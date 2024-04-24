@@ -1,0 +1,54 @@
+# Optimism Fractal Concept
+
+**Optimism Fractal is a community dedicated to fostering collaboration and awarding public good creators on Optimism.**
+
+### 1. Respect Game meetings
+
+1. [Respect Game](#2-respect-game) meetings happen weekly;
+2. At the start of the meeting participants are randomly distributed into break-out groups of 3 to 6 people. Each break-out group plays [Respect game](#2-respect-game), which lasts for 45 minutes;
+
+### 2. Respect Game
+
+1. Each participant of the group is given up to 4 minutes to present their contributions. Their presentation should answer the following question: "What did I do this week to help Optimism?"
+2. After everyone has had time to present, the group tries to reach consensus on rankings of contributions;
+  1. The participant who has contributed the most gets Level 6, the second biggest contributor gets level 5 and so on;
+
+### 3. Respect
+
+1. Respect is a non-transferable token representing respect (an opinion) that a community (in this case Optimism Fractal) has on a particular account;
+2. Respect is not a property that can by owned by anyone (or anything) and no participating party owns Respect;
+
+### 4. Respect Distribution
+
+1. Respect should be distributed to participants of break-out groups which were able to reach consensus
+  1. Level 6 receives 55 Respect;
+  2. Level 5 receives 34 Respect;
+  3. Level 4 receives 21 Respect;
+  4. Level 3 receives 13 Respect;
+  5. Level 2 receives 8 Respect;
+  6. Level 1 receives 5 Respect;
+
+### 5. Parent Respect token
+
+1. Respect token deployed as the following contract on Optmimism Mainnet is "Parent Respect" of Optimism Fractal:
+  [0x53C9E3a44B08E7ECF3E8882996A500eb06c0C5CC](https://optimistic.etherscan.io/address/0x53c9e3a44b08e7ecf3e8882996a500eb06c0c5cc);
+2. Parent Respect token distribution will be used for [consensus process](#6-consensus-process) and [executive contract] of Optimism Fractal until a new [Respect distribution](#4-respect-distribution) is ready and its contract is sufficiently tested according to the will of community (at which point a new concept document should be passed);
+
+### 6. Consensus process
+
+1. Every week, during Respect Game meeting, a poll is created for participants to register to take part in the consensus process of Optimism Fractal next week. This is “registration poll”. Participants can register throughout the whole week;
+2. Top 6 Parent Respect earners out of those who registered in last week’s “registration poll” constitute a "council" for the current week;
+3. A new council is activated at the start of a Respect Game meeting. Respect distribution at that moment is used to determine the council;
+4. If fewer than 6 participants have registered, then council is smaller (consists only of those who registered);
+5. A proposal is said to be passed by Optimism Fractal if at least 2/3rds of council members signal approval for it;
+6. Proposals passed by the council can:
+  1. Signal opinion of Optimism Fractal community;
+  2. Make changes to the rules of Optimism Fractal (i.e.: rules expressed here);
+  3. Select software implementation of Optimism Fractal (i.e.: implementation of rules defined here - smart contract deployment, official frontends, etc);
+  4. Blacklist break-out group results (see 3.2.3);
+  5. Make changes to the current Respect distribution (burn existing or mint additional Respect);
+7. Optimism Fractal does not have any control or any other kind of power over any participating parties;
+
+### 7. Executive contract
+
+
