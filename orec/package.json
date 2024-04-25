@@ -17,6 +17,7 @@
     "hardhat": "^2.22.3"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.0.2"
+    "@openzeppelin/contracts": "^5.0.2",
+    "op-fractal-sc": "github:Optimystics/op-fractal-sc#weeks-1-24"
   }
 }
