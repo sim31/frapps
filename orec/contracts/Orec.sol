@@ -155,7 +155,7 @@ contract Orec {
 
     function isVetoPeriod(Proposal storage prop) internal view returns (bool) {
         uint256 age = block.timestamp - prop.createTime;
-        return age > voteLen && age < voteLen + vetoLen;
+        return age >= voteLen && age < voteLen + vetoLen;
     }
 
     function isVetoOrVotePeriod(Proposal storage prop) internal view returns (bool) {
