@@ -54,27 +54,34 @@ async function deployOrecWithProposals() {
   const accounts = await hre.ethers.getSigners();
 
   const msg = buildMintMsg(accounts[0].address, 5);
-  await expect(orec.propose(msg)).to.not.be.reverted;
+  await expect(orec.propose(msg, 0)).to.not.be.reverted;
 
   const msg2 = buildMintMsg(accounts[1].address, 10);
-  await expect(orec.propose(msg2)).to.not.be.reverted;
+  await expect(orec.propose(msg2, 1)).to.not.be.reverted;
 
   await time.increase(60);
 
   const msg3 = buildMintMsg(accounts[3].address, 12);
-  await expect(orec.propose(msg3)).to.not.be.reverted;
+  await expect(orec.propose(msg3, 2)).to.not.be.reverted;
 
   await time.increase(60);
 
   const msg4 = buildMintMsg(accounts[3].address, 15);
-  await expect(orec.propose(msg4)).to.not.be.reverted;
+  await expect(orec.propose(msg4, 3)).to.not.be.reverted;
 
-  return { orec, token, tokenOwner, tokenAddress, buildMintMsg, accounts };
+  const voteLen = await orec.voteLen();
+  const vetoLen = await orec.vetoLen();
+  const minWeight = await orec.minWeight();
+
+  return {
+    orec, token, tokenOwner, tokenAddress, buildMintMsg, accounts, nonce: 4,
+    voteLen, vetoLen, minWeight
+   };
 }
 
 async function deployOrecWithProposalsAndBalances() {
-  const { orec, token, tokenOwner, tokenAddress, buildMintMsg, accounts } =
-    await loadFixture(deployOrecWithProposals);
+  const vars = await loadFixture(deployOrecWithProposals);
+  const { token, accounts } = vars;
 
   await expect(token.mint(accounts[0], 5)).to.not.be.reverted;
   await expect(token.mint(accounts[1], 8)).to.not.be.reverted;
@@ -84,7 +91,7 @@ async function deployOrecWithProposalsAndBalances() {
   await expect(token.mint(accounts[5], 55)).to.not.be.reverted;
   await expect(token.mint(accounts[6], 89)).to.not.be.reverted;
 
-  return { orec, token, tokenOwner, tokenAddress, buildMintMsg, accounts };
+  return vars;
 }
 
 describe("Orec", function () {
@@ -94,10 +101,10 @@ describe("Orec", function () {
     No = 2
   }
 
-  const MIN_1 = 60;
-  const HOUR_1 = 60 * MIN_1;
-  const DAY_1 = 24 * HOUR_1;
-  const DAY_6 = 6 * DAY_1;
+  const MIN_1 = 60n;
+  const HOUR_1 = 60n * MIN_1;
+  const DAY_1 = 24n * HOUR_1;
+  const DAY_6 = 6n * DAY_1;
 
   async function expectVoteCounted(
     orec: Orec,
@@ -147,7 +154,7 @@ describe("Orec", function () {
       // token.mint(accounts[2], 10).
       const msg = buildMintMsg(accounts[2].address, 10);
 
-      await expect(orec.propose(msg)).to.not.be.reverted;
+      await expect(orec.propose(msg, 0)).to.not.be.reverted;
 
       const storedProp = await orec.proposals(0);
 
@@ -162,14 +169,30 @@ describe("Orec", function () {
       const { orec, buildMintMsg } = await loadFixture(deployOrec);
       const accounts = await hre.ethers.getSigners();
 
-      // token.mint(accounts[2], 10).
       const msg = buildMintMsg(accounts[3].address, 20);
 
-      const txResp = await orec.propose(msg);
+      const txResp = await orec.propose(msg, 0);
       const bl = await txResp.getBlock();
       
       const storedProp = await orec.proposals(0);
       expect(storedProp.createTime).to.equal(bl?.timestamp);
+    });
+
+    it("should not allow reusing a nonce", async function() {
+      const { orec, token, tokenAddress, buildMintMsg } = await loadFixture(deployOrec);
+      const accounts = await hre.ethers.getSigners();
+
+      // token.mint(accounts[2], 10).
+      const msg1 = buildMintMsg(accounts[2].address, 10);
+      await expect(orec.propose(msg1, 0)).to.not.be.reverted;
+
+      await expect(orec.propose(msg1, 0)).to.be.reverted;
+
+      const msg2 = buildMintMsg(accounts[1].address, 1);
+      await expect(orec.propose(msg1, 1)).to.not.be.reverted;
+
+      const msg3 = buildMintMsg(accounts[0].address, 1);
+      await expect(orec.propose(msg3, 1)).to.be.reverted;
     });
   })
 
@@ -180,11 +203,11 @@ describe("Orec", function () {
 
         await expectVoteCounted(orec, token, 0, accounts[0], VoteType.Yes);
 
-        time.increase(HOUR_1);
+        await time.increase(HOUR_1);
 
         await expectVoteCounted(orec, token, 0, accounts[1], VoteType.Yes);
 
-        time.increase(22 * HOUR_1 + 55 * MIN_1);
+        await time.increase(22n * HOUR_1 + 55n * MIN_1);
 
         await expectVoteCounted(orec, token, 0, accounts[2], VoteType.Yes);
       });
@@ -193,11 +216,11 @@ describe("Orec", function () {
 
         await expectVoteReverted(orec, token, 0, accounts[0], VoteType.None);
 
-        time.increase(HOUR_1);
+        await time.increase(HOUR_1);
 
         await expectVoteReverted(orec, token, 0, accounts[1], VoteType.None);
 
-        time.increase(22 * HOUR_1 + 59 * MIN_1);
+        await time.increase(22n * HOUR_1 + 59n * MIN_1);
 
         await expectVoteReverted(orec, token, 0, accounts[2], VoteType.None);
       })
@@ -210,7 +233,7 @@ describe("Orec", function () {
         expect(prop.yesWeight).to.be.equal(expYesWeight);
         expect(prop.noWeight).to.be.equal(0);
 
-        time.increase(HOUR_1);
+        await time.increase(HOUR_1);
 
         await expectVoteCounted(orec, token, 0, accounts[1], VoteType.Yes);
         expYesWeight += await token.balanceOf(accounts[1]);
@@ -218,7 +241,7 @@ describe("Orec", function () {
         expect(prop.yesWeight).to.be.equal(expYesWeight);
         expect(prop.noWeight).to.be.equal(0);
 
-        time.increase(22 * HOUR_1 + 55 * MIN_1);
+        await time.increase(22n * HOUR_1 + 55n * MIN_1);
 
         await expectVoteCounted(orec, token, 0, accounts[2], VoteType.Yes);
         expYesWeight += await token.balanceOf(accounts[2]);
@@ -231,11 +254,11 @@ describe("Orec", function () {
 
         await expectVoteCounted(orec, token, 0, accounts[0], VoteType.No);
 
-        time.increase(HOUR_1);
+        await time.increase(HOUR_1);
 
         await expectVoteCounted(orec, token, 0, accounts[1], VoteType.No);
 
-        time.increase(22 * HOUR_1 + 55 * MIN_1);
+        await time.increase(22n * HOUR_1 + 55n * MIN_1);
 
         await expectVoteCounted(orec, token, 0, accounts[2], VoteType.No);
       })
@@ -248,7 +271,7 @@ describe("Orec", function () {
         expect(prop.yesWeight).to.be.equal(0);
         expect(prop.noWeight).to.be.equal(expNoWeight);
 
-        time.increase(HOUR_1);
+        await time.increase(HOUR_1);
 
         await expectVoteCounted(orec, token, 0, accounts[1], VoteType.No);
         expNoWeight += await token.balanceOf(accounts[1]);
@@ -261,7 +284,7 @@ describe("Orec", function () {
 
         await expectVoteCounted(orec, token, 1, accounts[3], VoteType.Yes);
 
-        time.increase(MIN_1);
+        await time.increase(MIN_1);
 
         await expectVoteCounted(orec, token, 1, accounts[3], VoteType.No);
       });
@@ -275,7 +298,7 @@ describe("Orec", function () {
         expect(prop.yesWeight).to.be.equal(expYesWeight);
         expect(prop.noWeight).to.be.equal(expNoWeight);
 
-        time.increase(MIN_1);
+        await time.increase(MIN_1);
 
         await expectVoteCounted(orec, token, 1, accounts[3], VoteType.No);
         expNoWeight = expYesWeight;
@@ -290,7 +313,7 @@ describe("Orec", function () {
 
         await expectVoteCounted(orec, token, 1, accounts[3], VoteType.No);
 
-        time.increase(MIN_1);
+        await time.increase(MIN_1);
 
         await expectVoteReverted(orec, token, 1, accounts[3], VoteType.Yes);
       });
@@ -298,22 +321,185 @@ describe("Orec", function () {
 
     describe("vetoTime (period: [createTime + voteLen, createTime + voteLen + vetoLen)", function() {
       it("should not allow voting yes during [createTime+voteLen, createTime+voteLen+vetoLen) period", async function() {
+        const { orec, accounts, token, voteLen } = await loadFixture(deployOrecWithProposalsAndBalances);
 
+        // Try during vote time first
+        await expectVoteCounted(orec, token, 0, accounts[0], VoteType.Yes);
+
+        await time.increase(voteLen + 1n);
+
+        await expectVoteReverted(orec, token, 0, accounts[1], VoteType.Yes);
+
+        await time.increase(MIN_1);
+
+        await expectVoteReverted(orec, token, 0, accounts[2], VoteType.Yes);
       });
-      it("should not allow voting with none vtype")
-      it("should allow voting no during [createTime+voteLen, createTime+voteLen+vetoLen) period")
-      it("should increment noWeight of proposal by the token balance of a voter")
-      it("should allow switching from yes to no during [createTime+voteLen, createTime+voteLen+vetoLen)")
-      it("switching from yes to no should subtract from yesWeight and add to noWeight")
-      it("should not allow switching from no to yes")
+      it("should not allow voting with none vtype", async function() {
+        const { orec, accounts, token, voteLen } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+        await time.increase(voteLen + MIN_1);
+
+        await expectVoteReverted(orec, token, 0, accounts[1], VoteType.None);
+      });
+
+      it("should allow voting no during [createTime+voteLen, createTime+voteLen+vetoLen) period", async function() {
+        const { orec, accounts, token, voteLen } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+        await expectVoteCounted(orec, token, 0, accounts[6], VoteType.Yes);
+
+        await time.increase(voteLen);
+
+        await expectVoteReverted(orec, token, 0, accounts[1], VoteType.Yes);
+        await expectVoteCounted(orec, token, 0, accounts[1], VoteType.No);
+
+        await time.increase(HOUR_1);
+        await expectVoteCounted(orec, token, 0, accounts[2], VoteType.No);
+      })
+      it("should increment noWeight of proposal by respect of a voter, when voting no", async function() {
+        const { orec, accounts, token, voteLen } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+        await expectVoteCounted(orec, token, 0, accounts[6], VoteType.Yes);
+
+        await time.increase(voteLen + 1n);
+
+        await expectVoteCounted(orec, token, 0, accounts[1], VoteType.No);
+
+        let expNoWeight = await token.balanceOf(accounts[1]);
+        let expYesWeight = await token.balanceOf(accounts[6]);
+        let prop = await orec.proposals(0);
+        expect(prop.yesWeight).to.be.equal(expYesWeight);
+        expect(prop.noWeight).to.be.equal(expNoWeight);
+
+        await time.increase(HOUR_1);
+        await expectVoteCounted(orec, token, 0, accounts[2], VoteType.No);
+
+        expNoWeight += await token.balanceOf(accounts[2]);
+        prop = await orec.proposals(0);
+        expect(prop.yesWeight).to.be.equal(expYesWeight);
+        expect(prop.noWeight).to.be.equal(expNoWeight);
+      })
+      it("should allow switching from yes to no during [createTime+voteLen, createTime+voteLen+vetoLen)", async function() {
+        const { orec, accounts, token, voteLen } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+        await expectVoteCounted(orec, token, 0, accounts[6], VoteType.Yes);
+
+        await time.increase(voteLen + 100n);
+
+        await expectVoteCounted(orec, token, 0, accounts[6], VoteType.No);
+      });
+      it("switching from yes to no should subtract from yesWeight and add to noWeight", async function() {
+        const { orec, accounts, token, voteLen } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+        await expectVoteCounted(orec, token, 0, accounts[6], VoteType.Yes);
+
+        let prop = await orec.proposals(0);
+        const w = prop.yesWeight;
+
+        await time.increase(voteLen + HOUR_1);
+
+        await expectVoteCounted(orec, token, 0, accounts[6], VoteType.No);
+
+        prop = await orec.proposals(0);
+        expect(prop.yesWeight).to.be.equal(0);
+        expect(prop.noWeight).to.be.equal(w);
+      });
+      it("should not allow switching from no to yes", async function() {
+        const { orec, accounts, token, voteLen } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+        await expectVoteCounted(orec, token, 0, accounts[6], VoteType.Yes);
+        await expectVoteCounted(orec, token, 0, accounts[2], VoteType.No);
+
+        await time.increase(voteLen + HOUR_1);
+
+        await expectVoteReverted(orec,token, 0, accounts[2], VoteType.Yes);
+
+        await expectVoteCounted(orec, token, 0, accounts[0], VoteType.No);
+        await time.increase(MIN_1);
+        await expectVoteReverted(orec, token, 0, accounts[0], VoteType.Yes);
+      })
     });
 
     describe("executeTime (createTime+voteLen+vetoLen or later)", function() {
-      it("should not allow voting yes");
-      it("should not allow voting with none vtype")
-      it("should not allow voting no")
+      it("should not allow voting yes", async function() {
+        const { orec, accounts, token, voteLen, vetoLen } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+        await expectVoteCounted(orec, token, 0, accounts[6], VoteType.Yes);
+        await expectVoteCounted(orec, token, 1, accounts[5], VoteType.No);
+        await expectVoteCounted(orec, token, 1, accounts[4], VoteType.Yes);
+
+        await time.increase(voteLen + vetoLen + MIN_1);
+
+        // Case when proposal is passed
+        await expectVoteReverted(orec, token, 0, accounts[2], VoteType.Yes);
+        // Case when proposal is rejected with no
+        await expectVoteReverted(orec, token, 1, accounts[1], VoteType.Yes);
+        // Case when proposal does not have any votes
+        await expectVoteReverted(orec, token, 2, accounts[3], VoteType.Yes);
+      });
+      it("should not allow voting with none vtype", async function() {
+        const { orec, accounts, token, voteLen, vetoLen } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+        await expectVoteCounted(orec, token, 0, accounts[6], VoteType.Yes);
+        await expectVoteCounted(orec, token, 1, accounts[5], VoteType.No);
+        await expectVoteCounted(orec, token, 1, accounts[4], VoteType.Yes);
+
+        await time.increase(voteLen + vetoLen + MIN_1);
+
+        // Case when proposal is passed
+        await expectVoteReverted(orec, token, 0, accounts[2], VoteType.None);
+        // Case when proposal is rejected with no
+        await expectVoteReverted(orec, token, 1, accounts[1], VoteType.None);
+        // Case when proposal does not have any votes
+        await expectVoteReverted(orec, token, 2, accounts[3], VoteType.None);
+
+      })
+      it("should not allow voting no", async function() {
+
+        const { orec, accounts, token, voteLen, vetoLen } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+        await expectVoteCounted(orec, token, 0, accounts[6], VoteType.Yes);
+        await expectVoteCounted(orec, token, 1, accounts[5], VoteType.No);
+        await expectVoteCounted(orec, token, 1, accounts[4], VoteType.Yes);
+
+        await time.increase(voteLen + vetoLen + MIN_1);
+
+        // Case when proposal is passed
+        await expectVoteReverted(orec, token, 0, accounts[2], VoteType.No);
+        // Case when proposal is rejected with no
+        await expectVoteReverted(orec, token, 1, accounts[1], VoteType.No);
+        // Case when proposal does not have any votes
+        await expectVoteReverted(orec, token, 2, accounts[3], VoteType.No);
+      });
     })
   });
+
+  describe("proposeAndVote", function() {
+    it("should create a proposal and record a yes vote", async function() {
+      const { orec, token, tokenAddress, buildMintMsg } = await loadFixture(deployOrec);
+      const accounts = await hre.ethers.getSigners();
+
+      // token.mint(accounts[2], 10).
+      const msg = buildMintMsg(accounts[2].address, 10);
+
+      const txResp = await orec.proposeAndVote(msg, 0, VoteType.Yes, "");
+      const bl = await txResp.getBlock();
+
+      const weight = await token.balanceOf(accounts[0]);
+
+      const storedProp = await orec.proposals(0);
+
+      expect(storedProp.yesWeight).to.equal(weight);
+      expect(storedProp.noWeight).to.equal(0);
+      expect(storedProp.message.cdata).to.equal(msg.cdata);
+      expect(storedProp.message.addr).to.equal(msg.addr);
+      expect(storedProp.status).to.equal(0);
+      expect(storedProp.createTime).to.equal(bl?.timestamp);
+
+      const storedVote = await orec.votes(0, accounts[0]);
+      expect(storedVote.vtype).to.be.equal(VoteType.Yes);
+      expect(storedVote.weight).to.be.equal(weight);
+    });
+  })
 
   describe("execute", function() {
     it("should not allow executing during voteTime [createTime, createTime + voteLen)")
@@ -321,7 +507,8 @@ describe("Orec", function () {
 
     describe("executeTime", function() {
       it("should not allow executing if noWeight * 2 >= yesWeight")
-      it("should allow executing (by anyone) if noWeight * 2 < yesWeight")
+      it("should not allow executing if noWeight < minWeight")
+      it("should allow executing (by anyone) if noWeight * 2 < yesWeight and noWeight >= minWeight")
       it("should not allow executing if execution was already attempted and failed")
       it("should not allow executing if execution was already successful")
 

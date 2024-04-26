@@ -32,6 +32,7 @@ contract Orec {
     event VoteIn(uint256 propId, Vote vote, address voter, string memo);
     event Executed(uint256 propId, bytes retVal);
     event ExecutionFailed(uint256 propId, bytes retVal);
+    event ProposalCreated(uint256 propId);
 
     // TODO: make configurable
     uint64 constant public voteLen = 1 days;
@@ -52,20 +53,85 @@ contract Orec {
         respectContract = respectContract_;
     }
 
-    function propose(Message calldata message) public {
-        proposals.push(Proposal({
-            message: message,
-            createTime: block.timestamp,
-            yesWeight: 0,
-            noWeight: 0,
-            status: ExecStatus.NotExecuted
-        }));
+    function propose(Message calldata message, uint256 nonce) public returns (uint256 propId) {
+        _propose(message, nonce);
+        return nonce;
+    }
+
+    function proposeAndVote(
+        Message calldata message,
+        uint256 nonce,
+        VoteType voteType,
+        string calldata memo
+    ) public {
+        Proposal storage p = _propose(message, nonce);
+        _vote(p, nonce, voteType, memo);
     }
 
     function vote(uint256 propId, VoteType voteType, string calldata memo) public {
+        Proposal storage p = _getProposal(propId);
+        _vote(p, propId, voteType, memo);
+    }
+
+    function execute(uint256 propId) public returns (bool) {
+        Proposal storage prop = _getProposal(propId);
+
+        require(isPassed(prop), "Proposal has to be passed");
+        require(prop.status == ExecStatus.NotExecuted, "Proposal can be executed only once");
+
+        (bool success, bytes memory retVal) = prop.message.addr.call(prop.message.cdata);
+
+        if (success) {
+            emit Executed(propId, retVal);
+            prop.status = ExecStatus.Executed;
+        } else {
+            emit ExecutionFailed(propId, retVal);
+            prop.status = ExecStatus.ExecutionFailed;
+        }
+
+        return success;
+    }
+
+    function remove(uint256 propId) public {
+        Proposal storage prop = _getProposal(propId);
+
+        require(
+            isRejected(prop) ||
+            prop.status == ExecStatus.Executed ||
+            prop.status == ExecStatus.ExecutionFailed,
+            "Proposal has to be rejected or executed in order to be removed"
+        );
+
+        delete proposals[propId];
+    }
+
+    
+    function _getProposal(uint256 propId) internal view returns (Proposal storage) {
+        Proposal storage p = proposals[propId];
+        require(p.message.addr != address(0), "Proposal dne");
+        return p;
+    }
+
+    function _propose(Message calldata message, uint256 nonce) internal returns (Proposal storage) {
+        require(nonce == proposals.length, "nonce already used");
+        Proposal storage p = proposals.push();
+        p.message = message;
+        p.createTime = block.timestamp;
+        p.noWeight = p.yesWeight = 0;
+        p.status = ExecStatus.NotExecuted;
+
+        emit ProposalCreated(nonce);
+        return p;
+    }
+
+    function _vote(
+        Proposal storage p,
+        uint256 propId,
+        VoteType voteType,
+        string calldata memo
+    ) internal {
         // TODO: check what stage proposal is in
 
-        Proposal storage p = getProposal(propId);
         Vote storage currentVote = votes[propId][msg.sender];
         Vote memory newVote;
 
@@ -104,56 +170,18 @@ contract Orec {
         emit VoteIn(propId, newVote, msg.sender, memo);
     }
 
-    function execute(uint256 propId) public returns (bool) {
-        Proposal storage prop = getProposal(propId);
-
-        require(isPassed(prop), "Proposal has to be passed");
-        require(prop.status == ExecStatus.NotExecuted, "Proposal can be executed only once");
-
-        (bool success, bytes memory retVal) = prop.message.addr.call(prop.message.cdata);
-
-        if (success) {
-            emit Executed(propId, retVal);
-            prop.status = ExecStatus.Executed;
-        } else {
-            emit ExecutionFailed(propId, retVal);
-            prop.status = ExecStatus.ExecutionFailed;
-        }
-
-        return success;
-    }
-
-    function remove(uint256 propId) public {
-        Proposal storage prop = getProposal(propId);
-
-        require(
-            isRejected(prop) ||
-            prop.status == ExecStatus.Executed ||
-            prop.status == ExecStatus.ExecutionFailed,
-            "Proposal has to be rejected or executed in order to be removed"
-        );
-
-        delete proposals[propId];
-    }
-
-    function getProposal(uint256 propId) internal view returns (Proposal storage) {
-        Proposal storage p = proposals[propId];
-        require(p.message.addr != address(0), "Proposal dne");
-        return p;
-    }
-
     function isVotePeriod(uint256 propId) public view returns (bool) {
-        Proposal storage p = getProposal(propId);    // reverts if proposal does not exist
+        Proposal storage p = _getProposal(propId);    // reverts if proposal does not exist
         return isVotePeriod(p);
     }
 
     function isVetoPeriod(uint256 propId) public view returns (bool) {
-        Proposal storage p = getProposal(propId);    // reverts if proposal does not exist
+        Proposal storage p = _getProposal(propId);    // reverts if proposal does not exist
         return isVetoPeriod(p);
     }
 
     function isVetoOrVotePeriod(uint256 propId) public view returns (bool) {
-        Proposal storage p = getProposal(propId);    // reverts if proposal does not exist
+        Proposal storage p = _getProposal(propId);    // reverts if proposal does not exist
         return isVetoOrVotePeriod(p);
     }
 
@@ -173,12 +201,12 @@ contract Orec {
     }
 
     function isRejected(uint256 propId) public view returns (bool) {
-        Proposal storage p = getProposal(propId);    // reverts if proposal does not exist
+        Proposal storage p = _getProposal(propId);    // reverts if proposal does not exist
         return isRejected(p);
     }
 
     function isPassed(uint256 propId) public view returns (bool) {
-        Proposal storage p = getProposal(propId);    // reverts if proposal does not exist
+        Proposal storage p = _getProposal(propId);    // reverts if proposal does not exist
         return isPassed(p);
     }
 
