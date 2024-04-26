@@ -7,6 +7,11 @@ import hre from "hardhat";
 import { AddressLike, BigNumberish, Signer } from "ethers";
 import { MintableToken, Orec } from "../typechain-types";
 
+const MIN_1 = 60n;
+const HOUR_1 = 60n * MIN_1;
+const DAY_1 = 24n * HOUR_1;
+const DAY_6 = 6n * DAY_1;
+
 async function deployToken() {
   // Contracts are deployed using the first signer/account by default
   const [tokenOwner, otherAccount] = await hre.ethers.getSigners();
@@ -43,7 +48,10 @@ async function deployOrec() {
   const { token, tokenOwner, tokenAddress, buildMintMsg, buildBurnMsg } = await deployToken();
 
   const Orec = await hre.ethers.getContractFactory("Orec");
-  const orec = await Orec.deploy(tokenAddress);
+  const orec = await Orec.deploy(
+    tokenAddress,
+    DAY_1, DAY_6, 5
+  );
 
   return { orec, token, tokenOwner, tokenAddress, buildMintMsg, buildBurnMsg };
 }
@@ -112,11 +120,6 @@ describe("Orec", function () {
     ExecutionFailed
   }
 
-  const MIN_1 = 60n;
-  const HOUR_1 = 60n * MIN_1;
-  const DAY_1 = 24n * HOUR_1;
-  const DAY_6 = 6n * DAY_1;
-
   async function expectVoteCounted(
     orec: Orec,
     token: MintableToken,
@@ -151,6 +154,20 @@ describe("Orec", function () {
 
       expect(await orec.respectContract()).to.equal(tokenAddress);
     });
+
+    it("should set itself as the owner", async function() {
+      const { orec, token, tokenAddress } = await loadFixture(deployOrec);
+
+      expect(await orec.owner()).to.be.equal(await orec.getAddress())
+    });
+
+    it("should set voteLen, vetoLen and minWeight", async function() {
+      const { orec, token, tokenAddress } = await loadFixture(deployOrec);
+
+      expect(await orec.voteLen()).to.be.equal(DAY_1);
+      expect(await orec.vetoLen()).to.be.equal(DAY_6);
+      expect(await orec.minWeight()).to.be.equal(5);
+    })
   });
   // function propose(Message calldata message) public {
   // function vote(uint256 propId, VoteType voteType, string calldata memo) public {
@@ -514,7 +531,7 @@ describe("Orec", function () {
 
   describe("execute", function() {
     it("should not allow executing during voteTime [createTime, createTime + voteLen)")
-    it("should not allow executing during vetoTime [createTime+voteLen, createTime+voteLen+vetLen)")
+    it("should not allow executing during vetoTime [createTime+voteLen, createTime+voteLen+vetoLen)")
 
     describe("executeTime", function() {
       it("should not allow executing if noWeight * 2 >= yesWeight")
@@ -574,6 +591,34 @@ describe("Orec", function () {
         });
       })
     })
+  });
+
+  describe("Settings", function() {
+    it("should allow itself to change voteLen", async function() {
+      const { orec, accounts, token, voteLen, vetoLen, buildBurnMsg, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      const cdata = orec.interface.encodeFunctionData("setVoteLen", [DAY_1 * 2n]);
+      const msg: Orec.MessageStruct = {
+        addr: orec,
+        cdata
+      };
+
+      await expect(orec.proposeAndVote(msg, nonce, VoteType.Yes, "")).to.not.be.reverted;
+
+      await time.increase(voteLen + vetoLen);
+
+      await expect(orec.execute(nonce)).to.emit(orec, "Executed");
+
+      expect(await orec.voteLen()).to.be.equal(DAY_1 * 2n);
+
+      // Try voting later to test the new setting
+      await expect(orec.proposeAndVote(msg, nonce+1, VoteType.Yes, "")).to.not.be.reverted;
+      await time.increase(voteLen + HOUR_1 * 6n);
+      await expectVoteCounted(orec, token, nonce+1, accounts[1], VoteType.Yes);
+    });
+    it("should allow changing vetoLen")
+    it("should allow changing minWeight")
+    it("should allow changing respect contract")
   });
 
   // TODO: remaining functions

@@ -2,11 +2,12 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Uncomment this line to use console.log
 import "hardhat/console.sol";
 
-contract Orec {
+contract Orec is Ownable {
     enum VoteType { None, Yes, No }
     enum ExecStatus { NotExecuted, Executed, ExecutionFailed }
 
@@ -35,9 +36,9 @@ contract Orec {
     event ProposalCreated(uint256 propId);
 
     // TODO: make configurable
-    uint64 constant public voteLen = 1 days;
-    uint64 constant public vetoLen = 6 days;
-    uint256 constant public minWeight = 256;
+    uint64 public voteLen = 1 days;
+    uint64 public vetoLen = 6 days;
+    uint256 public minWeight = 256;
     // TODO: make it work with ERC-1155
     // TODO: make configurable
     // TODO: document info about how it might work with tokens whose balances might change during proposal passing time
@@ -49,8 +50,16 @@ contract Orec {
     // Negative weight means "no" vote;
     mapping(uint256 => mapping (address => Vote)) public votes; 
 
-    constructor(IERC20 respectContract_) {
+    constructor(
+        IERC20 respectContract_,
+        uint64 voteLenSeconds_,
+        uint64 vetoLenSeconds_,
+        uint256 minWeight_
+    ) Ownable(address(this)) {
         respectContract = respectContract_;
+        voteLen = voteLenSeconds_;
+        vetoLen = vetoLenSeconds_;
+        minWeight = minWeight_;
     }
 
     function propose(Message calldata message, uint256 nonce) public returns (uint256 propId) {
@@ -208,6 +217,23 @@ contract Orec {
     function isPassed(uint256 propId) public view returns (bool) {
         Proposal storage p = _getProposal(propId);    // reverts if proposal does not exist
         return isPassed(p);
+    }
+
+    function setRespectContract(address newAddr) public onlyOwner {
+        respectContract = IERC20(newAddr);
+    }
+
+    function setMinWeight(uint256 newMinWeigth) public onlyOwner {
+        minWeight = newMinWeigth;
+    }
+
+    // WARNING: increasing voteLen could make the proposals you thought expired active again (if they are within the new voteLen)
+    function setVoteLen(uint64 newVoteLen) public onlyOwner {
+        voteLen = newVoteLen;
+    }
+
+    function setVetoLen(uint64 newVetoLen) public onlyOwner {
+        vetoLen = newVetoLen;
     }
 
     function isRejected(Proposal storage prop) internal view returns (bool) {
