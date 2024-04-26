@@ -40,16 +40,16 @@ async function deployOrec() {
   // Contracts are deployed using the first signer/account by default
   const [owner, otherAccount] = await hre.ethers.getSigners();
 
-  const { token, tokenOwner, tokenAddress, buildMintMsg } = await deployToken();
+  const { token, tokenOwner, tokenAddress, buildMintMsg, buildBurnMsg } = await deployToken();
 
   const Orec = await hre.ethers.getContractFactory("Orec");
   const orec = await Orec.deploy(tokenAddress);
 
-  return { orec, token, tokenOwner, tokenAddress, buildMintMsg };
+  return { orec, token, tokenOwner, tokenAddress, buildMintMsg, buildBurnMsg };
 }
 
 async function deployOrecWithProposals() {
-  const { orec, token, tokenOwner, tokenAddress, buildMintMsg } = await loadFixture(deployOrec);
+  const { orec, token, tokenOwner, tokenAddress, buildMintMsg, buildBurnMsg } = await loadFixture(deployOrec);
 
   const accounts = await hre.ethers.getSigners();
 
@@ -73,15 +73,17 @@ async function deployOrecWithProposals() {
   const vetoLen = await orec.vetoLen();
   const minWeight = await orec.minWeight();
 
+  const nonce: BigNumberish = 4;
+
   return {
-    orec, token, tokenOwner, tokenAddress, buildMintMsg, accounts, nonce: 4,
-    voteLen, vetoLen, minWeight
+    orec, token, tokenOwner, tokenAddress, buildMintMsg, accounts, nonce,
+    voteLen, vetoLen, minWeight, buildBurnMsg
    };
 }
 
 async function deployOrecWithProposalsAndBalances() {
   const vars = await loadFixture(deployOrecWithProposals);
-  const { token, accounts } = vars;
+  const { token, accounts, orec } = vars;
 
   await expect(token.mint(accounts[0], 5)).to.not.be.reverted;
   await expect(token.mint(accounts[1], 8)).to.not.be.reverted;
@@ -91,6 +93,9 @@ async function deployOrecWithProposalsAndBalances() {
   await expect(token.mint(accounts[5], 55)).to.not.be.reverted;
   await expect(token.mint(accounts[6], 89)).to.not.be.reverted;
 
+  // At this point let orec do further mints and burns
+  await token.transferOwnership(orec);
+
   return vars;
 }
 
@@ -99,6 +104,12 @@ describe("Orec", function () {
     None = 0,
     Yes = 1,
     No = 2
+  }
+
+  enum ExecStatus {
+    NotExecuted = 0,
+    Executed,
+    ExecutionFailed
   }
 
   const MIN_1 = 60n;
@@ -513,8 +524,54 @@ describe("Orec", function () {
       it("should not allow executing if execution was already successful")
 
       describe("executing messages to MintableToken", function() {
-        it("should mint tokens")
-        it("should burn tokens")
+        it("should mint tokens", async function() {
+          const { orec, accounts, token, voteLen, vetoLen } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+          // 0th proposal is for issuing 5 to accounts[0]
+          const initAcc0Balance = await token.balanceOf(accounts[0]);
+
+          await expectVoteCounted(orec, token, 0, accounts[1], VoteType.Yes);
+
+          await time.increase(voteLen + vetoLen);
+
+          await expect(orec.execute(0)).to.emit(orec, "Executed");
+
+          expect(await token.balanceOf(accounts[0])).to.be.equal(initAcc0Balance + 5n);
+          expect((await orec.proposals(0)).status).to.be.equal(ExecStatus.Executed);
+        });
+
+        it("should burn tokens", async function() {
+          const { orec, accounts, token, voteLen, vetoLen, buildBurnMsg, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+          // 0th proposal is for issuing 5 to accounts[0]
+          const initAcc6Balance = await token.balanceOf(accounts[6]);
+
+          const msg = buildBurnMsg(accounts[6].address, 10);
+
+          await expect(orec.proposeAndVote(msg, nonce, VoteType.Yes, "")).to.not.be.reverted;
+          await expectVoteCounted(orec, token, 0, accounts[1], VoteType.Yes);
+
+          await time.increase(voteLen + vetoLen);
+
+          await expect(orec.execute(nonce)).to.emit(orec, "Executed");
+
+          expect(await token.balanceOf(accounts[6])).to.be.equal(initAcc6Balance - 10n);
+          expect((await orec.proposals(nonce)).status).to.be.equal(ExecStatus.Executed);
+        });
+
+        it("should emit ExecutionFailed in case of failed call", async function() {
+          const { orec, accounts, token, voteLen, vetoLen, buildBurnMsg, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+          // accounts[0] does not have that much to burn
+          const msg = buildBurnMsg(accounts[0].address, 1000000);
+
+          await expect(orec.proposeAndVote(msg, nonce, VoteType.Yes, "")).to.not.be.reverted;
+          await expectVoteCounted(orec, token, 0, accounts[1], VoteType.Yes);
+
+          await time.increase(voteLen + vetoLen);
+
+          await expect(orec.execute(nonce)).to.emit(orec, "ExecutionFailed");
+        });
       })
     })
   });
