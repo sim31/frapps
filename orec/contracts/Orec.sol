@@ -4,10 +4,10 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // Uncomment this line to use console.log
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract Orec {
-    enum VoteType { Yes, No }
+    enum VoteType { None, Yes, No }
     enum ExecStatus { NotExecuted, Executed, ExecutionFailed }
 
     struct Vote {
@@ -70,8 +70,7 @@ contract Orec {
         Vote memory newVote;
 
         require(
-            currentVote.weight == 0 || currentVote.vtype != VoteType.No,
-            "Can't change vote from negative"
+            currentVote.vtype != VoteType.No, "Can't change vote from no"
         );
 
         if (voteType == VoteType.Yes) {
@@ -81,15 +80,25 @@ contract Orec {
             uint256 w = respectContract.balanceOf(msg.sender);
             newVote = Vote(VoteType.Yes, w);
 
+            // console.log("Voting yes. Account: ", msg.sender, ", weight: ", w);
+
             p.yesWeight += w;
             votes[propId][msg.sender] = newVote;
-        } else {
+        } else if (voteType == VoteType.No) {
             require(isActive(p), "Voting and Veto time is over or proposal is already rejected");
-            newVote = Vote(VoteType.No, currentVote.weight);
-
-            p.yesWeight -= uint256(currentVote.weight);
-            p.noWeight += uint256(currentVote.weight);
+            // console.log("Voting no. Account: ", msg.sender);
+            if (currentVote.vtype == VoteType.Yes) {
+                newVote = Vote(VoteType.No, currentVote.weight);
+                p.yesWeight -= uint256(currentVote.weight);
+                p.noWeight += uint256(currentVote.weight);
+            } else {
+                uint256 weight = respectContract.balanceOf(msg.sender);
+                newVote = Vote(VoteType.No, weight);
+                p.noWeight += weight;
+            }
             votes[propId][msg.sender] = newVote;
+        } else {
+            revert("Cannot vote with none type"); 
         }
 
         emit VoteIn(propId, newVote, msg.sender, memo);
