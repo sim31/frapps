@@ -116,6 +116,7 @@ contract Orec is Ownable {
 
     
     function _getProposal(uint256 propId) internal view returns (Proposal storage) {
+        require(proposals.length > propId, "Proposal with such id never existed");
         Proposal storage p = proposals[propId];
         require(p.message.addr != address(0), "Proposal dne");
         return p;
@@ -249,11 +250,15 @@ contract Orec is Ownable {
     }
 
     function isPassed(Proposal storage prop) internal view returns (bool) {
-        if (!isVetoOrVotePeriod(prop) && prop.noWeight * 2 < prop.yesWeight) {
+        if (!isVetoOrVotePeriod(prop) && isPassingThreshold(prop)) {
             return true;
         } else {
             return false;
         }
+    }
+
+    function isPassingThreshold(Proposal storage prop) internal view returns (bool) {
+        return prop.noWeight * 2 < prop.yesWeight && prop.yesWeight >= minWeight; 
     }
 
     function isActive(Proposal storage prop) internal view returns (bool) {
