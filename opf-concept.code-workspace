@@ -1,8 +1,12 @@
 {
 	"folders": [
 		{
-			"name": "orec",
-			"path": "./orec/"
+			"name": "orec-sc",
+			"path": "./orec/sc/"
+		},
+		{
+			"name": "orec-gui",
+			"path": "./orec/gui/"
 		}
 	],
 	"settings": {}
