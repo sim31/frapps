@@ -52,7 +52,7 @@ export default function ProposalsTable(props: ProposalsTableProps) {
     // TODO: smaller table for smaller screens
     <>
       <TableContainer>
-        <Table size="lg" variant='simple'>
+        <Table size="lg" variant='simple' align="center">
           <Thead>
             <Tr>
               <Th>Id</Th>

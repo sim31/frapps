@@ -1,4 +1,4 @@
-import { useDisclosure } from "@chakra-ui/react"
+import { Button, Center, Stack, useDisclosure } from "@chakra-ui/react"
 import ProposalsTable from "./ProposalsTable"
 import { Proposal } from "../global/types"
 import ProposalModal from "./ProposalModal"
@@ -7,7 +7,7 @@ import ProposalModal from "./ProposalModal"
 export type ProposalBoardProps = {
   proposals: Proposal[],
   totalRespect: number
-} 
+}
 
 export default function ProposalBoard(props: ProposalBoardProps) {
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -19,7 +19,6 @@ export default function ProposalBoard(props: ProposalBoardProps) {
         totalRespect={props.totalRespect}
         onProposalClick={onOpen}
       />
-
       <ProposalModal
         proposal={props.proposals[0]}
         isOpen={isOpen}

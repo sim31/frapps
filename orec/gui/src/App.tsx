@@ -1,7 +1,12 @@
 // import { useState } from 'react'
 // import './App.css'
 import { Proposal } from "./global/types"
-import ProposalBoard from "./components/ProposalBoard"
+import AppBar from "./components/AppBar"
+import { useDisclosure } from "@chakra-ui/react"
+import ProposalsTable from "./components/ProposalsTable"
+import ProposalModal from "./components/ProposalModal"
+import ProposalFormModal from './components/ProposalFormModal'
+// import { Box, Center, Flex } from "@chakra-ui/react"
 
 const proposals: Proposal[] = [
   {
@@ -46,9 +51,29 @@ const proposals: Proposal[] = [
 ]
 
 function App() {
+  const { isOpen: propIsOpen, onOpen: propOnOpen, onClose: propOnClose } = useDisclosure()
+  const { isOpen: propFormIsOpen, onOpen: propFormOnOpen, onClose: propFormOnClose } = useDisclosure()
 
   return (
-    <ProposalBoard proposals={proposals} totalRespect={1000} />
+    <>
+      <AppBar onNewPropClick={() => { propOnClose(); propFormOnOpen(); }}/>
+      <ProposalsTable
+        proposals={proposals}
+        totalRespect={1000}
+        onProposalClick={() => { propFormOnClose(); propOnOpen(); }}
+      />
+      <ProposalModal
+        proposal={proposals[0]}
+        isOpen={propIsOpen}
+        onClose={propOnClose}
+      />
+
+      <ProposalFormModal 
+        isOpen={propFormIsOpen}
+        onClose={propFormOnClose}
+      />
+
+    </>
   )
 }
 
