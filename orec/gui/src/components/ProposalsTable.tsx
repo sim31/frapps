@@ -6,53 +6,44 @@ import {
   Th,
   Td,
   TableContainer,
-  Link
 } from '@chakra-ui/react'
+import { Proposal } from '../global/types';
 
-export type Proposal = {
-  id: number,
-  name: string,
-  account: string,
-  function: string,
-  yesWeight: number,
-  noWeight: number,
-  status: string,
-  stage: string,
-  memo: string,
-  createdTime: string
-}
 
 export type ProposalsTableProps = {
   proposals: Proposal[],
-  totalRespect: number
+  totalRespect: number,
+  onProposalClick: (propId: number) => void;
 } 
 
 export default function ProposalsTable(props: ProposalsTableProps) {
+
   const rows = props.proposals.map((proposal) => {
     const totalVotes = proposal.yesWeight + proposal.noWeight;
     return (
-      <Link
-        href="https://chakra-ui.com"
-        isExternal
+      <Tr
+        key={proposal.id}
         cursor="pointer"
-        display="contents" // <------ Note this style
+        _hover={{
+          background: "lightblue"
+        }}
+        onClick={() => props.onProposalClick(proposal.id)}
       >
-        <Tr key={proposal.id}>
-          <Td>{proposal.id}</Td>
-          <Td>{proposal.name}</Td>
-          <Td>{proposal.memo}</Td>
-          {/* <Td>{proposal.account}</Td>
-          <Td>{proposal.function}</Td> */}
-          <Td isNumeric>{totalVotes}</Td>
-          <Td isNumeric>100 (70%)</Td>
-          <Td isNumeric>60 (30%)</Td>
-          {/* <Td isNumeric>{totalVotes / props.totalRespect}</Td> */}
-          <Td>{proposal.stage}</Td>
-          <Td>4 hours</Td>
-          <Td>{proposal.status}</Td>
-          <Td>{proposal.createdTime}</Td>
-        </Tr>
-      </Link>
+        <Td>{proposal.id}</Td>
+        <Td>{proposal.name}</Td>
+        {/* TODO: display truncated text properly */}
+        <Td>{proposal.memo.substring(0, 20)}</Td>
+        {/* <Td>{proposal.account}</Td>
+        <Td>{proposal.function}</Td> */}
+        <Td isNumeric>{totalVotes}</Td>
+        <Td isNumeric>100 (70%)</Td>
+        <Td isNumeric>60 (30%)</Td>
+        {/* <Td isNumeric>{totalVotes / props.totalRespect}</Td> */}
+        <Td>{proposal.stage}</Td>
+        <Td>4 hours</Td>
+        <Td>{proposal.status}</Td>
+        <Td>{proposal.createdTime}</Td>
+      </Tr>
     )
   });
 
