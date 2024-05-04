@@ -31,7 +31,7 @@ export default function ProposalFormModal(props: ProposalFormModalProps) {
     } else if (msgType === "burn") {
       return <BurnRespectForm/>
     } else {
-      return <></>
+      return null;
     }
   }
 
