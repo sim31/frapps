@@ -11,6 +11,7 @@ contract Orec is Ownable {
     enum VoteType { None, Yes, No }
     enum ExecStatus { NotExecuted, Executed, ExecutionFailed }
 
+
     struct Vote {
         VoteType vtype;
         uint256 weight;
@@ -18,22 +19,34 @@ contract Orec is Ownable {
 
     struct Message {
         address addr;
-        bytes   cdata; // Calldata
+        /// Calldata
+        bytes   cdata; 
+        /// Same message might be proposed multiple times and since we identify
+        /// proposals by the hash of the message we need to add some salt to
+        /// the hashed value to make the proposal have unique id.
+        uint32  salt;
     }
 
-    struct Proposal {
-        // uint256 id;
-        Message message;
+    struct ProposalState {
         uint256 createTime;
         uint256 yesWeight;
         uint256 noWeight;
         ExecStatus status;
     }
 
-    event VoteIn(uint256 propId, Vote vote, address voter, string memo);
-    event Executed(uint256 propId, bytes retVal);
-    event ExecutionFailed(uint256 propId, bytes retVal);
-    event ProposalCreated(uint256 propId);
+    struct Proposal {
+        PropId id;
+        ProposalState state;
+        Message message;
+    }
+
+    /// PropId = keccak256(Message)
+    type PropId is bytes32;
+
+    event VoteIn(PropId propId, Vote vote, address voter, string memo);
+    event Executed(PropId propId, bytes retVal);
+    event ExecutionFailed(PropId propId, bytes retVal);
+    event ProposalCreated(PropId propId);
 
     // TODO: make configurable
     uint64 public voteLen = 1 days;
@@ -45,10 +58,10 @@ contract Orec is Ownable {
     //      - I think this is best used with parent Respect distribution creating child distribution (so respect created by previous version of a fractal would be issuing new respect through this)
     IERC20 public respectContract;
 
-    Proposal[] public proposals;
+    mapping (PropId => ProposalState) proposals;
 
     // Negative weight means "no" vote;
-    mapping(uint256 => mapping (address => Vote)) public votes; 
+    mapping(PropId => mapping (address => Vote)) public votes; 
 
     constructor(
         IERC20 respectContract_,
@@ -62,47 +75,40 @@ contract Orec is Ownable {
         minWeight = minWeight_;
     }
 
-    function propose(Message calldata message, uint256 nonce) public returns (uint256 propId) {
-        _propose(message, nonce);
-        return nonce;
-    }
+    function vote(PropId propId, VoteType voteType, string calldata memo) public {
+        ProposalState storage p = proposals[propId];
 
-    function proposeAndVote(
-        Message calldata message,
-        uint256 nonce,
-        VoteType voteType,
-        string calldata memo
-    ) public {
-        Proposal storage p = _propose(message, nonce);
-        _vote(p, nonce, voteType, memo);
-    }
+        if (p.createTime == 0) {
+            assert(p.yesWeight == 0 && p.noWeight == 0 && p.status == ExecStatus.NotExecuted);
+            p.createTime = block.timestamp;
+        }
 
-    function vote(uint256 propId, VoteType voteType, string calldata memo) public {
-        Proposal storage p = _getProposal(propId);
         _vote(p, propId, voteType, memo);
     }
 
-    function execute(uint256 propId) public returns (bool) {
-        Proposal storage prop = _getProposal(propId);
+    function execute(Message calldata message) public returns (bool) {
+        PropId pId = proposalId(message);
+
+        ProposalState storage prop = _getProposal(pId);
 
         require(isPassed(prop), "Proposal has to be passed");
         require(prop.status == ExecStatus.NotExecuted, "Proposal can be executed only once");
 
-        (bool success, bytes memory retVal) = prop.message.addr.call(prop.message.cdata);
+        (bool success, bytes memory retVal) = message.addr.call(message.cdata);
 
         if (success) {
-            emit Executed(propId, retVal);
+            emit Executed(pId, retVal);
             prop.status = ExecStatus.Executed;
         } else {
-            emit ExecutionFailed(propId, retVal);
+            emit ExecutionFailed(pId, retVal);
             prop.status = ExecStatus.ExecutionFailed;
         }
 
         return success;
     }
 
-    function remove(uint256 propId) public {
-        Proposal storage prop = _getProposal(propId);
+    function remove(PropId propId) public {
+        ProposalState storage prop = _getProposal(propId);
 
         require(
             isRejected(prop) ||
@@ -114,29 +120,108 @@ contract Orec is Ownable {
         delete proposals[propId];
     }
 
-    
-    function _getProposal(uint256 propId) internal view returns (Proposal storage) {
-        require(proposals.length > propId, "Proposal with such id never existed");
-        Proposal storage p = proposals[propId];
-        require(p.message.addr != address(0), "Proposal dne");
-        return p;
+    function proposalExists(PropId propId) public view returns (bool) {
+        ProposalState storage p = proposals[propId];
+        return _proposalExists(p);
     }
 
-    function _propose(Message calldata message, uint256 nonce) internal returns (Proposal storage) {
-        require(nonce == proposals.length, "nonce already used");
-        Proposal storage p = proposals.push();
-        p.message = message;
-        p.createTime = block.timestamp;
-        p.noWeight = p.yesWeight = 0;
-        p.status = ExecStatus.NotExecuted;
+    function isVotePeriod(PropId propId) public view returns (bool) {
+        ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
+        return isVotePeriod(p);
+    }
 
-        emit ProposalCreated(nonce);
-        return p;
+    function isVetoPeriod(PropId propId) public view returns (bool) {
+        ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
+        return isVetoPeriod(p);
+    }
+
+    function isVetoOrVotePeriod(PropId propId) public view returns (bool) {
+        ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
+        return isVetoOrVotePeriod(p);
+    }
+
+    function isVotePeriod(ProposalState storage prop) internal view returns (bool) {
+        uint256 age = block.timestamp - prop.createTime;
+        return age < voteLen;
+    }
+
+    function isVetoPeriod(ProposalState storage prop) internal view returns (bool) {
+        uint256 age = block.timestamp - prop.createTime;
+        return age >= voteLen && age < voteLen + vetoLen;
+    }
+
+    function isVetoOrVotePeriod(ProposalState storage prop) internal view returns (bool) {
+        uint256 age = block.timestamp - prop.createTime;
+        return age < voteLen + vetoLen;
+    }
+
+    function isRejected(PropId propId) public view returns (bool) {
+        ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
+        return isRejected(p);
+    }
+
+    function isPassed(PropId propId) public view returns (bool) {
+        ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
+        return isPassed(p);
+    }
+
+    function setRespectContract(address newAddr) public onlyOwner {
+        respectContract = IERC20(newAddr);
+    }
+
+    function setMinWeight(uint256 newMinWeigth) public onlyOwner {
+        minWeight = newMinWeigth;
+    }
+
+    // WARNING: increasing voteLen could make the proposals you thought expired active again (if they are within the new voteLen)
+    function setVoteLen(uint64 newVoteLen) public onlyOwner {
+        voteLen = newVoteLen;
+    }
+
+    function setVetoLen(uint64 newVetoLen) public onlyOwner {
+        vetoLen = newVetoLen;
+    }
+
+    function isRejected(ProposalState storage prop) internal view returns (bool) {
+        if (!isVotePeriod(prop)) {
+            if (prop.noWeight * 2 >= prop.yesWeight) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    function isPassed(ProposalState storage prop) internal view returns (bool) {
+        if (!isVetoOrVotePeriod(prop) && isPassingThreshold(prop)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function isPassingThreshold(ProposalState storage prop) internal view returns (bool) {
+        return prop.noWeight * 2 < prop.yesWeight && prop.yesWeight >= minWeight; 
+    }
+
+    function isActive(ProposalState storage prop) internal view returns (bool) {
+        return isVetoOrVotePeriod(prop) && !isRejected(prop);
+    }
+
+    function proposalId(Message calldata message) public pure returns (PropId) {
+        bytes memory packed = abi.encodePacked(
+            message.addr,
+            message.cdata,
+            message.salt
+        );
+        return PropId.wrap(keccak256(packed));
     }
 
     function _vote(
-        Proposal storage p,
-        uint256 propId,
+        ProposalState storage p,
+        PropId propId,
         VoteType voteType,
         string calldata memo
     ) internal {
@@ -180,89 +265,14 @@ contract Orec is Ownable {
         emit VoteIn(propId, newVote, msg.sender, memo);
     }
 
-    function isVotePeriod(uint256 propId) public view returns (bool) {
-        Proposal storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return isVotePeriod(p);
+    function _getProposal(PropId propId) internal view returns (ProposalState storage) {
+        ProposalState storage p = proposals[propId];
+        require(_proposalExists(p), "Proposal dne");
+        return p;
     }
 
-    function isVetoPeriod(uint256 propId) public view returns (bool) {
-        Proposal storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return isVetoPeriod(p);
+    function _proposalExists(ProposalState storage prop) internal view returns (bool) {
+        return prop.createTime != 0;
     }
 
-    function isVetoOrVotePeriod(uint256 propId) public view returns (bool) {
-        Proposal storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return isVetoOrVotePeriod(p);
-    }
-
-    function isVotePeriod(Proposal storage prop) internal view returns (bool) {
-        uint256 age = block.timestamp - prop.createTime;
-        return age < voteLen;
-    }
-
-    function isVetoPeriod(Proposal storage prop) internal view returns (bool) {
-        uint256 age = block.timestamp - prop.createTime;
-        return age >= voteLen && age < voteLen + vetoLen;
-    }
-
-    function isVetoOrVotePeriod(Proposal storage prop) internal view returns (bool) {
-        uint256 age = block.timestamp - prop.createTime;
-        return age < voteLen + vetoLen;
-    }
-
-    function isRejected(uint256 propId) public view returns (bool) {
-        Proposal storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return isRejected(p);
-    }
-
-    function isPassed(uint256 propId) public view returns (bool) {
-        Proposal storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return isPassed(p);
-    }
-
-    function setRespectContract(address newAddr) public onlyOwner {
-        respectContract = IERC20(newAddr);
-    }
-
-    function setMinWeight(uint256 newMinWeigth) public onlyOwner {
-        minWeight = newMinWeigth;
-    }
-
-    // WARNING: increasing voteLen could make the proposals you thought expired active again (if they are within the new voteLen)
-    function setVoteLen(uint64 newVoteLen) public onlyOwner {
-        voteLen = newVoteLen;
-    }
-
-    function setVetoLen(uint64 newVetoLen) public onlyOwner {
-        vetoLen = newVetoLen;
-    }
-
-    function isRejected(Proposal storage prop) internal view returns (bool) {
-        if (!isVotePeriod(prop)) {
-            if (prop.noWeight * 2 >= prop.yesWeight) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-
-    function isPassed(Proposal storage prop) internal view returns (bool) {
-        if (!isVetoOrVotePeriod(prop) && isPassingThreshold(prop)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    function isPassingThreshold(Proposal storage prop) internal view returns (bool) {
-        return prop.noWeight * 2 < prop.yesWeight && prop.yesWeight >= minWeight; 
-    }
-
-    function isActive(Proposal storage prop) internal view returns (bool) {
-        return isVetoOrVotePeriod(prop) && !isRejected(prop);
-        
-    }
 }
