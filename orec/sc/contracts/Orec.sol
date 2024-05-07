@@ -91,7 +91,7 @@ contract Orec is Ownable {
 
         ProposalState storage prop = _getProposal(pId);
 
-        require(isPassed(prop), "Proposal has to be passed");
+        require(_isPassed(prop), "Proposal has to be passed");
         require(prop.status == ExecStatus.NotExecuted, "Proposal can be executed only once");
 
         (bool success, bytes memory retVal) = message.addr.call(message.cdata);
@@ -111,7 +111,7 @@ contract Orec is Ownable {
         ProposalState storage prop = _getProposal(propId);
 
         require(
-            isRejected(prop) ||
+            _isRejected(prop) ||
             prop.status == ExecStatus.Executed ||
             prop.status == ExecStatus.ExecutionFailed,
             "Proposal has to be rejected or executed in order to be removed"
@@ -127,42 +127,27 @@ contract Orec is Ownable {
 
     function isVotePeriod(PropId propId) public view returns (bool) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return isVotePeriod(p);
+        return _isVotePeriod(p);
     }
 
     function isVetoPeriod(PropId propId) public view returns (bool) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return isVetoPeriod(p);
+        return _isVetoPeriod(p);
     }
 
     function isVetoOrVotePeriod(PropId propId) public view returns (bool) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return isVetoOrVotePeriod(p);
-    }
-
-    function isVotePeriod(ProposalState storage prop) internal view returns (bool) {
-        uint256 age = block.timestamp - prop.createTime;
-        return age < voteLen;
-    }
-
-    function isVetoPeriod(ProposalState storage prop) internal view returns (bool) {
-        uint256 age = block.timestamp - prop.createTime;
-        return age >= voteLen && age < voteLen + vetoLen;
-    }
-
-    function isVetoOrVotePeriod(ProposalState storage prop) internal view returns (bool) {
-        uint256 age = block.timestamp - prop.createTime;
-        return age < voteLen + vetoLen;
+        return _isVetoOrVotePeriod(p);
     }
 
     function isRejected(PropId propId) public view returns (bool) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return isRejected(p);
+        return _isRejected(p);
     }
 
     function isPassed(PropId propId) public view returns (bool) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return isPassed(p);
+        return _isPassed(p);
     }
 
     function setRespectContract(address newAddr) public onlyOwner {
@@ -182,8 +167,33 @@ contract Orec is Ownable {
         vetoLen = newVetoLen;
     }
 
-    function isRejected(ProposalState storage prop) internal view returns (bool) {
-        if (!isVotePeriod(prop)) {
+    function proposalId(Message calldata message) public pure returns (PropId) {
+        bytes memory packed = abi.encodePacked(
+            message.addr,
+            message.cdata,
+            message.salt
+        );
+        return PropId.wrap(keccak256(packed));
+    }
+
+    function _isVotePeriod(ProposalState storage prop) internal view returns (bool) {
+        uint256 age = block.timestamp - prop.createTime;
+        return age < voteLen;
+    }
+
+    function _isVetoPeriod(ProposalState storage prop) internal view returns (bool) {
+        uint256 age = block.timestamp - prop.createTime;
+        return age >= voteLen && age < voteLen + vetoLen;
+    }
+
+    function _isVetoOrVotePeriod(ProposalState storage prop) internal view returns (bool) {
+        uint256 age = block.timestamp - prop.createTime;
+        return age < voteLen + vetoLen;
+    }
+
+
+    function _isRejected(ProposalState storage prop) internal view returns (bool) {
+        if (!_isVotePeriod(prop)) {
             if (prop.noWeight * 2 >= prop.yesWeight) {
                 return true;
             } else {
@@ -194,29 +204,20 @@ contract Orec is Ownable {
         }
     }
 
-    function isPassed(ProposalState storage prop) internal view returns (bool) {
-        if (!isVetoOrVotePeriod(prop) && isPassingThreshold(prop)) {
+    function _isPassed(ProposalState storage prop) internal view returns (bool) {
+        if (!_isVetoOrVotePeriod(prop) && _isPassingThreshold(prop)) {
             return true;
         } else {
             return false;
         }
     }
 
-    function isPassingThreshold(ProposalState storage prop) internal view returns (bool) {
+    function _isPassingThreshold(ProposalState storage prop) internal view returns (bool) {
         return prop.noWeight * 2 < prop.yesWeight && prop.yesWeight >= minWeight; 
     }
 
-    function isActive(ProposalState storage prop) internal view returns (bool) {
-        return isVetoOrVotePeriod(prop) && !isRejected(prop);
-    }
-
-    function proposalId(Message calldata message) public pure returns (PropId) {
-        bytes memory packed = abi.encodePacked(
-            message.addr,
-            message.cdata,
-            message.salt
-        );
-        return PropId.wrap(keccak256(packed));
+    function _isActive(ProposalState storage prop) internal view returns (bool) {
+        return _isVetoOrVotePeriod(prop) && !_isRejected(prop);
     }
 
     function _vote(
@@ -235,7 +236,7 @@ contract Orec is Ownable {
         );
 
         if (voteType == VoteType.Yes) {
-            require(isVotePeriod(p), "Voting period is over");
+            require(_isVotePeriod(p), "Voting period is over");
             require(currentVote.weight == 0, "Already voted yes");
 
             uint256 w = respectContract.balanceOf(msg.sender);
@@ -246,7 +247,7 @@ contract Orec is Ownable {
             p.yesWeight += w;
             votes[propId][msg.sender] = newVote;
         } else if (voteType == VoteType.No) {
-            require(isActive(p), "Voting and Veto time is over or proposal is already rejected");
+            require(_isActive(p), "Voting and Veto time is over or proposal is already rejected");
             // console.log("Voting no. Account: ", msg.sender);
             if (currentVote.vtype == VoteType.Yes) {
                 newVote = Vote(VoteType.No, currentVote.weight);
