@@ -21,10 +21,14 @@ contract Orec is Ownable {
         address addr;
         /// Calldata
         bytes   cdata; 
-        /// Same message might be proposed multiple times and since we identify
-        /// proposals by the hash of the message we need to add some salt to
-        /// the hashed value to make the proposal have unique id.
-        uint32  salt;
+        /// This can serve as
+        /// * Title for the proposal
+        /// * Short description
+        /// * Link to external document about a proposal
+        /// * Salt - same message might be proposed multiple times and since 
+        /// we identify proposals by the hash of the message we need to add
+        /// some salt to the hashed value to make the proposal have unique id.
+        string memo;
     }
 
     struct ProposalState {
@@ -75,15 +79,22 @@ contract Orec is Ownable {
         minWeight = minWeight_;
     }
 
+    /// Vote for proposal. Creates it if it doesn't exist
     function vote(PropId propId, VoteType voteType, string calldata memo) public {
         ProposalState storage p = proposals[propId];
 
-        if (p.createTime == 0) {
-            assert(p.yesWeight == 0 && p.noWeight == 0 && p.status == ExecStatus.NotExecuted);
-            p.createTime = block.timestamp;
+        if (!_proposalExists(p)) {
+            _propose(p);
         }
 
         _vote(p, propId, voteType, memo);
+    }
+
+    /// Propose but don't vote
+    function propose(PropId propId) public {
+        ProposalState storage p = proposals[propId];
+        require(!_proposalExists(p), "Proposal already exists");
+        _propose(p);
     }
 
     function execute(Message calldata message) public returns (bool) {
@@ -171,10 +182,15 @@ contract Orec is Ownable {
         bytes memory packed = abi.encodePacked(
             message.addr,
             message.cdata,
-            message.salt
+            message.memo
         );
         return PropId.wrap(keccak256(packed));
     }
+
+    function _propose(ProposalState storage p) private {
+        assert(p.yesWeight == 0 && p.noWeight == 0 && p.status == ExecStatus.NotExecuted);
+        p.createTime = block.timestamp;
+}
 
     function _isVotePeriod(ProposalState storage prop) internal view returns (bool) {
         uint256 age = block.timestamp - prop.createTime;

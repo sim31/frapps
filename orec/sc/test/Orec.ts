@@ -20,21 +20,27 @@ async function deployToken() {
   const token = await tokenFactory.deploy(tokenOwner, "TOKEN", "TOK");
   const tokenAddress = await token.getAddress();
 
+  let mintNonce = 0;
   const buildMintMsg = (recipient: AddressLike, amount: BigNumberish) => {
     const cdata = token.interface.encodeFunctionData("mint", [recipient, amount]);
     const msg: Orec.MessageStruct = {
       addr: tokenAddress,
-      cdata
+      cdata,
+      salt: mintNonce
     };
+    mintNonce += 1;
     return msg;
   }
 
+  let burnNonce = 0;
   const buildBurnMsg = (recipient: AddressLike, amount: BigNumberish) => {
     const cdata = token.interface.encodeFunctionData("burn", [recipient, amount]);
     const msg: Orec.MessageStruct = {
       addr: tokenAddress,
-      cdata
+      cdata,
+      salt: burnNonce
     };
+    burnNonce += 1;
     return msg;
   }
 
