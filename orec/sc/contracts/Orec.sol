@@ -7,10 +7,21 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // Uncomment this line to use console.log
 import "hardhat/console.sol";
 
+/**
+ * @title Optimistic Respect-based execution contract
+ * @notice `respectContract` is expected to be a token contract which has
+ * relatively stable distribution (it does not change at all (historical
+ * distribution) or it at least does not change when voting on proposals is
+ * happening)). Otherwise, if for example, new respect is distributed 
+ * while the vote on OREC proposal is happening, then some accounts
+ * might end up voting with weights determined by the old distribution while
+ * some might have weights determined by the new distribution (depending on
+ * when they vote).
+ */
+
 contract Orec is Ownable {
     enum VoteType { None, Yes, No }
     enum ExecStatus { NotExecuted, Executed, ExecutionFailed }
-
 
     struct Vote {
         VoteType vtype;
@@ -62,7 +73,7 @@ contract Orec is Ownable {
     //      - I think this is best used with parent Respect distribution creating child distribution (so respect created by previous version of a fractal would be issuing new respect through this)
     IERC20 public respectContract;
 
-    mapping (PropId => ProposalState) proposals;
+    mapping (PropId => ProposalState) public proposals;
 
     // Negative weight means "no" vote;
     mapping(PropId => mapping (address => Vote)) public votes; 
@@ -84,7 +95,7 @@ contract Orec is Ownable {
         ProposalState storage p = proposals[propId];
 
         if (!_proposalExists(p)) {
-            _propose(p);
+            _propose(propId, p);
         }
 
         _vote(p, propId, voteType, memo);
@@ -94,7 +105,7 @@ contract Orec is Ownable {
     function propose(PropId propId) public {
         ProposalState storage p = proposals[propId];
         require(!_proposalExists(p), "Proposal already exists");
-        _propose(p);
+        _propose(propId, p);
     }
 
     function execute(Message calldata message) public returns (bool) {
@@ -187,9 +198,10 @@ contract Orec is Ownable {
         return PropId.wrap(keccak256(packed));
     }
 
-    function _propose(ProposalState storage p) private {
+    function _propose(PropId propId, ProposalState storage p) private {
         assert(p.yesWeight == 0 && p.noWeight == 0 && p.status == ExecStatus.NotExecuted);
         p.createTime = block.timestamp;
+        emit ProposalCreated(propId);
 }
 
     function _isVotePeriod(ProposalState storage prop) internal view returns (bool) {
