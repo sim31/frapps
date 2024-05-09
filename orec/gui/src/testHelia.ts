@@ -6,8 +6,8 @@
 import { CarReader, CarWriter } from '@ipld/car'
 import * as raw from 'multiformats/codecs/raw'
 import { CID } from 'multiformats/cid'
-import { sha256 } from 'multiformats/hashes/sha2'
 // import { Car } from '@helia/car'
+import { keccak256 as hasher } from '@multiformats/sha3';
 
 async function carWriterOutToBlob(iterable: AsyncIterable<Uint8Array>) {
   const parts = []
@@ -40,7 +40,7 @@ console.log("ok")
 
 export async function example() {
   const bytes = new TextEncoder().encode('random meaningless bytes')
-  const hash = await sha256.digest(raw.encode(bytes))
+  const hash = await hasher.digest(raw.encode(bytes))
   CID.create
   const cid = CID.create(1, raw.code, hash)
 

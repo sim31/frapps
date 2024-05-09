@@ -14,6 +14,7 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@helia/car": "^3.1.5",
+    "@multiformats/sha3": "^3.0.2",
     "framer-motion": "^11.1.7",
     "helia": "^4.2.1",
     "react": "^18.2.0",
