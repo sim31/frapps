@@ -6,8 +6,13 @@
 import { CarReader, CarWriter } from '@ipld/car'
 import * as raw from 'multiformats/codecs/raw'
 import { CID } from 'multiformats/cid'
-// import { Car } from '@helia/car'
-import { keccak256 as hasher } from '@multiformats/sha3';
+// import { keccak256 as hasher } from '@multiformats/sha3';
+import { sha256 as hasher } from "multiformats/hashes/sha2"
+import { car } from '@helia/car'
+import { createHelia } from 'helia';
+
+const helia = await createHelia();
+const c = car(helia);
 
 async function carWriterOutToBlob(iterable: AsyncIterable<Uint8Array>) {
   const parts = []
@@ -36,12 +41,68 @@ async function blobToArray(blob: Blob): Promise<Uint8Array> {
 
 }
 
-console.log("ok")
+async function retrieve(cid: CID) {
+  const block = await helia.blockstore.get(cid);
+  console.log("block: ", block);
+
+  const { writer, out } = await CarWriter.create([cid])
+
+  const carBlob = carWriterOutToBlob(out);
+
+  console.log("retrieve1")
+  const timeoutController = new AbortController();
+  setTimeout(() => { timeoutController.abort(); }, 50000);
+  try {
+    await c.export(cid, writer, { signal: timeoutController.signal });
+  } catch (err) {
+    return false;
+  }
+  console.log("retrieve2")
+
+  const blob = await carBlob;
+
+  console.log("retrieve3")
+
+  const reader = await CarReader.fromBytes(await blobToArray(blob));
+
+  console.log("retrieve4")
+
+  // read the list of roots from the header
+  const roots = await reader.getRoots()
+  // retrieve a block, as a { cid:CID, bytes:UInt8Array } pair from the archive
+  const got = await reader.get(roots[0])
+  // also possible: for await (const { cid, bytes } of CarIterator.fromIterable(inStream)) { ... }
+
+  if (got !== undefined) {
+    console.log(
+      'Retrieved [%s] from example.car with CID [%s]',
+      new TextDecoder().decode(got.bytes),
+      roots[0].toString()
+    )
+    helia.pins.add(cid);
+    return true;
+  } else {
+    console.log("undefined")
+    return false;
+  }
+
+}
 
 export async function example() {
-  const bytes = new TextEncoder().encode('random meaningless bytes')
+  // const bytes = new TextEncoder().encode('random meaningless bytes1')
+  // const hash = await hasher.digest(raw.encode(bytes))
+  // const cid = CID.create(1, raw.code, hash)
+  const cid1 = CID.parse("bafkreiag4jvswvn4u5ehvkafj2gsxtyzhot4bafqcgkqdu57gb6hc4rqz4");
+
+  console.log("ok ", cid1);
+
+  const retrieved = await retrieve(cid1);
+  if (retrieved) {
+    return;
+  }
+
+  const bytes = new TextEncoder().encode('random meaningless bytes1')
   const hash = await hasher.digest(raw.encode(bytes))
-  CID.create
   const cid = CID.create(1, raw.code, hash)
 
   // create the writer and set the header with a single root
@@ -60,6 +121,8 @@ export async function example() {
   // the car in memory so is not suitable for large files.
   const reader = await CarReader.fromBytes(await blobToArray(await carBlob));
 
+  await c.import(reader);
+
   // read the list of roots from the header
   const roots = await reader.getRoots()
   // retrieve a block, as a { cid:CID, bytes:UInt8Array } pair from the archive
@@ -68,10 +131,11 @@ export async function example() {
 
   if (got !== undefined) {
     console.log(
-      'Retrieved [%s] from example.car with CID [%s]',
+      'Published [%s]',
       new TextDecoder().decode(got.bytes),
       roots[0].toString()
     )
+    helia.pins.add(cid);
   } else {
     console.log("undefined")
   }

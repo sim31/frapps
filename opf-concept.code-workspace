@@ -9,8 +9,8 @@
 			"path": "./orec/gui/"
 		},
 		{
-			"name": "opf-respect",
-			"path": "./opf/respect/"
+			"name": "respect-sc",
+			"path": "./respect/sc/"
 		}
 	],
 	"settings": {}
