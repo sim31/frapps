@@ -208,7 +208,7 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
         // Emit event
        (uint256[] memory ids, uint256[] memory values) = _constructStdArrays(tokenId, value);
        address operator = msg.sender;
-        emit TransferBatch(operator, owner, address(0), ids, values);
+       emit TransferBatch(operator, owner, address(0), ids, values);
     }
 
 
