@@ -188,7 +188,7 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
         emit TransferBatch(operator, address(0), to, ids, values);
 
         // Notify receiver
-        _doSafeBatchTransferAcceptanceCheck(operator, address(0), to, ids, values, data);
+        _doMintAcceptanceCheck(operator, to, ids, values, data);
     }
 
     function _burnRespect(uint256 tokenId) internal {
@@ -196,21 +196,18 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
         uint64 value = _valueOf(tokenId);
         require(value != 0, "Token does not exist");
 
+        // Delete non-fungible token
         delete _values[tokenId];
 
+        // Update fungible balance of owner
         uint256 accountBalance = _balances[owner];
-        // Should not happen
-        assert(accountBalance >= value);
-        assert(_totalRespect >= value);
-        unchecked {
-            _balances[owner] = accountBalance - value;
-            _totalRespect -= value;
-        }
-
-       (uint256[] memory ids, uint256[] memory values) = _constructStdArrays(tokenId, value);
-       address operator = msg.sender;
+        _balances[owner] = accountBalance - value;
+        // Update total supply of fungible
+        _totalRespect -= value;
 
         // Emit event
+       (uint256[] memory ids, uint256[] memory values) = _constructStdArrays(tokenId, value);
+       address operator = msg.sender;
         emit TransferBatch(operator, owner, address(0), ids, values);
     }
 
@@ -226,16 +223,15 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
      * @dev Performs a batch acceptance check by calling {IERC1155-onERC1155BatchReceived} on the `to` address
      * if it contains code at the moment of execution.
      */
-    function _doSafeBatchTransferAcceptanceCheck(
+    function _doMintAcceptanceCheck(
         address operator,
-        address from,
         address to,
         uint256[] memory ids,
         uint256[] memory values,
         bytes memory data
     ) private {
         if (to.code.length > 0) {
-            try IERC1155Receiver(to).onERC1155BatchReceived(operator, from, ids, values, data) returns (
+            try IERC1155Receiver(to).onERC1155BatchReceived(operator, address(0), ids, values, data) returns (
                 bytes4 response
             ) {
                 if (response != IERC1155Receiver.onERC1155BatchReceived.selector) {
@@ -254,10 +250,6 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
                 }
             }
         }
-    }
-
-    function _respect(address account) internal {
-
     }
 
     function _valueOf(uint256 tokenId) internal view returns (uint64) {

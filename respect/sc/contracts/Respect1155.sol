@@ -2,39 +2,41 @@
 pragma solidity ^0.8.24;
 
 import "./Respect1155Base.sol";
-import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-// TODO: Make upgradeable
-// TODO: Allow only owner to mint respect
-contract Respect1155 is Respect1155Base {
+contract Respect1155 is Respect1155Base, Ownable {
 
     struct MintRequest {
         uint256 id;
         uint64 value;
     }
 
-    constructor(string memory uri_) Respect1155Base(uri_) {}
+    constructor(address owner, string memory uri_)
+        Respect1155Base(uri_) Ownable(owner) {}
 
-    function mintRespect(MintRequest calldata request, bytes calldata data) external virtual {
+    function mintRespect(MintRequest calldata request, bytes calldata data) external virtual onlyOwner {
         _mintRespect(request.id, request.value, data);
     }
 
-    function burnRespect(uint256 tokenId, bytes calldata) external virtual {
+    function burnRespect(uint256 tokenId, bytes calldata) external virtual onlyOwner {
         _burnRespect(tokenId);
     }
 
-    function mintRespectGroup(MintRequest[] calldata requests, bytes calldata data) external virtual {
+    function mintRespectGroup(MintRequest[] calldata requests, bytes calldata data) external virtual onlyOwner {
         for (uint i = 0; i < requests.length; i++) {
             MintRequest calldata r = requests[i];
             _mintRespect(r.id, r.value, data);
         }
     }
 
-    function burnRespectGroup(uint256[] calldata ids, bytes calldata) external virtual {
+    function burnRespectGroup(uint256[] calldata ids, bytes calldata) external virtual onlyOwner {
         for (uint i = 0; i < ids.length; i++) {
             _burnRespect(ids[i]);
         }
+    }
+
+    function setURI(string calldata uri) external onlyOwner {
+        _setURI(uri);
     }
 
 }

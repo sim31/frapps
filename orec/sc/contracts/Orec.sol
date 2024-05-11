@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // Uncomment this line to use console.log
 import "hardhat/console.sol";
 
-// TODO: Make upgradeable by itself
 /**
  * @title Optimistic Respect-based execution contract
  * @notice `respectContract` is expected to be a token contract which has
