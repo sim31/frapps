@@ -4,7 +4,13 @@ import {
 } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
-import { AddressLike, BigNumberish, Signer, BytesLike, isBytesLike } from "ethers";
+import { 
+  AddressLike,
+  BigNumberish,
+  Signer, BytesLike,
+  isBytesLike,
+  toUtf8Bytes, hexlify
+} from "ethers";
 import { MintableToken, Orec } from "../typechain-types";
 
 const MIN_1 = 60n;
@@ -20,7 +26,7 @@ function isPropId(value: any): value is PropId {
 
 function propId(msg: Orec.MessageStruct) {
   return ethers.solidityPackedKeccak256(
-    [ "address", "bytes", "string" ],
+    [ "address", "bytes", "bytes" ],
     [msg.addr, msg.cdata, msg.memo]
   );
 }
@@ -39,7 +45,7 @@ async function deployToken() {
     const msg: Orec.MessageStruct = {
       addr: tokenAddress,
       cdata,
-      memo: `mint${mintNonce}`
+      memo: toUtf8Bytes(`mint${mintNonce}`)
     };
     mintNonce += 1;
     return { msg, id: propId(msg) }
@@ -51,7 +57,7 @@ async function deployToken() {
     const msg: Orec.MessageStruct = {
       addr: tokenAddress,
       cdata,
-      memo: `burn${burnNonce}`
+      memo: toUtf8Bytes(`burn${burnNonce}`)
     };
     burnNonce += 1;
     return { msg, id: propId(msg) };
@@ -156,7 +162,7 @@ describe("Orec", function () {
     const pid = isPropId(proposal) ? proposal : propId(proposal);
     const acc = orec.connect(voter);
     const expWeight = await token.balanceOf(voter);
-    await expect(acc.vote(pid, vtype, memo)).to.not.be.reverted;
+    await expect(acc.vote(pid, vtype, toUtf8Bytes(memo))).to.not.be.reverted;
     const storedVote = await orec.votes(pid, voter);
     expect(storedVote.vtype).to.be.equal(vtype);
     expect(storedVote.weight).to.be.equal(expWeight);
@@ -172,7 +178,7 @@ describe("Orec", function () {
   ) {
     const pid = isPropId(proposal) ? proposal : propId(proposal);
     const acc = orec.connect(voter);
-    await expect(acc.vote(pid, vtype, memo)).to.be.reverted;
+    await expect(acc.vote(pid, vtype, toUtf8Bytes(memo))).to.be.reverted;
   }
 
   describe("Deployment", function () {
@@ -764,8 +770,40 @@ describe("Orec", function () {
           await expect(orec.execute(prop.msg)).to.emit(orec, "ExecutionFailed");
         });
       })
+
+      describe("executing a signal", function() {
+      });
     })
   });
+
+  describe("signal", function() {
+    it("should emit a signal event if a proposal is passed to call signal on itself", async function() {
+      const { orec, accounts, token, voteLen, vetoLen, buildBurnProp, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      const signalBytes = toUtf8Bytes("Next meeting: 2024-05-28");
+      const cdata = orec.interface.encodeFunctionData("signal", [signalBytes]);
+      const msg: Orec.MessageStruct = {
+        addr: await orec.getAddress(),
+        cdata,
+        memo: toUtf8Bytes("signal1")
+      };
+      const pId = propId(msg);
+
+      await expectVoteCounted(orec, token, pId, accounts[1], VoteType.Yes);
+
+      await time.increase(voteLen + vetoLen);
+
+      await expect(orec.execute(msg))
+        .to.emit(orec, "Executed").and
+        .to.emit(orec, "Signal").withArgs(signalBytes);
+    });
+
+    it("should not allow calling signal for anyone else", async function() {
+      const { orec, accounts, token, voteLen, vetoLen, buildBurnProp, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      await expect(orec.signal(toUtf8Bytes("some data"))).to.be.reverted;
+    });
+  })
 
   describe("Settings", function() {
     it("should allow itself to change voteLen", async function() {
@@ -775,7 +813,7 @@ describe("Orec", function () {
       const msg: Orec.MessageStruct = {
         addr: await orec.getAddress(),
         cdata,
-        memo: "setVoteLen1"
+        memo: toUtf8Bytes("setVoteLen1")
       };
       const pId = propId(msg);
 
@@ -791,16 +829,20 @@ describe("Orec", function () {
       const msg2: Orec.MessageStruct = {
         addr: await orec.getAddress(),
         cdata,
-        memo: "setVoteLen2"
+        memo: toUtf8Bytes("setVoteLen2")
       };
       const pId2 = propId(msg2);
       await expectVoteCounted(orec, token, pId2, accounts[1], VoteType.Yes);
       await time.increase(voteLen + HOUR_1 * 6n);
       await expectVoteCounted(orec, token, pId2, accounts[2], VoteType.Yes);
     });
-    it("should allow changing vetoLen")
-    it("should allow changing minWeight")
-    it("should allow changing respect contract")
+    it("should not allow anyone else to change voteLen");
+    it("should allow itself to change vetoLen")
+    it("should not allow anyone else to change vetoLen")
+    it("should allow tself to change minWeight")
+    it("should not allow anyone else to change minWeight")
+    it("should allow itself to change respect contract")
+    it("should not allow anyone else to change respect contract")
   });
 
   // TODO: remaining functions

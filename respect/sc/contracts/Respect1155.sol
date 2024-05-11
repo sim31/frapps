@@ -20,7 +20,7 @@ contract Respect1155 is Respect1155Base {
         _mintRespect(request.id, request.value, data);
     }
 
-    function burnRespect(uint256 tokenId) external virtual {
+    function burnRespect(uint256 tokenId, bytes calldata) external virtual {
         _burnRespect(tokenId);
     }
 

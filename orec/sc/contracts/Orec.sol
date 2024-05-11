@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // Uncomment this line to use console.log
 import "hardhat/console.sol";
 
+// TODO: Make upgradeable by itself
 /**
  * @title Optimistic Respect-based execution contract
  * @notice `respectContract` is expected to be a token contract which has
@@ -39,7 +40,7 @@ contract Orec is Ownable {
         /// * Salt - same message might be proposed multiple times and since 
         /// we identify proposals by the hash of the message we need to add
         /// some salt to the hashed value to make the proposal have unique id.
-        string memo;
+        bytes memo;
     }
 
     struct ProposalState {
@@ -58,10 +59,12 @@ contract Orec is Ownable {
     /// PropId = keccak256(Message)
     type PropId is bytes32;
 
-    event VoteIn(PropId propId, Vote vote, address voter, string memo);
+    event EmptyVoteIn(PropId indexed propId, address indexed voter);
+    event WeightedVoteIn(PropId indexed propId, address indexed voter);
     event Executed(PropId propId, bytes retVal);
     event ExecutionFailed(PropId propId, bytes retVal);
     event ProposalCreated(PropId propId);
+    event Signal(bytes data);
 
     // TODO: make configurable
     uint64 public voteLen = 1 days;
@@ -91,14 +94,14 @@ contract Orec is Ownable {
     }
 
     /// Vote for proposal. Creates it if it doesn't exist
-    function vote(PropId propId, VoteType voteType, string calldata memo) public {
+    function vote(PropId propId, VoteType voteType, bytes calldata) public {
         ProposalState storage p = proposals[propId];
 
         if (!_proposalExists(p)) {
             _propose(propId, p);
         }
 
-        _vote(p, propId, voteType, memo);
+        _vote(p, propId, voteType);
     }
 
     /// Propose but don't vote
@@ -198,6 +201,10 @@ contract Orec is Ownable {
         return PropId.wrap(keccak256(packed));
     }
 
+    function signal(bytes calldata data) public onlyOwner {
+        emit Signal(data);
+    }
+
     function _propose(PropId propId, ProposalState storage p) private {
         assert(p.yesWeight == 0 && p.noWeight == 0 && p.status == ExecStatus.NotExecuted);
         p.createTime = block.timestamp;
@@ -251,8 +258,7 @@ contract Orec is Ownable {
     function _vote(
         ProposalState storage p,
         PropId propId,
-        VoteType voteType,
-        string calldata memo
+        VoteType voteType
     ) internal {
         // TODO: check what stage proposal is in
 
@@ -291,7 +297,11 @@ contract Orec is Ownable {
             revert("Cannot vote with none type"); 
         }
 
-        emit VoteIn(propId, newVote, msg.sender, memo);
+        if (newVote.weight == 0) {
+            emit EmptyVoteIn(propId, msg.sender);
+        } else {
+            emit WeightedVoteIn(propId, msg.sender);
+        }
     }
 
     function _getProposal(PropId propId) internal view returns (ProposalState storage) {
