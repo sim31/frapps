@@ -6,8 +6,28 @@ import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import hre from "hardhat";
 import { Respect1155 } from "../typechain-types";
-import { packTokenId } from "../utils/tokenId";
+import { normTokenIdData, packTokenId, unpackTokenId } from "../utils/tokenId";
 import { ZeroAddress } from "ethers";
+import { token } from "../typechain-types/@openzeppelin/contracts";
+
+type MintRequest = Respect1155.MintRequestStruct;
+
+function mintRequestStruct(
+  to: string,
+  value: number,
+  periodNumber: number = 0,
+  mintType: number = 0
+): MintRequest {
+  const tokenId = packTokenId({
+    owner: to,
+    mintType: mintType,
+    periodNumber: periodNumber
+  });
+  return {
+    id: tokenId,
+    value
+  };
+}
 
 async function deploy() {
   // Contracts are deployed using the first signer/account by default
@@ -31,24 +51,30 @@ async function deploy() {
   return { respect, owner, accounts, uri, receiver, recReverter, recInvalid };
 }
 
-type MintRequest = Respect1155.MintRequestStruct;
+async function deployAndMint() {
+  const fixt = await loadFixture(deploy);
+  const { respect, accounts } = fixt;
 
-function mintRequestStruct(
-  to: string,
-  value: number,
-  periodNumber: number = 0,
-  mintType: number = 0
-): MintRequest {
-  const tokenId = packTokenId({
-    owner: to,
-    mintType: mintType,
-    periodNumber: periodNumber
-  });
-  return {
-    id: tokenId,
-    value
-  };
+  const mints: MintRequest[] = [];
+  mints.push(mintRequestStruct(accounts[0].address, 5, 0));
+  mints.push(mintRequestStruct(accounts[1].address, 8, 0));
+  mints.push(mintRequestStruct(accounts[2].address, 13, 0));
+  mints.push(mintRequestStruct(accounts[3].address, 21, 0));
+  mints.push(mintRequestStruct(accounts[4].address, 34, 0));
+
+  mints.push(mintRequestStruct(accounts[4].address, 5, 1));
+  mints.push(mintRequestStruct(accounts[3].address, 8, 1));
+  mints.push(mintRequestStruct(accounts[2].address, 13, 1));
+  mints.push(mintRequestStruct(accounts[1].address, 21, 1));
+  mints.push(mintRequestStruct(accounts[0].address, 34, 1));
+
+  for (const mint of mints) {
+    await expect(respect.mintRespect(mint, "0x00")).to.not.be.reverted;
+  }
+
+  return { ...fixt, mints };
 }
+
 
 // TODO: consistency checks like in the previous respect versions?
 describe("Respect1155", function () {
@@ -75,6 +101,22 @@ describe("Respect1155", function () {
       expect(await respect.ownerOf(req.id)).to.be.equal(accounts[1].address);
       expect(await respect.valueOfToken(req.id)).to.be.equal(10);
     });
+    it("should not allow minting tokenId which already exists", async function() {
+      const { respect, accounts } = await loadFixture(deploy);
+
+      const req = mintRequestStruct(accounts[1].address, 10);
+      await expect(respect.mintRespect(req, "0x00")).to.not.be.reverted;
+
+      const req2 = mintRequestStruct(accounts[1].address, 11);
+      await expect(respect.mintRespect(req, "0x00")).to.be.reverted;
+    });
+    it("should not allow minting to zero address", async function() {
+      const { respect, accounts } = await loadFixture(deploy);
+
+      const req = mintRequestStruct(ZeroAddress, 10);
+      await expect(respect.mintRespect(req, "0x00")).to.be.reverted;
+
+    })
     it("should revert if called by account other than the owner of contract", async function() {
       const { respect, accounts } = await loadFixture(deploy);
 
@@ -201,11 +243,90 @@ describe("Respect1155", function () {
   });
 
   describe("burnRespect", function() {
-    it("should delete a non-fungible token with specified id");
-    it("should revert if called by account other than the owner of contract");
-    it("should decrease fungible balance by value of burned token");
-    it("should emit appropriate TransferBatch event for both fungible and non-fungible tokens")
-    it("should decrease totalRespect by value of burned token")
+    it("should delete a non-fungible token with specified id", async function() {
+      const { respect, mints } = await loadFixture(deployAndMint);
+
+      expect(await respect.tokenExists(mints[0].id)).to.be.true;
+      expect(await respect.valueOfToken(mints[0].id)).to.be.equal(mints[0].value);
+      await expect(respect.burnRespect(mints[0].id, "0x00")).to.not.be.reverted;
+      expect(await respect.tokenExists(mints[0].id)).to.be.false;
+      expect(await respect.valueOfToken(mints[0].id)).to.be.equal(0);
+
+      expect(await respect.tokenExists(mints[8].id)).to.be.true;
+      expect(await respect.valueOfToken(mints[8].id)).to.be.equal(mints[8].value);
+      await expect(respect.burnRespect(mints[8].id, "0x00")).to.not.be.reverted;
+      expect(await respect.tokenExists(mints[8].id)).to.be.false;
+      expect(await respect.valueOfToken(mints[8].id)).to.be.equal(0);
+    });
+    it("should revert if trying to burn non-existent token", async function() {
+      const { respect, mints, accounts } = await loadFixture(deployAndMint);
+
+      const req = mintRequestStruct(accounts[10].address, 50);
+
+      await expect(respect.burnRespect(req.id, "0x00")).to.be.reverted;
+    });
+    it("should revert if called by account other than the owner of contract", async function() {
+      const { respect, mints, accounts } = await loadFixture(deployAndMint);
+
+      const altCaller = await respect.connect(accounts[2]);
+
+      expect(await altCaller.tokenExists(mints[0].id)).to.be.true;
+      expect(await altCaller.valueOfToken(mints[0].id)).to.be.equal(mints[0].value);
+      await expect(altCaller.burnRespect(mints[0].id, "0x00")).to.be.reverted;
+
+      expect(await altCaller.tokenExists(mints[8].id)).to.be.true;
+      expect(await altCaller.valueOfToken(mints[8].id)).to.be.equal(mints[8].value);
+      await expect(altCaller.burnRespect(mints[8].id, "0x00")).to.be.reverted;
+
+    });
+    it("should decrease fungible balance by value of burned token", async function() {
+      const { respect, mints } = await loadFixture(deployAndMint);
+
+      expect(await respect.tokenExists(mints[0].id)).to.be.true;
+      expect(await respect.valueOfToken(mints[0].id)).to.be.equal(mints[0].value);
+      const tokenIdData = normTokenIdData(unpackTokenId(mints[0].id));
+      const balance = await respect.respectOf(tokenIdData.owner);
+      expect(await respect.balanceOf(tokenIdData.owner, 0)).to.be.equal(balance);
+      await expect(respect.burnRespect(mints[0].id, "0x00")).to.not.be.reverted;
+      const newBalance = await respect.respectOf(tokenIdData.owner);
+      expect(await respect.balanceOf(tokenIdData.owner, 0)).to.be.equal(newBalance);
+      expect(balance - newBalance).to.be.equal(mints[0].value);
+    });
+    it("should emit appropriate TransferBatch event for both fungible and non-fungible tokens", async function() {
+      const { respect, mints, owner, accounts } = await loadFixture(deployAndMint);
+
+      await expect(respect.burnRespect(mints[0].id, "0x00"))
+        .to.emit(respect, "TransferBatch")
+        .withArgs(
+          owner, accounts[0], ZeroAddress, [0, mints[0].id], [mints[0].value, 1]
+        );
+
+      await expect(respect.burnRespect(mints[5].id, "0x00"))
+        .to.emit(respect, "TransferBatch")
+        .withArgs(
+          owner, accounts[4], ZeroAddress, [0, mints[5].id], [mints[5].value, 1]
+        );
+    });
+    it("should decrease totalRespect by value of burned token", async function() {
+      const { respect, mints } = await loadFixture(deployAndMint);
+
+      const supplyBefore = await respect.totalRespect();
+      const burnedValue = await respect.valueOfToken(mints[0].id);
+      await expect(respect.burnRespect(mints[0].id, "0x00")).to.not.be.reverted;
+      const newSupply = await respect.totalRespect();
+      expect(newSupply).to.be.equal(supplyBefore - burnedValue);
+
+      const burnedValue2 = await respect.valueOfToken(mints[9].id);
+      await expect(respect.burnRespect(mints[9].id, "0x00")).to.not.be.reverted;
+      const newSupply2 = await respect.totalRespect();
+      expect(newSupply2).to.be.equal(newSupply - burnedValue2);
+    });
+
+    it("should not allow burning tokenId = 0 (fungible token)", async function() {
+      const { respect } = await loadFixture(deployAndMint);
+
+      await expect(respect.burnRespect(0, "0x00")).to.be.reverted;
+    });
   });
 
   describe("burnRespectGroup", function() {
@@ -218,6 +339,30 @@ describe("Respect1155", function () {
   });
 
   describe("setURI", function() {
-    it("should change URI for existing tokens");
+    it("should change URI for existing tokens", async function() {
+      const { respect, mints } = await loadFixture(deployAndMint);
+
+      const uriBefore = await respect.uri(mints[9].id);
+      const newURI = "https://newaddr.io/tokens/{id}";
+
+      await expect(respect.setURI(newURI)).to.not.be.reverted;
+
+      expect(await respect.uri(mints[9].id))
+        .to.be.equal(newURI)
+        .and.not.be.equal(uriBefore);
+    });
+
+    it("should not allow changing URI for non-owner of contract", async function() {
+      const { respect, mints, accounts } = await loadFixture(deployAndMint);
+
+      const altCaller = await respect.connect(accounts[5]);
+
+      const newURI = "https://newaddr.io/tokens/{id}";
+      await expect(altCaller.setURI(newURI)).to.be.reverted;
+    })
   })
+
+  // TODO: check that transfer related functions throw
+  // TODO: test batchRespectOf, sumRespectOf, balanceOfBatch
+    // TODO: rename batchRespectOf to respectOfBatch
 });
