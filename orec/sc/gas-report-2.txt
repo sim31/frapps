@@ -1,0 +1,88 @@
+
+  Orec
+    Deployment
+      ✔ Should set respectContract
+      ✔ should set itself as the owner
+      ✔ should set voteLen, vetoLen and minWeight
+    propose
+      ✔ should store a proposal with initial values
+      ✔ should store proposal with current block time as createTime
+      ✔ should not proposing what already exist
+    vote
+      voteTime (period: [createTime, createTime + voteLen))
+        ✔ should allow voting yes during [createTime, createTime + voteLen) period
+        ✔ should not allow voting with none vtype
+        ✔ should increment yesWeight of proposal by the token balance of voter
+        ✔ should allow voting no during [createTime, createTime+voteLen) period
+        ✔ should increment noWeight of proposal by the token balance of a voter
+        ✔ should allow switching from yes to no during [createTime, createTime+voteLen)
+        ✔ should subtract from yesWeight and add to noWeight in case of a switched vote
+        ✔ should not allow switching from no to yes
+        ✔ should create a proposal if it does not exist yet
+      vetoTime (period: [createTime + voteLen, createTime + voteLen + vetoLen)
+        ✔ should not allow voting yes during [createTime+voteLen, createTime+voteLen+vetoLen) period
+        ✔ should not allow voting with none vtype
+        ✔ should allow voting no during [createTime+voteLen, createTime+voteLen+vetoLen) period
+        ✔ should increment noWeight of proposal by respect of a voter, when voting no
+        ✔ should allow switching from yes to no during [createTime+voteLen, createTime+voteLen+vetoLen)
+        ✔ switching from yes to no should subtract from yesWeight and add to noWeight
+        ✔ should not allow switching from no to yes
+      executeTime (createTime+voteLen+vetoLen or later)
+        ✔ should not allow voting yes
+        ✔ should not allow voting with none vtype
+        ✔ should not allow voting no
+    execute
+      ✔ should not allow executing during voteTime [createTime, createTime + voteLen)
+      ✔ should not allow executing during vetoTime [createTime+voteLen, createTime+voteLen+vetoLen)
+      executeTime
+        ✔ should not allow executing if noWeight * 2 > yesWeight
+        ✔ should not allow executing if noWeight * 2 == yesWeight
+        ✔ should not allow executing if yesWeight < minWeight
+        ✔ should allow executing (by anyone) if noWeight * 2 < yesWeight and noWeight > minWeight
+        ✔ should allow executing (by anyone) if noWeight * 2 < yesWeight and noWeight == minWeight
+        ✔ should not allow executing if execution was already attempted and failed
+        ✔ should not allow executing if execution was already successful
+        executing messages to MintableToken
+          ✔ should mint tokens
+          ✔ should burn tokens
+          ✔ should emit ExecutionFailed in case of failed call
+    signal
+      ✔ should emit a signal event if a proposal is passed to call signal on itself
+      ✔ should not allow calling signal for anyone else
+    Settings
+      ✔ should allow itself to change voteLen
+      - should not allow anyone else to change voteLen
+      - should allow itself to change vetoLen
+      - should not allow anyone else to change vetoLen
+      - should allow tself to change minWeight
+      - should not allow anyone else to change minWeight
+      - should allow itself to change respect contract
+      - should not allow anyone else to change respect contract
+
+·---------------------------------------|----------------------------|-------------|-----------------------------·
+|         [90mSolc version: 0.8.24[39m          ·  [90mOptimizer enabled: false[39m  ·  [90mRuns: 200[39m  ·  [90mBlock limit: 30000000 gas[39m  │
+········································|····························|·············|······························
+|  [32m[1mMethods[22m[39m                                                                                                       │
+··················|·····················|·············|··············|·············|···············|··············
+|  [1mContract[22m       ·  [1mMethod[22m             ·  [32mMin[39m        ·  [32mMax[39m         ·  [32mAvg[39m        ·  [1m# calls[22m      ·  [1musd (avg)[22m  │
+··················|·····················|·············|··············|·············|···············|··············
+|  [90mMintableToken[39m  ·  mint               ·      [36m54106[39m  ·       [31m71218[39m  ·      55670  ·           [90m22[39m  ·          [32m[90m-[32m[39m  │
+··················|·····················|·············|··············|·············|···············|··············
+|  [90mMintableToken[39m  ·  transferOwnership  ·          -  ·           -  ·      29064  ·            [90m1[39m  ·          [32m[90m-[32m[39m  │
+··················|·····················|·············|··············|·············|···············|··············
+|  [90mOrec[39m           ·  execute            ·      [36m67911[39m  ·       [31m82930[39m  ·      78271  ·           [90m23[39m  ·          [32m[90m-[32m[39m  │
+··················|·····················|·············|··············|·············|···············|··············
+|  [90mOrec[39m           ·  propose            ·          -  ·           -  ·      52118  ·           [90m15[39m  ·          [32m[90m-[32m[39m  │
+··················|·····················|·············|··············|·············|···············|··············
+|  [90mOrec[39m           ·  vote               ·      [36m63756[39m  ·      [31m130872[39m  ·     101951  ·          [90m158[39m  ·          [32m[90m-[32m[39m  │
+··················|·····················|·············|··············|·············|···············|··············
+|  [32m[1mDeployments[22m[39m                          ·                                          ·  [1m% of limit[22m   ·             │
+········································|·············|··············|·············|···············|··············
+|  MintableToken                        ·          -  ·           -  ·    1167882  ·        [90m3.9 %[39m  ·          [32m[90m-[32m[39m  │
+········································|·············|··············|·············|···············|··············
+|  Orec                                 ·          -  ·           -  ·    2321810  ·        [90m7.7 %[39m  ·          [32m[90m-[32m[39m  │
+·---------------------------------------|-------------|--------------|-------------|---------------|-------------·
+
+  40 passing (1s)
+  7 pending
+

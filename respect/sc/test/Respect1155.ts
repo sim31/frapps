@@ -7,7 +7,7 @@ import { expect } from "chai";
 import hre from "hardhat";
 import { Respect1155 } from "../typechain-types";
 import { normTokenIdData, packTokenId, unpackTokenId } from "../utils/tokenId";
-import { ZeroAddress } from "ethers";
+import { ZeroAddress, hexlify } from "ethers";
 import { token } from "../typechain-types/@openzeppelin/contracts";
 
 type MintRequest = Respect1155.MintRequestStruct;
@@ -362,7 +362,126 @@ describe("Respect1155", function () {
     })
   })
 
-  // TODO: check that transfer related functions throw
-  // TODO: test batchRespectOf, sumRespectOf, balanceOfBatch
-    // TODO: rename batchRespectOf to respectOfBatch
+  describe("balanceOfBatch", function() {
+    it("should return fungible balance of multiple accounts when ids are all 0 (fungibleId)", async function() {
+      const { respect, accounts } = await loadFixture(deployAndMint);
+
+      // see deployAndMint
+      const accs = [
+        accounts[0].address,
+        accounts[1].address,
+        accounts[2].address,
+        accounts[3].address,
+        accounts[4].address,
+      ]
+      const ids = [0, 0, 0, 0, 0];
+      expect(await respect.balanceOfBatch(accs, ids)).to.deep.equal(
+        [
+          39,
+          29,
+          26,
+          29,
+          39
+        ]
+      );
+    })   
+  });
+
+  describe("respectOfBatch", function() {
+    it("should return fungible balance of multiple accounts", async function() {
+      const { respect, accounts } = await loadFixture(deployAndMint);
+
+      // see deployAndMint
+      const accs = [
+        accounts[0].address,
+        accounts[1].address,
+        accounts[2].address,
+        accounts[3].address,
+        accounts[4].address,
+        accounts[15].address
+      ]
+      expect(await respect.respectOfBatch(accs)).to.deep.equal(
+        [
+          39,
+          29,
+          26,
+          29,
+          39,
+          0
+        ]
+      );
+    })   
+  });
+
+  describe("sumRespectOf", function() {
+    it("should return respect summed from specified accounts", async function() {
+      const { respect, accounts } = await loadFixture(deployAndMint);
+
+      // see deployAndMint
+      const accs = [
+        accounts[0].address,
+        accounts[1].address,
+        accounts[2].address,
+        accounts[3].address,
+        accounts[4].address,
+        accounts[15].address
+      ]
+      expect(await respect.sumRespectOf(accs)).to.equal(
+        [
+          39,
+          29,
+          26,
+          29,
+          39,
+          0
+        ].reduce((prev, current) => { return prev + current })
+      );
+    });
+  })
+
+  describe("safeTransferFrom", function() {
+    it("should revert when trying to transfer fungible balance", async function() {
+      const { respect, accounts } = await loadFixture(deployAndMint);
+
+      const altCaller = respect.connect(accounts[4]);
+
+      await expect(altCaller.safeTransferFrom(
+        accounts[4].address, accounts[12].address, 0, 5, "0x00"
+      )).to.be.reverted;
+    });
+
+    it("should revert if trying to transfer non-fungible token", async function() {
+      const { respect, accounts, mints } = await loadFixture(deployAndMint);
+
+      const altCaller = respect.connect(accounts[0]);
+
+      expect(unpackTokenId(mints[0].id).owner).to.be.equal(hexlify(accounts[0].address));
+      await expect(altCaller.safeTransferFrom(
+        accounts[0].address, accounts[12].address, mints[0].id, 5, "0x00"
+      )).to.be.reverted;
+    });
+  });
+
+  describe("safeTransferFrom", function() {
+    it("should revert when trying to transfer fungible balance", async function() {
+      const { respect, accounts } = await loadFixture(deployAndMint);
+
+      const altCaller = respect.connect(accounts[4]);
+
+      await expect(altCaller.safeBatchTransferFrom(
+        accounts[4].address, accounts[12].address, [0, 0], [2, 2], "0x00"
+      )).to.be.reverted;
+    });
+
+    it("should revert if trying to transfer non-fungible token", async function() {
+      const { respect, accounts, mints } = await loadFixture(deployAndMint);
+
+      const altCaller = respect.connect(accounts[0]);
+
+      expect(unpackTokenId(mints[0].id).owner).to.be.equal(hexlify(accounts[0].address));
+      await expect(altCaller.safeBatchTransferFrom(
+        accounts[0].address, accounts[12].address, [mints[0].id, mints[9].id], [1, 1], "0x00"
+      )).to.be.reverted;
+    });
+  })
 });

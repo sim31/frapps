@@ -84,7 +84,7 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
         return total;
     }
 
-    function batchRespectOf(address[] calldata accounts) public view override returns (uint256[] memory) {
+    function respectOfBatch(address[] calldata accounts) public view override returns (uint256[] memory) {
         uint256[] memory respectBalances = new uint256[](accounts.length);
 
         for (uint256 i = 0; i < accounts.length; ++i) {

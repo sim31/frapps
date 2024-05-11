@@ -24,7 +24,7 @@ interface IRespect1155 is IERC1155 {
      * @dev Returns the number of *fungible* Respect ``accounts`` have.
      * This has to be equal to the sum of values of all the NTTs they have (see ``valueOfToken``) 
      */
-    function batchRespectOf(address[] calldata accounts) external view returns (uint256[] memory);
+    function respectOfBatch(address[] calldata accounts) external view returns (uint256[] memory);
 
     /**
      * @dev Returns the sum of *fungible* Respect ``accounts`` have together.
