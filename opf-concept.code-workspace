@@ -11,6 +11,10 @@
 		{
 			"name": "respect-sc",
 			"path": "./respect/sc/"
+		},
+		{
+			"name": "ornode",
+			"path": "./ornode"
 		}
 	],
 	"settings": {}
