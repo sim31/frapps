@@ -2,16 +2,37 @@
   "name": "ornode",
   "version": "1.0.0",
   "description": "Helper node for OREC (optimistic respect-based executive contract) based DAO",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx tsc",
+    "build-watch": "npx tsc --watch",
+    "start": "node dist/index.js",
+    "dev": "nodemon src/index.ts",
+    "postinstall": "patch-package"
   },
   "author": "sim31",
   "license": "GPL-3.0",
   "devDependencies": {
+    "@constl/orbit-db-types": "^2.0.0",
     "@types/chai": "^4.3.16",
+    "@types/express": "^4.17.21",
     "@types/mocha": "^10.0.6",
+    "@types/node": "^20.12.11",
     "chai": "^5.1.1",
-    "mocha": "^10.4.0"
+    "mocha": "^10.4.0",
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@chainsafe/libp2p-gossipsub": "^13.0.0",
+    "@orbitdb/core": "^2.2.0",
+    "blockstore-level": "^1.1.8",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "helia": "^4.2.1",
+    "tsx": "^4.10.2"
   }
 }
