@@ -9,8 +9,9 @@
   "author": "sim31",
   "license": "GPL-3.0",
   "description": "",
-  "dependencies": {
-    "chai": "^5.1.1",
-    "mocha": "^10.4.0"
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.4",
+    "typescript": "^5.4.5"
   }
 }

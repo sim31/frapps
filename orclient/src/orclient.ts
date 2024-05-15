@@ -82,8 +82,37 @@ export interface Proposal {
   decoded?: DecodedProposal
 }
 
+export interface Config {
+  eth: string;
+  ornode: string | ORNode;
+}
+
+export interface ORNode {
+
+}
+
+export interface BreakoutResult {
+  groupNum: number;
+  rankings: [
+    Account, Account, Account, Account, Account, Account
+  ]
+}
+
+class NotImplemented extends Error {
+  constructor(message: string) {
+    super(message);
+    this.message = message + " has not yet been implemented.";
+  }
+}
 
 export default class ORClient {
+  private _config?: Config;
+
+  static async createORClient(config: Config): Promise<ORClient> {
+    const client = new ORClient();
+    client._config = config;
+    return client;
+  }
 
   /**
    * Returns proposal by id
@@ -93,32 +122,38 @@ export default class ORClient {
     return {}
   }
 
+  // UC8
   /**
    * Returns a list of proposals ordered from latest to oldest
    * @param from - Start of proposal range. 0 - last proposal, 1 - second to  last proposal and so on
    * @param count - Number of proposals to return
    */
-  lsProposals(from: number = 0, limit: number = 50): Proposal {
-    return {}
+  lsProposals(from: number = 0, limit: number = 50): Proposal[] {
+    return []
   }
 
+  // UC2
   vote(propId: PropId, vote: VoteType, memo?: string) {}
+  // UC3
   execute(propId: PropId) {}
 
-  submitBreakoutResult(
-    group: number,
-    rankings: Account[6]
-  ) {}
+  // UC{1,4}
+  submitBreakoutResult(result: BreakoutResult) {
+    throw new NotImplemented("submitBreakoutResult");
+  }
+  // UC5
   proposeRespectTo(
     account: Account,
     value: number,
     title: string,
     reason: string
   ) {}
+  // UC6
   burnRespect(
     tokenId: TokenId,
     reason: string
   ) {}
+  // UC7
   proposeTick(data: string) {}
   proposeCustomSignal(data: string) {
 

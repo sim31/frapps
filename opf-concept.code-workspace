@@ -15,6 +15,10 @@
 		{
 			"name": "ornode",
 			"path": "./ornode"
+		},
+		{
+			"name": "orclient",
+			"path": "./orclient"
 		}
 	],
 	"settings": {}
