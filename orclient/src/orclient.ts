@@ -88,7 +88,7 @@ export interface Config {
 }
 
 export interface ORNode {
-
+  
 }
 
 export interface BreakoutResult {
@@ -118,7 +118,7 @@ export default class ORClient {
    * Returns proposal by id
    * @param id - proposal id
    */
-  getProposal(id: PropId) {
+  async getProposal(id: PropId) {
     return {}
   }
 
@@ -128,34 +128,34 @@ export default class ORClient {
    * @param from - Start of proposal range. 0 - last proposal, 1 - second to  last proposal and so on
    * @param count - Number of proposals to return
    */
-  lsProposals(from: number = 0, limit: number = 50): Proposal[] {
+  async lsProposals(from: number = 0, limit: number = 50): Promise<Proposal[]> {
     return []
   }
 
   // UC2
-  vote(propId: PropId, vote: VoteType, memo?: string) {}
+  async vote(propId: PropId, vote: VoteType, memo?: string) {}
   // UC3
-  execute(propId: PropId) {}
+  async execute(propId: PropId) {}
 
   // UC{1,4}
-  submitBreakoutResult(result: BreakoutResult) {
+  async submitBreakoutResult(result: BreakoutResult) {
     throw new NotImplemented("submitBreakoutResult");
   }
   // UC5
-  proposeRespectTo(
+  async proposeRespectTo(
     account: Account,
     value: number,
     title: string,
     reason: string
   ) {}
   // UC6
-  burnRespect(
+  async burnRespect(
     tokenId: TokenId,
     reason: string
   ) {}
   // UC7
-  proposeTick(data: string) {}
-  proposeCustomSignal(data: string) {
+  async proposeTick(data: string) {}
+  async proposeCustomSignal(data: string) {
 
   }
 

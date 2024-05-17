@@ -11,7 +11,12 @@
   "description": "",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "chai-as-promised": "^7.1.2",
     "hardhat": "^2.22.4",
     "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "op-fractal-sc": "github:Optimystics/op-fractal-sc#weeks-1-24-7",
+    "orec": "file:../orec/sc"
   }
 }
