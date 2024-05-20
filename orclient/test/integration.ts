@@ -1,20 +1,34 @@
 import chai, { expect } from "chai";
-import ORClient, { BreakoutResult, ORNode, EthAddress } from "../src/orclient";
+import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
+import ORClient, { BreakoutResult, ORNode, EthAddress } from "../src/orclient.js";
 import hre, { run } from "hardhat";
 import { ZeroAddress, hexlify, Signer } from "ethers";
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { Orec__factory as OrecFactory } from "orec/typechain-types/factories/contracts/Orec__factory";
-import { FractalRespect__factory as FrRespectFactory } from "op-fractal-sc/typechain-types/factories/contracts/FractalRespect__factory";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers.js";
+import { Orec__factory as OrecFactory } from "orec/typechain-types/factories/contracts/Orec__factory.js";
+import { Orec } from "orec/typechain-types/contracts/Orec.js";
+import FRF from "op-fractal-sc/typechain-types/factories/contracts/FractalRespect__factory.js";
+const { FractalRespect__factory: FrRespectFactory } = FRF;
+import { FractalRespect } from "op-fractal-sc/typechain-types/contracts/FractalRespect.js";
+import RF from "respect-sc/typechain-types/factories/contracts/Respect1155__factory.js";
+const { Respect1155__factory: RespectFactory } = RF;
+import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
+
+const MIN_1 = 60n;
+const HOUR_1 = 60n * MIN_1;
+const DAY_1 = 24n * HOUR_1;
+const DAY_6 = 6n * DAY_1;
+const WEEK_1 = 7n * DAY_1;
 
 describe("orclient", function() {
   let cl: ORClient;
   const ethUrl = "https://localhost:8545";
   let ornode: ORNode;
   let addrs: EthAddress[] = []
-  let oldRespect: EthAddress;
-  let newRespect: EthAddress;
-  let orecAddr: EthAddress;
+  let oldRespect: FractalRespect;
+  let newRespect: Respect1155;
+  let orec: Orec;
   let signers: HardhatEthersSigner[];
+  const oldRanksDelay = 518400; // 6 days in seconds
 
   const groupRes: BreakoutResult[] = [
     {
@@ -48,12 +62,85 @@ describe("orclient", function() {
     addrs = signers.map(signer => signer.address);
   });
 
+  before("deploy old respect smart contract", async function() {
+    const signer: HardhatEthersSigner = signers[0];
+    const oldRespectFactory = new FrRespectFactory(signer);
+
+    oldRespect = await oldRespectFactory.deploy(
+      "TestFractal",
+      "TF",
+      signer,
+      signer,
+      oldRanksDelay
+    );
+  });
+
+  before("run old fractal contract", async function() {
+    const groupRes1: FractalRespect.GroupRanksStruct[] = [
+      {
+        groupNum: 1,
+        ranks: [
+          addrs[16], addrs[15], addrs[14], addrs[13], addrs[12], addrs[11]
+        ]
+      }
+    ]
+    await expect(oldRespect.submitRanks(groupRes1)).to.not.be.reverted;
+
+    await time.increase(WEEK_1);
+
+    const groupRes2: FractalRespect.GroupRanksStruct[] = [
+      {
+        groupNum: 1,
+        ranks: [
+          addrs[14], addrs[11], addrs[16], addrs[12], addrs[13], addrs[15]
+        ]
+      }
+    ]
+    await expect(oldRespect.submitRanks(groupRes2)).to.not.be.reverted;
+
+    await time.increase(WEEK_1);
+
+    const groupRes3: FractalRespect.GroupRanksStruct[] = [
+      {
+        groupNum: 1,
+        ranks: [
+          addrs[14], addrs[11], addrs[16], addrs[12], addrs[13], addrs[15]
+        ]
+      },
+      {
+        groupNum: 2,
+        ranks: [
+          addrs[1], addrs[2], addrs[3], addrs[4], addrs[5], addrs[6]
+        ]
+      }
+    ]
+    await expect(oldRespect.submitRanks(groupRes3)).to.not.be.reverted;
+
+    await time.increase(WEEK_1);
+
+    const groupRes4: FractalRespect.GroupRanksStruct[] = [
+      {
+        groupNum: 1,
+        ranks: [
+          addrs[6], addrs[2], addrs[3], addrs[1], addrs[4], addrs[5]
+        ]
+      },
+      {
+        groupNum: 2,
+        ranks: [
+          addrs[12], addrs[10], addrs[8], addrs[13], addrs[14], addrs[15]
+        ]
+      }
+    ]
+    await expect(oldRespect.submitRanks(groupRes4)).to.not.be.reverted;
+
+  });
+
   before("deploy smart contracts", async function() {
     // TODO
 
-    const signer: Signer = signers[0];
-    const orecFactory = new OrecFactory(signer);
-    const oldRespectFactory = new FrRespectFactory(signer);
+    // const orecFactory = new OrecFactory(signer);
+    // const respectFactory = new RespectFactory(signer);
 
 
   });

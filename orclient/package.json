@@ -2,8 +2,10 @@
   "name": "orclient",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_OPTIONS='--experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat --network localhost test",
+    "script": "NODE_OPTIONS='--experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat run"
   },
   "keywords": [],
   "author": "sim31",
@@ -16,7 +18,8 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "op-fractal-sc": "github:Optimystics/op-fractal-sc#weeks-1-24-7",
-    "orec": "file:../orec/sc"
+    "op-fractal-sc": "github:Optimystics/op-fractal-sc#main",
+    "orec": "file:../orec/sc",
+    "respect-sc": "file:../respect/sc"
   }
 }
