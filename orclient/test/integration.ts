@@ -4,7 +4,8 @@ import ORClient, { BreakoutResult, ORNode, EthAddress } from "../src/orclient.js
 import hre, { run } from "hardhat";
 import { ZeroAddress, hexlify, Signer } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers.js";
-import { Orec__factory as OrecFactory } from "orec/typechain-types/factories/contracts/Orec__factory.js";
+import orecFactory from "orec/typechain-types/factories/contracts/Orec__factory.js";
+const { Orec__factory: OrecFactory } = orecFactory;
 import { Orec } from "orec/typechain-types/contracts/Orec.js";
 import FRF from "op-fractal-sc/typechain-types/factories/contracts/FractalRespect__factory.js";
 const { FractalRespect__factory: FrRespectFactory } = FRF;
@@ -136,13 +137,20 @@ describe("orclient", function() {
 
   });
 
-  before("deploy smart contracts", async function() {
-    // TODO
+  before("deploy orec", async function() {
+    const signer = signers[0];
+    const orecFactory = new OrecFactory(signer);
 
-    // const orecFactory = new OrecFactory(signer);
-    // const respectFactory = new RespectFactory(signer);
+    orec = await orecFactory.deploy(
+      await oldRespect.getAddress(),
+      DAY_6, DAY_1, 21
+    );
+  });
 
+  before("deploy new respect contract", async function() {
+    const respectFactory = new RespectFactory(signers[0]);
 
+    newRespect = await respectFactory.deploy(orec, "https://tf.io");
   });
 
   before("create ORNode", async function() {
