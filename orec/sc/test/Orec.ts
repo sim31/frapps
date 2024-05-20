@@ -12,24 +12,11 @@ import {
   toUtf8Bytes, hexlify
 } from "ethers";
 import { MintableToken, Orec } from "../typechain-types";
-
-const MIN_1 = 60n;
-const HOUR_1 = 60n * MIN_1;
-const DAY_1 = 24n * HOUR_1;
-const DAY_6 = 6n * DAY_1;
-
-type PropId = BytesLike;
-function isPropId(value: any): value is PropId {
-  return isBytesLike(value);
-}
-
-
-function propId(msg: Orec.MessageStruct) {
-  return ethers.solidityPackedKeccak256(
-    [ "address", "bytes", "bytes" ],
-    [msg.addr, msg.cdata, msg.memo]
-  );
-}
+import {
+  isPropId, propId, PropId,
+  MIN_1, DAY_1, HOUR_1, DAY_6,
+  ExecStatus, VoteType
+} from "../utils";
 
 async function deployToken() {
   // Contracts are deployed using the first signer/account by default
@@ -139,18 +126,6 @@ async function deployOrecWithProposalsAndBalances() {
 }
 
 describe("Orec", function () {
-  enum VoteType {
-    None = 0,
-    Yes = 1,
-    No = 2
-  }
-
-  enum ExecStatus {
-    NotExecuted = 0,
-    Executed,
-    ExecutionFailed
-  }
-
   async function expectVoteCounted(
     orec: Orec,
     token: MintableToken,

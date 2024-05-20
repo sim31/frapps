@@ -20,6 +20,7 @@
   "dependencies": {
     "op-fractal-sc": "github:Optimystics/op-fractal-sc#main",
     "orec": "file:../orec/sc",
-    "respect-sc": "file:../respect/sc"
+    "respect-sc": "file:../respect/sc",
+    "utility-types": "^3.11.0"
   }
 }

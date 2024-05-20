@@ -1,3 +1,5 @@
+import { Optional } from "utility-types";
+
 export enum Stage {
   Voting,
   Veto,
@@ -50,6 +52,8 @@ export interface RespectAccount {
   reason: string,
 }
 
+export type RespectAccountRequest = Optional<Omit<RespectAccount, 'propType'>, 'meetingNum'>;
+
 export interface BurnRespect {
   propType: "burnRespect"
   tokenId: TokenId,
@@ -57,13 +61,13 @@ export interface BurnRespect {
 }
 
 export interface CustomSignal {
-  propType: "burnRespect"
+  propType: "customSignal"
   data: string
 }
 
 export interface Tick {
   propType: "tick",
-  data: string
+  data?: string
 }
 
 export type DecodedProposal =
@@ -73,6 +77,7 @@ export interface Proposal {
   id: PropId;
   address: string;
   cdata: string;
+  memo: string,
   yesWeight: number;
   noWeight: number;
   createTime: Date;
@@ -142,30 +147,25 @@ export default class ORClient {
     throw new NotImplemented("submitBreakoutResult");
   }
   // UC5
-  async proposeRespectTo(
-    account: Account,
-    value: number,
-    title: string,
-    reason: string
-  ) {}
+  async proposeRespectTo(req: RespectAccountRequest) {}
   // UC6
   async burnRespect(
     tokenId: TokenId,
     reason: string
   ) {}
   // UC7
-  async proposeTick(data: string) {}
+  async proposeTick(data?: string) {}
   async proposeCustomSignal(data: string) {
 
   }
 
-  getPeriodNum(): number {
+  async getPeriodNum(): Promise<number> {
     return 0;
   }
-  getNextMeetingNum(): number {
+  async getNextMeetingNum(): Promise<number> {
     return 0;
   }
-  getLastMeetingNum(): number {
+  async getLastMeetingNum(): Promise<number> {
     return 0;
   }
 
