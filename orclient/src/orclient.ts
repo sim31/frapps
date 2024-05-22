@@ -1,4 +1,8 @@
 import { Optional } from "utility-types";
+// TODO: Probably won't work for browser builds
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers.js";
+
+type Signer = HardhatEthersSigner;
 
 export enum Stage {
   Voting,
@@ -46,13 +50,14 @@ export interface RespectBreakout {
 export interface RespectAccount {
   propType: "respectAccount",
   meetingNum: number,
+  mintType: number,
   account: Account,
   value: number,
   title: string
   reason: string,
 }
 
-export type RespectAccountRequest = Optional<Omit<RespectAccount, 'propType'>, 'meetingNum'>;
+export type RespectAccountRequest = Optional<Omit<RespectAccount, 'propType'>, 'meetingNum' | 'mintType'>;
 
 export interface BurnRespect {
   propType: "burnRespect"
@@ -78,8 +83,8 @@ export interface Proposal {
   address: string;
   cdata: string;
   memo: string,
-  yesWeight: number;
-  noWeight: number;
+  yesWeight: bigint;
+  noWeight: bigint;
   createTime: Date;
   execStatus: ExecStatus;
   stage: Stage;
@@ -90,6 +95,7 @@ export interface Proposal {
 export interface Config {
   eth: string;
   ornode: string | ORNode;
+  signer: Signer;
 }
 
 export interface ORNode {
@@ -103,10 +109,24 @@ export interface BreakoutResult {
   ]
 }
 
-class NotImplemented extends Error {
+export class NotImplemented extends Error {
   constructor(message: string) {
     super(message);
     this.message = message + " has not yet been implemented.";
+  }
+}
+
+export class VoteEnded extends Error {
+  constructor(stage?: Stage, message?: string) {
+    super(message);
+    this.message = `Vote has ended. Currenct stage: ${stage}. Message: ${message}`;
+  }
+}
+
+export class ProposalFailed extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.message = `Proposal has failed. Message: ${message}`;
   }
 }
 
@@ -119,12 +139,22 @@ export default class ORClient {
     return client;
   }
 
+  connect(signer: Signer): ORClient {
+    const newCl = Object.create(this);
+    if (newCl._config !== undefined) {
+      newCl._config.signer = signer;
+      return newCl;
+    } else {
+      throw new Error("Trying to connect un-initialized ORClient")
+    }
+  }
+
   /**
    * Returns proposal by id
    * @param id - proposal id
    */
-  async getProposal(id: PropId) {
-    return {}
+  async getProposal(id: PropId): Promise<Proposal> {
+    throw new NotImplemented("getProposal");
   }
 
   // UC8
@@ -143,20 +173,26 @@ export default class ORClient {
   async execute(propId: PropId) {}
 
   // UC{1,4}
-  async submitBreakoutResult(result: BreakoutResult) {
+  async submitBreakoutResult(result: BreakoutResult): Promise<Proposal> {
     throw new NotImplemented("submitBreakoutResult");
   }
   // UC5
-  async proposeRespectTo(req: RespectAccountRequest) {}
+  async proposeRespectTo(req: RespectAccountRequest): Promise<Proposal> {
+    throw new NotImplemented("proposeRespectTo");
+  }
   // UC6
   async burnRespect(
     tokenId: TokenId,
     reason: string
-  ) {}
+  ): Promise<Proposal> {
+    throw new NotImplemented("burnRespect");
+  }
   // UC7
-  async proposeTick(data?: string) {}
-  async proposeCustomSignal(data: string) {
-
+  async proposeTick(data?: string): Promise<Proposal> {
+    throw new NotImplemented("proposeTick");
+  }
+  async proposeCustomSignal(data: string): Promise<Proposal> {
+    throw new NotImplemented("proposeCustomSignal");
   }
 
   async getPeriodNum(): Promise<number> {

@@ -18,6 +18,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "ethers": "^6.12.1",
     "op-fractal-sc": "github:Optimystics/op-fractal-sc#main",
     "orec": "file:../orec/sc",
     "respect-sc": "file:../respect/sc",
