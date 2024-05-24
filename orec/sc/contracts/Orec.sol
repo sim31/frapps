@@ -22,6 +22,8 @@ import "hardhat/console.sol";
 contract Orec is Ownable {
     enum VoteType { None, Yes, No }
     enum ExecStatus { NotExecuted, Executed, ExecutionFailed }
+    enum Stage { Voting, Veto, Execution, Expired }
+    enum VoteStatus { Passing, Failing, Passed, Failed }
 
     struct Vote {
         VoteType vtype;
@@ -162,6 +164,29 @@ contract Orec is Ownable {
     function isVetoOrVotePeriod(PropId propId) public view returns (bool) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
         return _isVetoOrVotePeriod(p);
+    }
+
+    function getStage(PropId propId) public view returns (Stage) {
+        ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
+        if (_isVotePeriod(p)) {
+            return Stage.Voting;
+        } else if (_isVetoPeriod(p)) {
+            return Stage.Veto;
+        } else if (_isRejected(p) || p.status == ExecStatus.Executed || p.status == ExecStatus.ExecutionFailed) {
+            return Stage.Expired;
+        } else {
+            assert(_isPassed(p));
+            return Stage.Execution;
+        }
+    }
+
+    function getVoteStatus(PropId propId) public view returns (VoteStatus) {
+        ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
+        if (_isPassingThreshold(p)) {
+            return _isVetoOrVotePeriod(p) ? VoteStatus.Passing : VoteStatus.Passed;
+        } else {
+            return _isVetoOrVotePeriod(p) ? VoteStatus.Failing : VoteStatus.Failed;
+        }
     }
 
     function isRejected(PropId propId) public view returns (bool) {

@@ -1,6 +1,7 @@
 import chai, { expect } from "chai";
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
-import ORClient, { BreakoutResult, ORNode, EthAddress, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, Stage, VoteStatus, RespectAccount, Tick, CustomSignal, VoteEnded, ProposalFailed } from "../src/orclient.js";
+import ORClient, { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, VoteEnded, ProposalFailed } from "../src/orclient.js";
+import { EthAddress, Stage, VoteStatus } from "../src/common.js";
 import hre, { run } from "hardhat";
 import { ZeroAddress, hexlify, Signer } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers.js";
@@ -76,7 +77,7 @@ describe("orclient", function() {
   })
   
   before("create test accounts", async function() {
-    console.log(await hre.ethers.getSigners())
+    // console.log(await hre.ethers.getSigners())
     signers = await hre.ethers.getSigners();
     addrs = signers.map(signer => signer.address);
   });
@@ -178,7 +179,7 @@ describe("orclient", function() {
   })
 
   before("create ORClient", async function() {
-    cl = await ORClient.createORClient({ ornode, eth: ethUrl, signer: signers[0] });
+    cl = await ORClient.createORClient({ ornode, signer: signers[0] });
   })
 
   function expectDecoded<T extends DecodedProposal>(

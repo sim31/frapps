@@ -821,5 +821,6 @@ describe("Orec", function () {
   });
 
   // TODO: remaining functions
+  // TODO: test getStage
 
 });
