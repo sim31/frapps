@@ -7,61 +7,81 @@ import {
   ExecStatus,
   TokenId,
   PropId,
-  PropType
+  PropType,
+  zEthAddress,
+  zBytes,
+  zPropId,
+  zPropType
 } from "./common.js";
+import { z } from "zod";
 
-export interface ProposalContent {
-  address: string;
-  cdata: string;
-}
+export const zPropContent = z.object({
+  address: zEthAddress,
+  cdata: zBytes
+});
+export type PropContent = z.infer<typeof zPropContent>;
 
-export interface Proposal {
-  id: PropId;
-  content?: ProposalContent;
-  attachment?: PropAttachment;
-}
+export const zPropAttachmentBase = z.object({
+  propType: zPropType,
+  propTitle: z.string().optional(),
+  propDescription: z.string().optional(),
+  salt: z.string().optional(),
+});
+export type PropAttachmentBase = z.infer<typeof zPropAttachmentBase>;
 
-export type PropAttachment = 
-  RespectBreakoutAttachment | RespectAccountAttachment
-  | BurnRespectAttachment | CustomSignalAttachment
-  | TickAttachment
-  | CustomCallAttachment;
+export const zRespectBreakoutAttachment = zPropAttachmentBase.extend({
+  propType: z.literal(zPropType.Enum.respectBreakout),
+  groupNum: z.number().gt(0)
+});
+export type RespectBreakoutAttachment = z.infer<typeof zRespectBreakoutAttachment>;
 
-export interface PropAttachmentBase {
-  propType: PropType;
-  propTitle?: string;
-  propDescription?: string;
-  salt?: string;
-}
+export const zRespectAccountAttachment = zPropAttachmentBase.extend({
+  propType: z.literal(zPropType.Enum.respectAccount),
+  mintReason: z.string(),
+  mintTitle: z.string()
+});
+export type RespectAccountAttachment = z.infer<typeof zRespectAccountAttachment>;
 
-export interface RespectBreakoutAttachment extends PropAttachmentBase {
-  propType: "respectBreakout"
-}
+export const zBurnRespectAttachment = zPropAttachmentBase.extend({
+  propType: z.literal(zPropType.Enum.burnRespect),
+  burnReason: z.literal(zPropType.Enum.burnRespect)
+});
+export type BurnRespectAttachment = z.infer<typeof zBurnRespectAttachment>;
 
-export interface RespectAccountAttachment extends PropAttachmentBase {
-  propType: "respectAccount";
-  mintReason: string;
-  mintTitle: string;
-}
+export const zCustomSignalAttachment = zPropAttachmentBase.extend({
+  propType: z.literal(zPropType.Enum.customSignal),
+  link: z.string()
+})
+export type CustomSignalAttachment = z.infer<typeof zCustomSignalAttachment>;
 
-export interface BurnRespectAttachment extends PropAttachmentBase {
-  propType: "burnRespect";
-  burnReason: string;
-}
+export const zTickAttachment = zPropAttachmentBase.extend({
+  propType: z.literal(zPropType.Enum.tick),
+  link: z.string().optional()
+})
+export type TickAttachment = z.infer<typeof zTickAttachment>;
 
-export interface CustomSignalAttachment extends PropAttachmentBase {
-  propType: "customSignal";
-  link: string;
-}
+export const zCustomCallAttachment = zPropAttachmentBase.extend({
+  propType: z.literal(zPropType.Enum.customCall)
+})
+export type CustomCallAttachment = z.infer<typeof zCustomCallAttachment>;
 
-export interface TickAttachment extends PropAttachmentBase {
-  propType: "tick";
-  link?: string;
-}
+export const zPropAttachment = z.union([
+  zRespectBreakoutAttachment,
+  zRespectAccountAttachment,
+  zBurnRespectAttachment,
+  zCustomSignalAttachment,
+  zTickAttachment,
+  zCustomCallAttachment
+]);
+export type PropAttachment = z.infer<typeof zPropAttachment>;
 
-export interface CustomCallAttachment extends PropAttachmentBase {
-  propType: "customCall";
-}
+export const zProposal = z.object({
+  id: zPropId,
+  content: zPropContent,
+  attachment: zPropAttachment
+});
+export type Proposal = z.infer<typeof zProposal>;
+
 
 export interface IORNode {
   putProposal: (proposal: Proposal) => Promise<void>;

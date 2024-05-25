@@ -11,11 +11,23 @@ import {
   TokenId,
   PropId,
   PropType,
-  toExecStatus,
-  toStage,
-  toVoteStatus
+  zExecStatus,
+  zStage,
+  zVoteStatus,
+  zProposalState,
+  zMintRespectGroupArgs,
+  zPropType,
+  zEthAddress,
+  zMeetingNum,
+  zGroupNum,
+  zRankings,
+  zMintType,
+  zUint,
+  zTokenId,
+  zBytes,
+  zPropId,
 } from "./common.js";
-import { IORNode } from "./ornode.js";
+import { IORNode, zPropContent } from "./ornode.js";
 import { Orec } from "orec/typechain-types/contracts/Orec.js";
 import Rf from "respect-sc/typechain-types/factories/contracts/Respect1155__factory.js";
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
@@ -23,76 +35,94 @@ import { BigNumberish, isBytesLike } from "ethers";
 import { Result } from "../node_modules/ethers/lib.commonjs/index.js";
 import { unpackTokenId } from "op-fractal-sc/utils/tokenId.js";
 import { expect } from 'chai';
+import { z } from "zod";
 
 type Signer = HardhatEthersSigner;
 
-export interface ProposalMetadata {
-  propTitle?: string;
-  propDescription?: string;
-}
+export const zProposalMetadata = z.object({
+  propTitle: z.string().optional(),
+  propDescription: z.string().optional()
+})
+export type ProposalMetadata = z.infer<typeof zProposalMetadata>;
 
-export interface DecodedProposalBase extends ProposalMetadata {
-  propType: PropType;
-}
+export const zDecodedPropBase = z.object({
+  propType: zPropType
+})
+export type DecodedPropBase = z.infer<typeof zDecodedPropBase>;
 
-export interface RespectBreakout extends DecodedProposalBase {
-  propType: "respectBreakout",
-  meetingNum: number,
-  groupNum: number,
-  rankings: Account[6],
-}
+const zBreakoutResult = z.object({
+  groupNum: zGroupNum,
+  rankings: zRankings
+});
+export type BreakoutResult = z.infer<typeof zBreakoutResult>;
 
-export interface RespectAccount extends DecodedProposalBase {
-  propType: "respectAccount",
-  meetingNum: number,
-  mintType: number,
-  account: Account,
-  value: number,
-  title: string
-  reason: string,
-}
+export const zRespectBreakout = zDecodedPropBase.merge(zBreakoutResult).extend({
+  propType: z.literal(zPropType.Enum.respectBreakout),
+  meetingNum: zMeetingNum,
+});
+export type RespectBreakout = z.infer<typeof zRespectBreakout>;
 
-export type RespectAccountRequest = Optional<Omit<RespectAccount, 'propType'>, 'meetingNum' | 'mintType'>;
+export const zRespectAccount = zDecodedPropBase.extend({
+  propType: z.literal(zPropType.Enum.respectAccount),
+  meetingNum: zMeetingNum,
+  mintType: zMintType,
+  account: zEthAddress,
+  value: zUint,
+  title: z.string(),
+  reason: z.string()
+});
+export type RespectAccount = z.infer<typeof zRespectAccount>;
 
-export interface BurnRespect extends DecodedProposalBase {
-  propType: "burnRespect"
-  tokenId: TokenId,
-  reason: string
-}
+export const zRespectAccountRequest = zRespectAccount.omit({ propType: true }).extend({
+  mintType: zMintType.optional(),
+  meetingNum: zMeetingNum.optional()
+});
+export type RespectAccountRequest = z.infer<typeof zRespectAccountRequest>;
 
-export interface CustomSignal extends DecodedProposalBase {
-  propType: "customSignal"
-  data: string
-}
+export const zBurnRespect = zDecodedPropBase.extend({
+  propType: z.literal(zPropType.Enum.burnRespect),
+  tokenId: zTokenId,
+  reason: z.string()
+})
+export type BurnRespect = z.infer<typeof zBurnRespect>;
 
-export interface Tick extends DecodedProposalBase {
-  propType: "tick",
-  data?: string
-}
+export const zCustomSignal = zDecodedPropBase.extend({
+  propType: z.literal(zPropType.Enum.customSignal),
+  data: zBytes
+});
+export type CustomSignal = z.infer<typeof zCustomSignal>;
 
-export type DecodedProposal =
-  RespectBreakout | RespectAccountRequest | BurnRespect | CustomSignal | Tick;
+export const zTick = zDecodedPropBase.extend({
+  propType: z.literal(zPropType.Enum.tick),
+  data: zBytes
+})
+export type Tick = z.infer<typeof zTick>;
 
-export interface Proposal {
-  id: PropId;
-  address?: string;
-  cdata?: string;
-  memo?: string,
-  yesWeight: bigint;
-  noWeight: bigint;
-  createTime: Date;
-  execStatus: ExecStatus;
-  stage: Stage;
-  voteStatus: VoteStatus;
-  decoded?: DecodedProposal
-}
+export const zCustomCall = zDecodedPropBase.extend({
+  propType: z.literal(zPropType.Enum.customCall)
+});
+export type CustomCall = z.infer<typeof zCustomCall>;
 
-export interface BreakoutResult {
-  groupNum: number;
-  rankings: [
-    Account, Account, Account, Account, Account, Account
-  ]
-}
+export const zDecodedProposal = z.union([
+  zCustomCall,
+  zTick,
+  zCustomSignal,
+  zBurnRespect,
+  zRespectAccount,
+  zRespectBreakout
+]);
+export type DecodedProposal = z.infer<typeof zDecodedProposal>;
+
+export const zProposal = zProposalState.extend({
+  id: zPropId,
+  address: zEthAddress.optional(),
+  cdata: zBytes.optional(),
+  stage: zStage,
+  voteStatus: zVoteStatus,
+  decoded: zDecodedProposal.optional(),
+  createTime: z.date()
+})
+export type Proposal = z.infer<typeof zProposal>;
 
 export class NotImplemented extends Error {
   constructor(message: string) {
@@ -123,28 +153,10 @@ export interface Config {
   newRespect: Respect1155;
 }
 
-function parseMintRespectGroupArgs(txArgs: Result): Parameters<Respect1155["mintRespectGroup"]> {
-  const requests = txArgs["requests"]
-  const data = txArgs["data"];
-  if (!(requests instanceof Array) || !isBytesLike(data)) {
-    throw new TypeError("invalid arguments")
-  }
+export type ProposalState = Awaited<ReturnType<Orec["proposals"]>>
 
-  const mRequests: Respect1155.MintRequestStruct[] = requests.map(val => {
-    if (val["id"] === undefined || val["value"] === undefined) {
-      throw new TypeError("id or value missing in mint request struct");
-    }
-    return {
-      id: val["id"] as BigNumberish,
-      value: val["value"] as BigNumberish
-    }
-  });
-
-  const args: Parameters<Respect1155["mintRespectGroup"]> = [
-    mRequests,
-    data,
-  ]
-  return args;
+export function isPropCreated(propState: ProposalState) {
+  return propState.createTime > 0n;
 }
 
 export default class ORClient {
@@ -168,81 +180,93 @@ export default class ORClient {
     return newCl;
   }
 
+  private async _getProposalFromChain(id: PropId): Promise<Proposal> {
+    const propState = zProposalState.parse(await this._config.orec.proposals(id));
+    const stage = zStage.parse(await this._config.orec.getStage(id));
+    const voteStatus = zVoteStatus.parse(await this._config.orec.getVoteStatus(id));
+
+    const r: Proposal = {
+      id: id,
+      createTime: new Date(Number(propState.createTime) * 1000),
+      yesWeight: propState.yesWeight,
+      noWeight: propState.noWeight,
+      status: zExecStatus.parse(propState.status),
+      stage,
+      voteStatus,
+    }
+
+    return r;
+  }
+
   /**
    * Returns proposal by id
    * @param id - proposal id
    */
   async getProposal(id: PropId): Promise<Proposal> {
-    const prop = await this._config.ornode.getProposal(id);
+    const prop = await this._getProposalFromChain(id);
+    const nodeProp = await this._config.ornode.getProposal(id);
 
-    const propState = await this._config.orec.proposals(id);
-    if (propState.createTime === 0n) {
-      throw new Error("Proposal does not exist onchain");
-    }
+    if (nodeProp.content !== undefined) {
+      prop.address = nodeProp.content.address;
+      prop.cdata = nodeProp.content.cdata;
 
-    const stage = toStage(await this._config.orec.getStage(id));
-    const voteStatus = toVoteStatus(await this._config.orec.getVoteStatus(id));
+      if (nodeProp.attachment !== undefined) {
+        let decoded: DecodedProposal;
+        switch (nodeProp.attachment.propType) {
+          case 'respectBreakout': {
+            const content = zPropContent.extend({
+              address: z.literal(this._newRespectAddr)
+            }).parse(nodeProp.content);
+            z.literal(this._newRespectAddr);
+            if (prop.content.address !== this._newRespectAddr) {
+              throw new Error("respectBreakout proposal for unexpected contract")
+            }
+            const iface = this._config.newRespect.interface;
+            const tx = iface.parseTransaction({ data: prop.content.cdata });
+            if (tx === null) {
+              throw new Error("Failed parsing transaction");
+            }
+            const f = iface.getFunction('mintRespectGroup');
+            expect(tx.name).to.be.equal(f.name);
+            const args = parseMintRespectGroupArgs(tx.args);
 
-    const r: Proposal = {
-      id: prop.id,
-      address: prop.content?.address,
-      cdata: prop.content?.cdata,
-      createTime: new Date(Number(propState.createTime) * 1000),
-      yesWeight: propState.yesWeight,
-      noWeight: propState.noWeight,
-      execStatus: toExecStatus(propState.status),
-      stage,
-      voteStatus,
-    }
+            const mintReqs = args[0] as Respect1155.MintRequestStruct[];
+            for (const req of mintReqs) {
+              const tokenId = unpackTokenId(req.id);
+              // TODO: use assertion library to check what you expect
+              // Maybe just use chai;
+              // ... or zod - it is better because it does compile time checking (e.g.: if you check for undefined the code after that will know it)
+              expect(tokenId.mintType).to.be.equal(0);
+            }
+            
+            // TODO: don't forget to add memo
 
-    if (prop.attachment !== undefined && prop.content !== undefined) {
-      let decoded: DecodedProposal;
-      switch (prop.attachment.propType) {
-        case 'respectBreakout': {
-          if (prop.content.address !== this._newRespectAddr) {
-            throw new Error("respectBreakout proposal for unexpected contract")
+            break;
           }
-          const iface = this._config.newRespect.interface;
-          const tx = iface.parseTransaction({ data: prop.content.cdata });
-          if (tx === null) {
-            throw new Error("Failed parsing transaction");
+          case 'respectAccount': {
+            break;
           }
-          const f = iface.getFunction('mintRespectGroup');
-          expect(tx.name).to.be.equal(f.name);
-          const args = parseMintRespectGroupArgs(tx.args);
-
-          const mintReqs = args[0] as Respect1155.MintRequestStruct[];
-          for (const req of mintReqs) {
-            const tokenId = unpackTokenId(req.id);
-            // TODO: use assertion library to check what you expect
-            // Maybe just use chai;
-            // ... or zod - it is better because it does compile time checking (e.g.: if you check for undefined the code after that will know it)
-            expect(tokenId.mintType).to.be.equal(0);
+          case 'burnRespect': {
+            break;
           }
-          
-          // TODO: don't forget to add memo
+          case 'customSignal': {
+            break;
+          }
+          case 'tick': {
+            break;
+          }
+          case 'customCall': {
+            break;
+          }
+          default: {
+            const exhaustiveCheck: never = prop.attachment;
+          }
+        }
 
-          break;
-        }
-        case 'respectAccount': {
-          break;
-        }
-        case 'burnRespect': {
-          break;
-        }
-        case 'customSignal': {
-          break;
-        }
-        case 'tick': {
-          break;
-        }
-        case 'customCall': {
-          break;
-        }
-        default: {
-          const exhaustiveCheck: never = prop.attachment;
-        }
       }
+    }
+
+    if (nodeProp.attachment !== undefined && nodeProp.content !== undefined) {
 
 
     }
