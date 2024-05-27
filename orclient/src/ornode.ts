@@ -1,3 +1,4 @@
+import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
 import {
   Account,
   EthAddress,
@@ -14,6 +15,13 @@ import {
   zPropType
 } from "./common.js";
 import { z } from "zod";
+import { Orec } from "orec/typechain-types/index.js";
+
+export const zPropContext = z.object({
+  oldRespectAddr: zEthAddress,
+  newRespectAddr: zEthAddress,
+  orecAddr: zEthAddress
+});
 
 export const zPropContent = z.object({
   address: zEthAddress,
@@ -82,6 +90,49 @@ export const zProposal = z.object({
 });
 export type Proposal = z.infer<typeof zProposal>;
 
+export const zProposalInContext = zPropContext.extend({
+  prop: zProposal
+});
+export type ProposalInContext = z.infer<typeof zProposalInContext>;
+
+export const zRespectBreakout = zProposal.extend({
+  attachment: zRespectBreakoutAttachment
+});
+export type RespectBreakout = z.infer<typeof zRespectBreakout>;
+
+export const zRespectAccount = zProposal.extend({
+  attachment: zRespectAccountAttachment
+})
+export type RespectAccount = z.infer<typeof zRespectAccount>;
+
+export const zBurnRespect = zProposal.extend({
+  attachment: zBurnRespectAttachment
+});
+export type BurnRespect = z.infer<typeof zBurnRespect>;
+
+export const zCustomSignal = zProposal.extend({
+  attachment: zCustomSignalAttachment
+});
+export type CustomSignal = z.infer<typeof zCustomSignal>;
+
+export const zCustomCall = zProposal.extend({
+  attachment: zCustomCallAttachment
+});
+export type CustomCall = z.infer<typeof zCustomCall>;
+
+export const zTick = zProposal.extend({
+  attachment: zTickAttachment
+});
+export type Tick = z.infer<typeof zTick>;
+
+export interface zProposalTypes {
+  respectBreakout: typeof zRespectBreakout,
+  respectAccount: typeof zRespectAccount,
+  burnRespect: typeof zBurnRespect,
+  CustomSignal: typeof zCustomSignal,
+  Tick: typeof zTick,
+  CustomCall: typeof zCustomCall
+}
 
 export interface IORNode {
   putProposal: (proposal: Proposal) => Promise<void>;
@@ -90,4 +141,6 @@ export interface IORNode {
    */
   getProposal: (id: PropId) => Promise<Proposal>;
   getProposals: (from: number, limit: number) => Promise<Proposal[]>
+
+  getProposalTypes: () => zProposalTypes;
 }

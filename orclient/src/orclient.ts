@@ -36,6 +36,7 @@ import { Result } from "../node_modules/ethers/lib.commonjs/index.js";
 import { unpackTokenId } from "op-fractal-sc/utils/tokenId.js";
 import { expect } from 'chai';
 import { z } from "zod";
+import { zProposalToRespectBreakout } from "./ornodeToOrclient.js";
 
 type Signer = HardhatEthersSigner;
 
@@ -50,7 +51,7 @@ export const zDecodedPropBase = z.object({
 })
 export type DecodedPropBase = z.infer<typeof zDecodedPropBase>;
 
-const zBreakoutResult = z.object({
+export const zBreakoutResult = z.object({
   groupNum: zGroupNum,
   rankings: zRankings
 });
@@ -163,14 +164,15 @@ export default class ORClient {
   private _config: Config;
   private _newRespectAddr?: EthAddress;
 
-  constructor(config: Config) {
+  private constructor(config: Config) {
     this._config = config;
-    this._newRespectAddr = await config.newRespect.getAddress();
   }
 
   static async createORClient(config: Config): Promise<ORClient> {
     const client = new ORClient(config);
     client._config = config;
+    client._newRespectAddr = await config.newRespect.getAddress();
+
     return client;
   }
 
@@ -214,33 +216,10 @@ export default class ORClient {
         let decoded: DecodedProposal;
         switch (nodeProp.attachment.propType) {
           case 'respectBreakout': {
-            const content = zPropContent.extend({
-              address: z.literal(this._newRespectAddr)
-            }).parse(nodeProp.content);
-            z.literal(this._newRespectAddr);
-            if (prop.content.address !== this._newRespectAddr) {
-              throw new Error("respectBreakout proposal for unexpected contract")
-            }
-            const iface = this._config.newRespect.interface;
-            const tx = iface.parseTransaction({ data: prop.content.cdata });
-            if (tx === null) {
-              throw new Error("Failed parsing transaction");
-            }
-            const f = iface.getFunction('mintRespectGroup');
-            expect(tx.name).to.be.equal(f.name);
-            const args = parseMintRespectGroupArgs(tx.args);
-
-            const mintReqs = args[0] as Respect1155.MintRequestStruct[];
-            for (const req of mintReqs) {
-              const tokenId = unpackTokenId(req.id);
-              // TODO: use assertion library to check what you expect
-              // Maybe just use chai;
-              // ... or zod - it is better because it does compile time checking (e.g.: if you check for undefined the code after that will know it)
-              expect(tokenId.mintType).to.be.equal(0);
-            }
-            
-            // TODO: don't forget to add memo
-
+            const parsedNprop = this._config.ornode.getProposalTypes().respectBreakout.parse(nodeProp);
+            // TODO: add context
+            decoded = zProposalToRespectBreakout.parse(parsedNprop);
+            prop.decoded = decoded;
             break;
           }
           case 'respectAccount': {

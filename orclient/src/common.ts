@@ -52,7 +52,6 @@ export enum VoteType {
 }
 export const zVoteType = z.nativeEnum(VoteType);
 
-// TODO: zTokenId
 export const zTokenId = zBytes32.refine(val => {
   try {
     const unpacked = unpackTokenId(val);
@@ -87,13 +86,13 @@ export const PropTypeValues = [
 export const zPropType = z.enum(PropTypeValues);
 export type PropType = z.infer<typeof zPropType>;
 
-export const zMeetingNum = z.number().gt(0);
+export const zMeetingNum = z.coerce.number().gt(0);
 export type MeetingNum = z.infer<typeof zMeetingNum>;
 
-export const zGroupNum = z.number().gt(0)
+export const zGroupNum = z.coerce.number().gt(0)
 export type GroupNum = z.infer<typeof zGroupNum>;
 
-export const zMintType = z.number().gt(0);
+export const zMintType = z.coerce.number().gt(0);
 export type MintType = z.infer<typeof zMintType>;
 
 export const zRankings = z.array(zEthAddress).min(3).max(6);
