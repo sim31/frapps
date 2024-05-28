@@ -36,6 +36,8 @@ export const zBytes32 = z.string().refine((val) => {
   return isHexString(val, 32);
 })
 
+export const zBytesLike = z.string().or(z.instanceof(Uint8Array));
+
 export const zPropId = zBytes32;
 export type PropId = z.infer<typeof zPropId>;
 
@@ -98,19 +100,22 @@ export type MintType = z.infer<typeof zMintType>;
 export const zRankings = z.array(zEthAddress).min(3).max(6);
 
 export type CMintRespectGroupArgs = Parameters<Respect1155["mintRespectGroup"]>
+export type CMintRespectArgs = Parameters<Respect1155["mintRespect"]>;
 export type CProposalState = Omit<
   Awaited<ReturnType<Orec["proposals"]>>,
   keyof [bigint, bigint, bigint, bigint]
 >
 
-export const zMintRespectGroupArgs = z.object({
-  mintRequests: z.array(z.object({
-    id: zBigNumberish.gt(0n),
-    value: zBigNumberish.gt(0n)
-  })),
-  data: z.string().or(z.instanceof(Uint8Array))
-})
+export const zMintRequest = z.object({
+  id: zBigNumberish.gt(0n),
+  value: zBigNumberish.gt(0n)
+});
 
+export const zMintRespectGroupArgs = z.object({
+  mintRequests: z.array(zMintRequest),
+  data: zBytesLike
+})
+// This is just a compile time check that zMintRespectGroupArgs above match latest contract
 const mintRespectGroupVerify = zMintRespectGroupArgs.refine(
   (val) => {
     const args: CMintRespectGroupArgs = [
@@ -121,6 +126,19 @@ const mintRespectGroupVerify = zMintRespectGroupArgs.refine(
   }, "Zod type does not match type from contract interface"
 );
 export type MintRespectGroupArgs = z.infer<typeof zMintRespectGroupArgs>;
+
+export const zMintRespectArgs = z.object({
+  request: zMintRequest,
+  data: zBytesLike
+});
+const mintRespectVerify = zMintRespectArgs.refine((val) => {
+  const args: CMintRespectArgs = [
+    val.request,
+    val.data
+  ];
+  return true;
+});
+export type MintRespectArgs = z.infer<typeof zMintRespectArgs>;
 
 export const zProposalState = z.object({
   createTime: z.bigint().gt(0n),

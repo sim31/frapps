@@ -1,6 +1,6 @@
 import chai, { expect } from "chai";
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
-import ORClient, { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, VoteEnded, ProposalFailed } from "../src/orclient.js";
+import ORClient, { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, VoteEnded, ProposalFailed } from "../src/orclientTypes.js";
 import { EthAddress, Stage, VoteStatus } from "../src/common.js";
 import hre, { run } from "hardhat";
 import { ZeroAddress, hexlify, Signer } from "ethers";
