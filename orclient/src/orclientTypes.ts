@@ -26,17 +26,21 @@ import {
   zTokenId,
   zBytes,
   zPropId,
+  zOnchainProp,
+  zUint8,
+  zProposedMsg,
 } from "./common.js";
 import { IORNode, zPropContent } from "./ornodeTypes.js";
 import { Orec } from "orec/typechain-types/contracts/Orec.js";
 import Rf from "respect-sc/typechain-types/factories/contracts/Respect1155__factory.js";
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
-import { BigNumberish, isBytesLike } from "ethers";
+import { BigNumberish, TransactionResponse, isBytesLike } from "ethers";
 import { Result } from "ethers";
 import { unpackTokenId } from "op-fractal-sc/utils/tokenId.js";
 import { expect } from 'chai';
 import { z } from "zod";
-import { zProposalToRespectBreakout } from "./nodeToClientTransformer.js";
+import { zNProposalToRespectBreakout } from "./transformers/nodeToClientTransformer.js";
+import { ContractTransactionResponse, TransactionReceipt } from "../node_modules/ethers/lib.commonjs/index.js";
 
 type Signer = HardhatEthersSigner;
 
@@ -47,7 +51,8 @@ export const zProposalMetadata = z.object({
 export type ProposalMetadata = z.infer<typeof zProposalMetadata>;
 
 export const zDecodedPropBase = z.object({
-  propType: zPropType
+  propType: zPropType,
+  metadata: zProposalMetadata
 })
 export type DecodedPropBase = z.infer<typeof zDecodedPropBase>;
 
@@ -57,9 +62,16 @@ export const zBreakoutResult = z.object({
 });
 export type BreakoutResult = z.infer<typeof zBreakoutResult>;
 
+export const zRespectBreakoutRequest = zBreakoutResult.extend({
+  meetingNum: zMeetingNum.optional(),
+  voteMemo: z.string().optional()
+})
+export type RespectBreakoutRequest = z.infer<typeof zRespectBreakoutRequest>;
+
 export const zRespectBreakout = zDecodedPropBase.merge(zBreakoutResult).extend({
   propType: z.literal(zPropType.Enum.respectBreakout),
   meetingNum: zMeetingNum,
+  mintData: zBytes
 });
 export type RespectBreakout = z.infer<typeof zRespectBreakout>;
 
@@ -74,10 +86,12 @@ export const zRespectAccount = zDecodedPropBase.extend({
 });
 export type RespectAccount = z.infer<typeof zRespectAccount>;
 
-export const zRespectAccountRequest = zRespectAccount.omit({ propType: true }).extend({
-  mintType: zMintType.optional(),
-  meetingNum: zMeetingNum.optional()
-});
+export const zRespectAccountRequest = zRespectAccount
+  .omit({ propType: true })
+  .partial({ mintType: true, meetingNum: true })
+  .extend({
+    voteMemo: z.string().optional()
+  });
 export type RespectAccountRequest = z.infer<typeof zRespectAccountRequest>;
 
 export const zBurnRespect = zDecodedPropBase.extend({
@@ -89,12 +103,15 @@ export type BurnRespect = z.infer<typeof zBurnRespect>;
 
 export const zCustomSignal = zDecodedPropBase.extend({
   propType: z.literal(zPropType.Enum.customSignal),
-  data: zBytes
+  signalType: zUint8,
+  data: zBytes,
+  link: z.string().optional()
 });
 export type CustomSignal = z.infer<typeof zCustomSignal>;
 
 export const zTick = zDecodedPropBase.extend({
   propType: z.literal(zPropType.Enum.tick),
+  link: z.string().optional(),
   data: zBytes
 })
 export type Tick = z.infer<typeof zTick>;
@@ -114,15 +131,9 @@ export const zDecodedProposal = z.union([
 ]);
 export type DecodedProposal = z.infer<typeof zDecodedProposal>;
 
-export const zProposal = zProposalState.extend({
-  id: zPropId,
-  address: zEthAddress.optional(),
-  cdata: zBytes.optional(),
-  stage: zStage,
-  voteStatus: zVoteStatus,
+export const zProposal = zOnchainProp.merge(zProposedMsg.partial()).extend({
   decoded: zDecodedProposal.optional(),
-  createTime: z.date()
-})
+});
 export type Proposal = z.infer<typeof zProposal>;
 
 export class NotImplemented extends Error {
@@ -146,12 +157,11 @@ export class ProposalFailed extends Error {
   }
 }
 
-export interface Config {
-  // eth: string;
-  ornode: IORNode;
-  signer: Signer;
-  orec: Orec;
-  newRespect: Respect1155;
+export class TxFailed extends Error {
+  constructor(response: ContractTransactionResponse, receipt: TransactionReceipt | null) {
+    const msg = `Transaction failed. Response: ${response}. Receipt: ${receipt}`;
+    super(msg);
+  }
 }
 
 export type ProposalState = Awaited<ReturnType<Orec["proposals"]>>

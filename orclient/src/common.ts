@@ -1,4 +1,4 @@
-import { dataLength, isAddress, isHexString } from "ethers";
+import { dataLength, getBigInt, hexlify, isAddress, isHexString } from "ethers";
 import { Orec } from "orec/typechain-types/index.js";
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
 import { z } from "zod";
@@ -38,6 +38,10 @@ export const zBytes32 = z.string().refine((val) => {
 
 export const zBytesLike = z.string().or(z.instanceof(Uint8Array));
 
+export const zBytesLikeToBytes = zBytesLike.transform((val, ctx) => {
+  return hexlify(val);
+}).pipe(zBytes);
+
 export const zPropId = zBytes32;
 export type PropId = z.infer<typeof zPropId>;
 
@@ -66,12 +70,28 @@ export type TokenId = z.infer<typeof zTokenId>;
 
 export const zBigNumberish = z.coerce.bigint();
 
-export const zUint = z.number().gt(0);
+export const zUint = z.bigint().gt(0n);
+
+export const zUint8 = z.coerce.number().gte(0).lte(255);
+
+export const zMintType = z.coerce.number().gte(0);
+export type MintType = z.infer<typeof zMintType>;
+
+export const zBreakoutMintType = z.literal(0);
+export type BreakoutMintType = z.infer<typeof zBreakoutMintType>;
+
+export const zMeetingNum = z.coerce.number().gt(0);
+export type MeetingNum = z.infer<typeof zMeetingNum>;
+
+export const zBigNumberishToBigint = zBigNumberish.transform((val, ctx) => {
+  return getBigInt(val);
+}).pipe(z.bigint());
+
 
 export const zTokenIdData = z.object({
-  periodNumber: zBigNumberish,
+  periodNumber: zMeetingNum,
   owner: zEthAddress,
-  mintType: zBigNumberish
+  mintType: zMintType
 }).refine(val => {
   return val.owner !== ZeroAddress;
 });
@@ -88,19 +108,17 @@ export const PropTypeValues = [
 export const zPropType = z.enum(PropTypeValues);
 export type PropType = z.infer<typeof zPropType>;
 
-export const zMeetingNum = z.coerce.number().gt(0);
-export type MeetingNum = z.infer<typeof zMeetingNum>;
-
 export const zGroupNum = z.coerce.number().gt(0)
 export type GroupNum = z.infer<typeof zGroupNum>;
 
-export const zMintType = z.coerce.number().gt(0);
-export type MintType = z.infer<typeof zMintType>;
 
 export const zRankings = z.array(zEthAddress).min(3).max(6);
 
 export type CMintRespectGroupArgs = Parameters<Respect1155["mintRespectGroup"]>
 export type CMintRespectArgs = Parameters<Respect1155["mintRespect"]>;
+export type CBurnRespectArgs = Parameters<Respect1155['burnRespect']>;
+export type CCustomSignalArgs = Parameters<Orec['signal']>;
+export type CMessage = Orec.MessageStruct;
 export type CProposalState = Omit<
   Awaited<ReturnType<Orec["proposals"]>>,
   keyof [bigint, bigint, bigint, bigint]
@@ -110,6 +128,7 @@ export const zMintRequest = z.object({
   id: zBigNumberish.gt(0n),
   value: zBigNumberish.gt(0n)
 });
+export type MintRequest = z.infer<typeof zMintRequest>;
 
 export const zMintRespectGroupArgs = z.object({
   mintRequests: z.array(zMintRequest),
@@ -140,6 +159,31 @@ const mintRespectVerify = zMintRespectArgs.refine((val) => {
 });
 export type MintRespectArgs = z.infer<typeof zMintRespectArgs>;
 
+export const zBurnRespectArgs = z.object({
+  tokenId: zTokenId,
+  data: zBytesLike
+});
+const burnRespectVerify = zBurnRespectArgs.refine((val) => {
+  const args: CBurnRespectArgs = [
+    val.tokenId,
+    val.data
+  ];
+  return true;
+});
+
+export const zSignalArgs = z.object({
+  signalType: zUint8, 
+  data: zBytesLike
+});
+const customSignalVerify = zSignalArgs.refine((val) => {
+  const args: CCustomSignalArgs = [
+    val.signalType,
+    val.data
+  ];
+  return true;
+});
+export type CustomSignalArgs = z.infer<typeof zSignalArgs>;
+
 export const zProposalState = z.object({
   createTime: z.bigint().gt(0n),
   yesWeight: z.bigint(),
@@ -157,5 +201,26 @@ const zPropStateVerify = zProposalState.refine(val => {
   };
   return true;
 }, "Zod type does not match type from contract interface")
+
+export const zProposedMsg = z.object({
+  addr: zEthAddress,
+  cdata: zBytesLike,
+  memo: zBytesLike
+});
+const zProposedMsgVerify = zProposedMsg.refine(val => {
+  const msg: CMessage = val;
+  return true;
+});
+export type ProposedMsg = z.infer<typeof zProposedMsg>;
+
+export const zOnchainProp = zProposalState.extend({
+  id: zPropId,
+  stage: zStage,
+  voteStatus: zVoteStatus,
+  createTime: z.date()
+});
+export type OnchainProp = z.infer<typeof zOnchainProp>;
+
+
 
 

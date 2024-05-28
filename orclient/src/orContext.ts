@@ -1,6 +1,6 @@
 import { Provider as EthProvider } from "ethers";
 import { Orec } from "orec/typechain-types/index.js";
-import { EthAddress } from "./common.js";
+import { EthAddress, OnchainProp, PropId, zExecStatus, zProposalState, zStage, zVoteStatus } from "./common.js";
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
 import { IORNode } from "./ornodeTypes.js";
 import { FractalRespect } from "op-fractal-sc/typechain-types/contracts/FractalRespect.js";
@@ -72,5 +72,23 @@ export class ORContext {
       this._newRespectAddr = await this._cfg.newRespect.getAddress();
     }
     return this._newRespectAddr;
+  }
+
+  async getProposalFromChain(id: PropId): Promise<OnchainProp> {
+    const propState = zProposalState.parse(await this._cfg.orec.proposals(id));
+    const stage = zStage.parse(await this._cfg.orec.getStage(id));
+    const voteStatus = zVoteStatus.parse(await this._cfg.orec.getVoteStatus(id));
+
+    const r: OnchainProp = {
+      id: id,
+      createTime: new Date(Number(propState.createTime) * 1000),
+      yesWeight: propState.yesWeight,
+      noWeight: propState.noWeight,
+      status: zExecStatus.parse(propState.status),
+      stage,
+      voteStatus,
+    }
+
+    return r;
   }
 }

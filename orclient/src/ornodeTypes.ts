@@ -12,16 +12,23 @@ import {
   zEthAddress,
   zBytes,
   zPropId,
-  zPropType
+  zPropType,
+  zUint8,
+  zProposedMsg
 } from "./common.js";
 import { z } from "zod";
 import { Orec } from "orec/typechain-types/index.js";
 
+export enum KnownSignalTypes { 
+  Tick = 0,
+};
+export const zKnownSignalTypes = z.nativeEnum(KnownSignalTypes);
 
-export const zPropContent = z.object({
-  address: zEthAddress,
-  cdata: zBytes
-});
+export const zSignalType = zUint8;
+export const zCustomSignalType = zSignalType.gt(0);
+export const zTickSignalType = z.literal(Number(zKnownSignalTypes.enum.Tick));
+
+export const zPropContent = zProposedMsg;
 export type PropContent = z.infer<typeof zPropContent>;
 
 export const zPropAttachmentBase = z.object({
@@ -53,7 +60,7 @@ export type BurnRespectAttachment = z.infer<typeof zBurnRespectAttachment>;
 
 export const zCustomSignalAttachment = zPropAttachmentBase.extend({
   propType: z.literal(zPropType.Enum.customSignal),
-  link: z.string()
+  link: z.string().optional()
 })
 export type CustomSignalAttachment = z.infer<typeof zCustomSignalAttachment>;
 
@@ -80,10 +87,13 @@ export type PropAttachment = z.infer<typeof zPropAttachment>;
 
 export const zProposal = z.object({
   id: zPropId,
-  content: zPropContent,
-  attachment: zPropAttachment
+  content: zPropContent.optional(),
+  attachment: zPropAttachment.optional()
 });
 export type Proposal = z.infer<typeof zProposal>;
+
+export const zProposalFull = zProposal.required();
+export type ProposalFull = z.infer<typeof zProposalFull>;
 
 export const zRespectBreakout = zProposal.extend({
   attachment: zRespectBreakoutAttachment
@@ -122,5 +132,7 @@ export interface IORNode {
    */
   getProposal: (id: PropId) => Promise<Proposal>;
   getProposals: (from: number, limit: number) => Promise<Proposal[]>
+
+  getPeriodNum: () => Promise<number>;
 
 }

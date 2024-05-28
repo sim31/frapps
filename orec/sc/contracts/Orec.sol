@@ -65,7 +65,7 @@ contract Orec is Ownable {
     event Executed(PropId propId, bytes retVal);
     event ExecutionFailed(PropId propId, bytes retVal);
     event ProposalCreated(PropId propId);
-    event Signal(bytes data);
+    event Signal(uint8 indexed signalType, bytes data);
 
     // TODO: make configurable
     uint64 public voteLen = 1 days;
@@ -225,8 +225,8 @@ contract Orec is Ownable {
         return PropId.wrap(keccak256(packed));
     }
 
-    function signal(bytes calldata data) public onlyOwner {
-        emit Signal(data);
+    function signal(uint8 signalType, bytes calldata data) public onlyOwner {
+        emit Signal(signalType, data);
     }
 
     function _propose(PropId propId, ProposalState storage p) private {
