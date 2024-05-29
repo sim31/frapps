@@ -88,7 +88,7 @@ export type RespectAccount = z.infer<typeof zRespectAccount>;
 
 export const zRespectAccountRequest = zRespectAccount
   .omit({ propType: true })
-  .partial({ mintType: true, meetingNum: true })
+  .partial({ mintType: true, meetingNum: true, metadata: true })
   .extend({
     voteMemo: z.string().optional()
   });
@@ -100,6 +100,12 @@ export const zBurnRespect = zDecodedPropBase.extend({
   reason: z.string()
 })
 export type BurnRespect = z.infer<typeof zBurnRespect>;
+
+export const zBurnRespectRequest = zBurnRespect
+  .omit({ propType: true })
+  .partial({ metadata: true })
+  .extend({ voteMemo: z.string().optional() })
+export type BurnRespectRequest = z.infer<typeof zBurnRespectRequest>;
 
 export const zCustomSignal = zDecodedPropBase.extend({
   propType: z.literal(zPropType.Enum.customSignal),

@@ -1,13 +1,15 @@
 import { z } from "zod";
 import {
+  RespectAccountRequest,
   RespectBreakoutRequest,
   zBreakoutResult,
+  zBurnRespectRequest,
   zRespectAccountRequest,
   zRespectBreakoutRequest,
 } from "../orclientTypes.js";
-import { PropContent, Proposal, RespectBreakout, RespectBreakoutAttachment, zRespectBreakout } from "../ornodeTypes.js";
+import { BurnRespectAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, zRespectAccount, zRespectBreakout } from "../ornodeTypes.js";
 import { ORContext } from "../orContext.js";
-import { MintRequest, MintRespectGroupArgs, zBigNumberish, zBigNumberishToBigint, zBreakoutMintType, zGroupNum, zMintRespectGroupArgs, zPropType } from "../common.js";
+import { BurnRespectArgs, MintRequest, MintRespectArgs, MintRespectGroupArgs, zBigNumberish, zBigNumberishToBigint, zBreakoutMintType, zGroupNum, zMintRespectArgs, zMintRespectGroupArgs, zPropType, zRankNum, zUnspecifiedMintType } from "../common.js";
 import { expect } from "chai";
 import { packTokenId } from "respect-sc/utils/tokenId.js";
 import { addIssue } from "./common.js";
@@ -32,14 +34,18 @@ export const zRespAccountReqCtx = z.object({
   req: zRespectAccountRequest
 });
 
+export const zBurnRespectReqCtx = z.object({
+  ctx: zCPropContext,
+  req: zBurnRespectRequest
+});
+
 const _rewards = [
   55n, 34n, 21n, 13n, 8n, 5n
 ];
 
-export const zRankingToValue = z.number().transform((rank, ctx) => {
+export const zRankNumToValue = zRankNum.transform((rankNum, ctx) => {
   try {
-    const rankIndex = rank - 1;
-    expect(rankIndex).to.be.lt(_rewards.length).gte(0);
+    const rankIndex = rankNum - 1;
     return _rewards[rankIndex];
   } catch (err) {
     addIssue(ctx, `${err}`);
@@ -49,13 +55,13 @@ export const zRankingToValue = z.number().transform((rank, ctx) => {
 export const zCRespectBreakoutToMintArgs = zRespBreakoutReqCtx.transform(async (val, ctx) => {
   try {
     const periodNumber = val.req.meetingNum === undefined
-      ? await val.ctx.ornode.getPeriodNum() + 1
-      : val.req.meetingNum;
+      ? await val.ctx.ornode.getPeriodNum()
+      : val.req.meetingNum - 1;
 
     const mintReqs: MintRequest[] = [];
 
     for (const [i, addr] of val.req.rankings.entries()) {
-      const value = zRankingToValue.parse(6 - i);
+      const value = zRankNumToValue.parse(6 - i);
       const id = packTokenId({
         owner: addr,
         mintType: zBreakoutMintType.value,
@@ -90,6 +96,20 @@ export function idOfRespectBreakoutAttach(attachment: RespectBreakoutAttachment)
   );
 }
 
+export function idOfRespectAccountAttach(attachment: RespectAccountAttachment) {
+  const a: Required<RespectAccountAttachment> = {
+    ...attachment,
+    propTitle: attachment.propTitle ?? "",
+    propDescription: attachment.propDescription ?? "",
+    salt: attachment.salt ?? ""
+  };
+
+  return solidityPackedKeccak256(
+    [ "string", "string", "string", "string", "string", "string" ],
+    [ a.propType, a.propTitle, a.propDescription, a.salt, a.mintReason, a.mintTitle ]
+  );
+}
+
 export const zCRespBreakoutReqToProposal = zRespBreakoutReqCtx.transform(async (val, ctx) => {
   try {
     const mintArgs = await zCRespectBreakoutToMintArgs.parseAsync(val);
@@ -99,7 +119,7 @@ export const zCRespBreakoutReqToProposal = zRespBreakoutReqCtx.transform(async (
     );
     const addr = await val.ctx.getNewRespectAddr();
 
-    const attachment: RespectBreakoutAttachment= {
+    const attachment: RespectBreakoutAttachment = {
       propType: zPropType.Enum.respectBreakout,
       groupNum: zGroupNum.parse(val.req.groupNum),
     };
@@ -120,26 +140,60 @@ export const zCRespBreakoutReqToProposal = zRespBreakoutReqCtx.transform(async (
   }
 }).pipe(zRespectBreakout);
 
+export const zCRespectAccountReqToMintArgs = zRespAccountReqCtx.transform(async (val, ctx) => {
+  try {
+    const periodNumber = val.req.meetingNum === undefined
+      ? await val.ctx.ornode.getPeriodNum()
+      : val.req.meetingNum - 1;
+    const mintType = val.req.mintType === undefined
+      ? zUnspecifiedMintType.value
+      : val.req.mintType;
+
+    const id = packTokenId({
+      owner: val.req.account,
+      mintType,
+      periodNumber
+    });
+
+    const mintReq: MintRequest = {
+      id: zBigNumberishToBigint.parse(id),
+      value: val.req.value
+    };
+
+    const r: MintRespectArgs = {
+      request: mintReq,
+      data: ""
+    };
+
+    return r;
+  } catch (err) {
+    addIssue(ctx, `Error: ${err}`);
+  }
+}).pipe(zMintRespectArgs);
+
 export const zCRespAccountReqToProposal = zRespAccountReqCtx.transform(async (val, ctx) => {
   try {
-    const mintArgs = await zCRespectBreakoutToMintArgs.parseAsync(val);
+    const mintArgs = await zCRespectAccountReqToMintArgs.parseAsync(val);
     const cdata = respectInterface.encodeFunctionData(
       "mintRespect",
-      [mintArgs.mintRequests, mintArgs.data]
+      [mintArgs.request, mintArgs.data]
     );
     const addr = await val.ctx.getNewRespectAddr();
 
-    const attachment: RespectBreakoutAttachment= {
-      propType: zPropType.Enum.respectBreakout,
-      groupNum: zGroupNum.parse(val.req.groupNum),
+    const attachment: RespectAccountAttachment = {
+      propType: zPropType.Enum.respectAccount,
+      mintReason: val.req.reason,
+      mintTitle: val.req.title,
+      propTitle: val.req.metadata?.propTitle,
+      propDescription: val.req.metadata?.propDescription
     };
 
-    const memo = idOfRespectBreakoutAttach(attachment);
+    const memo = idOfRespectAccountAttach(attachment);
 
     const content: PropContent = { addr, cdata, memo };
     const id = propId(content);
 
-    const r: RespectBreakout = {
+    const r: RespectAccount = {
       id,
       content,
       attachment
@@ -148,8 +202,43 @@ export const zCRespAccountReqToProposal = zRespAccountReqCtx.transform(async (va
   } catch (err) {
     addIssue(ctx, `Error: ${err}`);
   }
+}).pipe(zRespectAccount);
 
-});
+export const zCBurnRespReqToProposal = zBurnRespectReqCtx.transform(async (val, ctx) => {
+  try {
+    const args: BurnRespectArgs = {
+      tokenId: val.req.tokenId,
+      data: ""
+    };
+    const cdata = respectInterface.encodeFunctionData(
+      "burnRespect",
+      [args.tokenId, args.data]
+    );
+    const addr = await val.ctx.getNewRespectAddr();
+
+    const attachment: BurnRespectAttachment = {
+      propType: zPropType.Enum.burnRespect,
+      reason: 
+      mintTitle: val.req.title,
+      propTitle: val.req.metadata?.propTitle,
+      propDescription: val.req.metadata?.propDescription
+    };
+
+    const memo = idOfRespectAccountAttach(attachment);
+
+    const content: PropContent = { addr, cdata, memo };
+    const id = propId(content);
+
+    const r: RespectAccount = {
+      id,
+      content,
+      attachment
+    }
+    return r;
+  } catch (err) {
+    addIssue(ctx, `Error: ${err}`);
+  }
+}).pipe(zRespectAccount);
 
 export class ClientToNodeTransformer {
   private _cctx: CPropContext
@@ -160,6 +249,11 @@ export class ClientToNodeTransformer {
 
   async transformRespectBreakout(req: RespectBreakoutRequest): Promise<Proposal> {
     const c = { ctx: this._cctx, req };
-    return await zCRespBreakoutReqToProposal.parseAsync(req);
+    return await zCRespBreakoutReqToProposal.parseAsync(c);
+  }
+
+  async tranformRespectAccount(req: RespectAccountRequest): Promise<Proposal> {
+    const c = { ctx: this._cctx, req };
+    return await zCRespAccountReqToProposal.parseAsync(c);
   }
 }

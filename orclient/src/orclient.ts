@@ -1,6 +1,6 @@
 import { Signer } from "ethers";
 import { EthAddress, PropId, ProposalState, TokenId, VoteType } from "./common.js";
-import { BreakoutResult, NotImplemented, Proposal, ProposalMetadata, RespectAccountRequest, RespectBreakoutRequest, TxFailed } from "./orclientTypes.js";
+import { BreakoutResult, BurnRespectRequest, NotImplemented, Proposal, ProposalMetadata, RespectAccountRequest, RespectBreakoutRequest, TxFailed } from "./orclientTypes.js";
 import { ORContext } from "./orContext.js";
 import { NodeToClientTransformer } from "./transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "./transformers/clientToNodeTransformer.js";
@@ -85,15 +85,30 @@ export default class ORClient {
     }
   }
   // UC5
-  async proposeRespectTo(req: RespectAccountRequest): Promise<Proposal> {
-    throw new NotImplemented("proposeRespectTo");
+  async proposeRespectTo(
+    req: RespectAccountRequest,
+    vote: boolean = true
+  ): Promise<Proposal> {
+    const proposal = await this._clientToNode.tranformRespectAccount(req);
+    await this._ctx.ornode.putProposal(proposal);
+
+    const resp = vote === true
+      ? await this._ctx.orec.vote(
+          proposal.id,
+          VoteType.Yes,
+          req.voteMemo ?? ""
+        )
+      : await this._ctx.orec.propose(proposal.id);
+
+    const receipt = await resp.wait();
+    if (receipt?.status === 1) {
+      return await this._nodeToClient.transformProp(proposal)
+    } else {
+      throw new TxFailed(resp, receipt);
+    }
   }
   // UC6
-  async burnRespect(
-    tokenId: TokenId,
-    reason: string,
-    metadata?: ProposalMetadata
-  ): Promise<Proposal> {
+  async burnRespect(req: BurnRespectRequest): Promise<Proposal> {
     throw new NotImplemented("burnRespect");
   }
   // UC7

@@ -80,6 +80,8 @@ export type MintType = z.infer<typeof zMintType>;
 export const zBreakoutMintType = z.literal(0);
 export type BreakoutMintType = z.infer<typeof zBreakoutMintType>;
 
+export const zUnspecifiedMintType = z.literal(1);
+
 export const zMeetingNum = z.coerce.number().gt(0);
 export type MeetingNum = z.infer<typeof zMeetingNum>;
 
@@ -111,8 +113,9 @@ export type PropType = z.infer<typeof zPropType>;
 export const zGroupNum = z.coerce.number().gt(0)
 export type GroupNum = z.infer<typeof zGroupNum>;
 
-
 export const zRankings = z.array(zEthAddress).min(3).max(6);
+
+export const zRankNum = z.number().lte(6).gt(0);
 
 export type CMintRespectGroupArgs = Parameters<Respect1155["mintRespectGroup"]>
 export type CMintRespectArgs = Parameters<Respect1155["mintRespect"]>;
@@ -170,6 +173,7 @@ const burnRespectVerify = zBurnRespectArgs.refine((val) => {
   ];
   return true;
 });
+export type BurnRespectArgs = z.infer<typeof zBurnRespectArgs>;
 
 export const zSignalArgs = z.object({
   signalType: zUint8, 

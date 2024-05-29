@@ -48,7 +48,8 @@ import {
   zMintType,
   zPropType,
   zRankings,
-  zTokenIdData
+  zTokenIdData,
+  zBigNumberishToBigint
 } from "../common.js";
 import { z, RefinementCtx } from "zod";
 import { unpackTokenId } from "respect-sc/utils/tokenId.js";
@@ -126,10 +127,11 @@ export const zMintArgsToRespectBreakout = zMintRespectGroupArgs.transform((val, 
       const tokenIdData = unpackTokenId(req.id);
       expect(tokenIdData.mintType).to.be.equal(0);
       expect(tokenIdData.owner).to.be.not.equal(ZeroAddress);
+      const periodNum = zBigNumberishToBigint.parse(tokenIdData.periodNumber); 
       if (meetingNum === undefined) {
-        meetingNum = zMeetingNum.parse(tokenIdData.periodNumber);
+        meetingNum = zMeetingNum.parse(periodNum + 1n);
       } else {
-        expect(tokenIdData.periodNumber).to.be.equal(meetingNum);
+        expect(periodNum + 1n).to.be.equal(BigInt(meetingNum));
       }
       rankings.push(tokenIdData.owner);
     }
@@ -198,7 +200,7 @@ export const zNProposalToRespectAccount = zNProposalFullInContext.transform(asyn
 
     const r: RespectAccount = {
       propType: zPropType.Enum.respectAccount,
-      meetingNum: tdata.periodNumber,
+      meetingNum: tdata.periodNumber + 1,
       mintType: tdata.mintType,
       account: tdata.owner,
       value: args.request.value,
