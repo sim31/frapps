@@ -28,13 +28,7 @@
   5. Level 2 receives 8 Respect;
   6. Level 1 receives 5 Respect;
 
-### 5. Parent Respect token
-
-1. Respect token deployed as the following contract on Optmimism Mainnet is "Parent Respect" of Optimism Fractal:
-  [0x53C9E3a44B08E7ECF3E8882996A500eb06c0C5CC](https://optimistic.etherscan.io/address/0x53c9e3a44b08e7ecf3e8882996a500eb06c0c5cc);
-2. Parent Respect token distribution will be used for [consensus process](#6-consensus-process) and [executive contract] of Optimism Fractal until a new [Respect distribution](#4-respect-distribution) is ready and its contract is sufficiently tested according to the will of community (at which point a new concept document should be passed);
-
-### 6. Consensus process
+### 5. Consensus process
 
 1. Every week, during Respect Game meeting, a poll is created for participants to register to take part in the consensus process of Optimism Fractal next week. This is “registration poll”. Participants can register throughout the whole week;
 2. Top 6 Parent Respect earners out of those who registered in last week’s “registration poll” constitute a "council" for the current week;
@@ -49,6 +43,17 @@
   5. Make changes to the current Respect distribution (burn existing or mint additional Respect);
 7. Optimism Fractal does not have any control or any other kind of power over any participating parties;
 
-### 7. Executive contract
+### 5. Parent Respect token
+
+1. Respect token deployed as the following contract on Optmimism Mainnet is "Parent Respect" of Optimism Fractal:
+  [0x53C9E3a44B08E7ECF3E8882996A500eb06c0C5CC](https://optimistic.etherscan.io/address/0x53c9e3a44b08e7ecf3e8882996a500eb06c0c5cc);
+
+### 6. Executive process
+
+1. Onchain Respect distribution of Optimism Fractal is managed by [Optimistic Respect-based executive contract](./OREC-CONCEPT.md), configured with the following parameters:
+  1. `voting_period` = 1 day;
+  2. `veto_period` = 3 days;
+  3. `prop_weight_threshold` = 256
+  4. `respect_contract` = [Parent Respect contract](#5-parent-respect-token);
 
 

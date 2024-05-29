@@ -6,36 +6,30 @@ It is optimistic because it trusts a minority of contributors who take the initi
 
 ## Definitions
 
-- "Proposal" - proposal to execute some transaction. Once proposal is passed this transaction can be executed;
+- *Proposal* - proposal to execute some transaction. Once proposal is passed this transaction can be executed;
+- *Disstrust vote* - a vote against an account instead of proposal, which signals that the issuer of this vote is automatically against anything that another account votes `YES` for;
 
 ## Variables
 
-- `voting_period` = 1 day;
-- `min_respect_threshold` = 256 Respect;
-- `blocking_period` = 6 days;
+- `voting_period` - first stage of proposal. Anyone can vote either `YES` or `NO` here;
+- `prop_weight_threshold` - minimum amount of Respect voting `YES` for proposal to be eligible for passing;
+- `veto_period` - second stage of proposal. Anyone can vote `NO` but no one can vote `YES`;
+- `respect_contract` - contract storing Respect balances;
 
 ## Mechanism
 
-1. To pass a proposal it has to go through 2 stages: first the “voting
-stage” and if it passes it, to the “blocking stage”;
-2. In the voting stage a poll is created for a proposal with at least
-the “Yes”, “No” and “Abstain” options. This is “voting poll” and it
-lasts for `voting_period`. Votes are weighted by Respect of
-the voter;
-3. If at the end of `voting_period` at least
-`min_respect_threshold` is voting for “Yes” and more than
-2/3rds of all Respect voting on this poll are for “Yes”, then proposal
-advances to the blocking stage;
-4. In the blocking stage a poll is created for the same proposal with
-only the “Veto” option. This is “blocking poll” and it lasts
-`blocking_period`. Votes are weighted by Respect of the
-voter;
-5. If at the end of `blocking_period` the total Respect
-weight of “Veto” votes on the “blocking poll” is at least half of the
-total weight of “Yes” votes in the “voting poll” then a proposal is
-rejected (but it can be resubmitted and go through the stages again).
-Otherwise, a proposal is passed;
-6. Passed proposal can be executed by anyone;
+1. Anyone can create a proposal to execute some transaction;
+2. For `voting_period` from proposal creation anyone can vote `YES` or `NO` on a proposal;
+3. After `voting_period` from proposal creation, anyone can vote `NO`, but no one can vote `YES` on a proposal. This lasts for `veto_period`;
+4. Every vote is weighted by the amount of Respect a voter has according to `respect_contract` at the time of the vote;
+5. After `voting_period + veto_period` from proposal creation, proposal is said to be passed if all of these conditions hold:
+   1. At least `prop_weight_threshold` of Respect is voting `YES`;
+   2. `yes_weight > 2 * no_weight`, where `yes_weight` is amount of Respect voting `YES` and `no_weight` is amount of Respect voting `NO`;
+6. Any account can issue *distrust vote* against another account;
+  1. If this happens then whenever distrusted account votes `YES`, the issuer of *distrust vote* is automatically counted as voting `NO` on the same proposal (without him having to take any additional action);
+  2. *Distrust vote* can be unregistered at any time, but it does not undo any automatic `NO` votes which have already happened;
+7. Passed proposal can be executed. Anyone can trigger execution;
+
 
 ### Rationale
 
@@ -43,5 +37,7 @@ The motivation behind this mechanism is to tolerate majority of participants bei
 
 There’s a usually a big category of participants who are not proactive in governance decisions but are aware and would be able to react in case of contentious proposals being passed. The reason to block a proposal could simply be the perspective that proposal needs more consideration. So proactive governance participants could simply ask passive participant to “Veto” with an argument that “we need more discussion around this”. So passive voter would not need to understand the proposal fully to “Veto”, they would simply need to get a sense of it’s importance. This way we can utilize “passive but aware” category of participants for security thus avoiding reliance on any (typically arbitrary) quorum requirements and allowing organization to move forward even in cases of low voting turnout.
 
-If we consider total turnout to be union of Respect voting in both stages then a one way to think about it, is that 2/3rds + 1 of turnout is able to pass a proposal (which means that 1/3rd of turnout is also able to block it). This is because 1/3rd is half of 2/3rds, so by requiring Veto votes to weight at least half of “Yes” votes we make it so that 1/3rd of active voters can block a proposal[1](about:blank#fn1).
+If we consider total turnout to be union of Respect voting in both stages then a one way to think about it, is that 2/3rds + 1 of turnout is able to pass a proposal, which means that 1/3rd of turnout is also able to block it.
 
+<!-- #### Distrust vote
+Without distrust vote any Respect holder which has at least `prop_weight_threshold` could flood the contract with proposals which  -->
