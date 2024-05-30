@@ -18,6 +18,21 @@ It is optimistic because it trusts a minority of contributors who take the initi
 
 ## Mechanism
 
+<!-- TODO:
+There's currently a problem with spam, where any respected member with more than 256 `prop_weight_threshold` could spam with many proposals and force honest members to waste a lot of gas vetoing each one. This could be solved by implementing the following changes:
+
+* Each account has voting power, initially equal to his current Respect balance;
+* Allow each vote to specify voting power to be used, which can be less than current Respect balance of account;
+* Each `YES` vote subtracts from voting power of account. Voting power is returned after proposal is rejected or executed (execution can fail);
+  * [ ] How will `NO` votes work with voting power?
+
+This prevents spam because each respect holders have limited voting power, and so they have limited amount of proposals they could create per unit of time.
+
+Plus this has other attractive features:
+* Allowing respect-holders to signal how strongly they feel about a proposal;
+* Incetivization to execute proposals (if your proposal is passed you only get your voting power back if someone executes it);
+* The actions you can do are limited by the amount of Respect you hold. As a big respect-holder, the more contentious proposals you're trying to pass the less proposals you will pass (or you will pass them slower). This makes sense because reputation you've earned in the past, while it should give you power it should be limited based on what you're trying to do now.  -->
+
 1. Anyone can create a proposal to execute some transaction;
 2. For `voting_period` from proposal creation anyone can vote `YES` or `NO` on a proposal;
 3. After `voting_period` from proposal creation, anyone can vote `NO`, but no one can vote `YES` on a proposal. This lasts for `veto_period`;
