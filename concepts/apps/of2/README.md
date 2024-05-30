@@ -34,6 +34,9 @@ Other componenets currently being worked on:
 * Easier to deal with cases where breakout room submissions need to be corrected;
 * [Other advantages of OREC](../../OREC.md#rationale);
 
+## How will Respect game result in Respect distribution
+Frontend will accept breakout room results as always, but then it will translate it to OREC proposal to distribute Respect for break-out room participants (according to their ranking). When the user submits, he will actually be submitting a vote on that OREC proposal. This way an old and familiar Respect game workflow will integrate seamlesly with the new and more powerful OREC mechanism.
+
 ## Upgrade path
 
 The idea is to deploy implementation on Optimism mainnet as a test version that can potentially become the new "official" version of Optimism Fractal, if Optimism Fractal consensus decides so. 
