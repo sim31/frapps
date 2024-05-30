@@ -21,12 +21,12 @@
 ### 4. Respect Distribution
 
 1. Respect should be distributed to participants of break-out groups which were able to reach consensus
-  1. Level 6 receives 55 Respect;
-  2. Level 5 receives 34 Respect;
-  3. Level 4 receives 21 Respect;
-  4. Level 3 receives 13 Respect;
-  5. Level 2 receives 8 Respect;
-  6. Level 1 receives 5 Respect;
+   1. Level 6 receives 55 Respect;
+   2. Level 5 receives 34 Respect;
+   3. Level 4 receives 21 Respect;
+   4. Level 3 receives 13 Respect;
+   5. Level 2 receives 8 Respect;
+   6. Level 1 receives 5 Respect;
 
 ### 5. Consensus process
 
@@ -36,11 +36,11 @@
 4. If fewer than 6 participants have registered, then council is smaller (consists only of those who registered);
 5. A proposal is said to be passed by Optimism Fractal if at least 2/3rds of council members signal approval for it;
 6. Proposals passed by the council can:
-  1. Signal opinion of Optimism Fractal community;
-  2. Make changes to the rules of Optimism Fractal (i.e.: rules expressed here);
-  3. Select software implementation of Optimism Fractal (i.e.: implementation of rules defined here - smart contract deployment, official frontends, etc);
-  4. Blacklist break-out group results (see 3.2.3);
-  5. Make changes to the current Respect distribution (burn existing or mint additional Respect);
+   1. Signal opinion of Optimism Fractal community;
+   2. Make changes to the rules of Optimism Fractal (i.e.: rules expressed here);
+   3. Select software implementation of Optimism Fractal (i.e.: implementation of rules defined here - smart contract deployment, official frontends, etc);
+   4. Blacklist break-out group results (see 3.2.3);
+   5. Make changes to the current Respect distribution (burn existing or mint additional Respect);
 7. Optimism Fractal does not have any control or any other kind of power over any participating parties;
 
 ### 5. Parent Respect token
@@ -51,9 +51,9 @@
 ### 6. Executive process
 
 1. Onchain Respect distribution of Optimism Fractal is managed by [Optimistic Respect-based executive contract](./OREC-CONCEPT.md), configured with the following parameters:
-  1. `voting_period` = 1 day;
-  2. `veto_period` = 3 days;
-  3. `prop_weight_threshold` = 256
-  4. `respect_contract` = [Parent Respect contract](#5-parent-respect-token);
+   1. `voting_period` = 1 day;
+   2. `veto_period` = 3 days;
+   3. `prop_weight_threshold` = 256
+   4. `respect_contract` = [Parent Respect contract](#5-parent-respect-token);
 
 
