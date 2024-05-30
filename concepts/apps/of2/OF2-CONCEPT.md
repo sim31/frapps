@@ -50,7 +50,7 @@
 
 ### 6. Executive process
 
-1. Onchain Respect distribution of Optimism Fractal is managed by [Optimistic Respect-based executive contract](./OREC-CONCEPT.md), configured with the following parameters:
+1. Onchain Respect distribution of Optimism Fractal is managed by [Optimistic Respect-based executive contract](../../OREC.md), configured with the following parameters:
    1. `voting_period` = 1 day;
    2. `veto_period` = 3 days;
    3. `prop_weight_threshold` = 256
