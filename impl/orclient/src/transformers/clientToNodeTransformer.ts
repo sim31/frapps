@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  BurnRespectRequest,
   RespectAccountRequest,
   RespectBreakoutRequest,
   zBreakoutResult,
@@ -7,7 +8,7 @@ import {
   zRespectAccountRequest,
   zRespectBreakoutRequest,
 } from "../orclientTypes.js";
-import { BurnRespectAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, zRespectAccount, zRespectBreakout } from "../ornodeTypes.js";
+import { BurnRespect, BurnRespectAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, zBurnRespect, zRespectAccount, zRespectBreakout } from "../ornodeTypes.js";
 import { ORContext } from "../orContext.js";
 import { BurnRespectArgs, MintRequest, MintRespectArgs, MintRespectGroupArgs, zBigNumberish, zBigNumberishToBigint, zBreakoutMintType, zGroupNum, zMintRespectArgs, zMintRespectGroupArgs, zPropType, zRankNum, zUnspecifiedMintType } from "../common.js";
 import { expect } from "chai";
@@ -51,6 +52,9 @@ export const zRankNumToValue = zRankNum.transform((rankNum, ctx) => {
     addIssue(ctx, `${err}`);
   }
 }).pipe(zBigNumberish.gt(0n));
+
+// TODO: use ipfs cids instead?
+//  * propIds can use solidityPacked for efficiency but it makes sense to adapt attachments more for off-chain?
 
 export const zCRespectBreakoutToMintArgs = zRespBreakoutReqCtx.transform(async (val, ctx) => {
   try {
@@ -107,6 +111,20 @@ export function idOfRespectAccountAttach(attachment: RespectAccountAttachment) {
   return solidityPackedKeccak256(
     [ "string", "string", "string", "string", "string", "string" ],
     [ a.propType, a.propTitle, a.propDescription, a.salt, a.mintReason, a.mintTitle ]
+  );
+}
+
+export function idOfBurnRespectAttach(attachment: BurnRespectAttachment) {
+  const a: Required<BurnRespectAttachment> = {
+    ...attachment,
+    propTitle: attachment.propTitle ?? "",
+    propDescription: attachment.propDescription ?? "",
+    salt: attachment.salt ?? ""
+  };
+
+  return solidityPackedKeccak256(
+    [ "string", "string", "string", "string", "string" ],
+    [ a.propType, a.propTitle, a.propDescription, a.salt, a.burnReason ]
   );
 }
 
@@ -218,18 +236,17 @@ export const zCBurnRespReqToProposal = zBurnRespectReqCtx.transform(async (val, 
 
     const attachment: BurnRespectAttachment = {
       propType: zPropType.Enum.burnRespect,
-      reason: 
-      mintTitle: val.req.title,
+      burnReason: val.req.reason, 
       propTitle: val.req.metadata?.propTitle,
       propDescription: val.req.metadata?.propDescription
     };
 
-    const memo = idOfRespectAccountAttach(attachment);
+    const memo = idOfBurnRespectAttach(attachment);
 
     const content: PropContent = { addr, cdata, memo };
     const id = propId(content);
 
-    const r: RespectAccount = {
+    const r: BurnRespect = {
       id,
       content,
       attachment
@@ -238,7 +255,7 @@ export const zCBurnRespReqToProposal = zBurnRespectReqCtx.transform(async (val, 
   } catch (err) {
     addIssue(ctx, `Error: ${err}`);
   }
-}).pipe(zRespectAccount);
+}).pipe(zBurnRespect);
 
 export class ClientToNodeTransformer {
   private _cctx: CPropContext
@@ -255,5 +272,10 @@ export class ClientToNodeTransformer {
   async tranformRespectAccount(req: RespectAccountRequest): Promise<Proposal> {
     const c = { ctx: this._cctx, req };
     return await zCRespAccountReqToProposal.parseAsync(c);
+  }
+
+  async transformBurnRespect(req: BurnRespectRequest): Promise<Proposal> {
+    const c = { ctx: this._cctx, req };
+    return await zCBurnRespReqToProposal.parseAsync(c);
   }
 }

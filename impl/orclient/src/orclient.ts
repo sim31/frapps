@@ -1,9 +1,10 @@
 import { Signer } from "ethers";
 import { EthAddress, PropId, ProposalState, TokenId, VoteType } from "./common.js";
-import { BreakoutResult, BurnRespectRequest, NotImplemented, Proposal, ProposalMetadata, RespectAccountRequest, RespectBreakoutRequest, TxFailed } from "./orclientTypes.js";
+import { BreakoutResult, BurnRespectRequest, NotImplemented, Proposal, ProposalMetadata, RespectAccountRequest, RespectBreakoutRequest, TxFailed, VoteRequest, VoteWithProp, zVoteWithProp } from "./orclientTypes.js";
 import { ORContext } from "./orContext.js";
 import { NodeToClientTransformer } from "./transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "./transformers/clientToNodeTransformer.js";
+import { Proposal as NProp } from "./ornodeTypes.js";
 
 export function isPropCreated(propState: ProposalState) {
   return propState.createTime > 0n;
@@ -54,9 +55,9 @@ export default class ORClient {
   }
 
   // UC2
-  async vote(propId: PropId, vote: VoteType, memo?: string) {
+  async vote(req: VoteRequest) {
     const orec = this._ctx.orec;
-    await orec.vote(propId, vote, memo ? memo : "");
+    await orec.vote(req.propId, req.vote, req.memo ?? "");
   }
   // UC3
   async execute(propId: PropId) {
@@ -68,48 +69,29 @@ export default class ORClient {
   }
 
   // UC{1,4}
-  async submitBreakoutResult(request: RespectBreakoutRequest): Promise<Proposal> {
+  async submitBreakoutResult(
+    request: RespectBreakoutRequest,
+    vote: VoteWithProp = { vote: VoteType.Yes }
+  ): Promise<Proposal> {
     const proposal = await this._clientToNode.transformRespectBreakout(request);
-    await this._ctx.ornode.putProposal(proposal);
-
-    const resp = await this._ctx.orec.vote(
-      proposal.id,
-      VoteType.Yes,
-      request.voteMemo ?? ""
-    );
-    const receipt = await resp.wait();
-    if (receipt?.status === 1) {
-      return await this._nodeToClient.transformProp(proposal)
-    } else {
-      throw new TxFailed(resp, receipt);
-    }
+    return await this._submitProposal(proposal, vote);
   }
   // UC5
   async proposeRespectTo(
     req: RespectAccountRequest,
-    vote: boolean = true
+    vote: VoteWithProp = { vote: VoteType.Yes }
   ): Promise<Proposal> {
     const proposal = await this._clientToNode.tranformRespectAccount(req);
-    await this._ctx.ornode.putProposal(proposal);
-
-    const resp = vote === true
-      ? await this._ctx.orec.vote(
-          proposal.id,
-          VoteType.Yes,
-          req.voteMemo ?? ""
-        )
-      : await this._ctx.orec.propose(proposal.id);
-
-    const receipt = await resp.wait();
-    if (receipt?.status === 1) {
-      return await this._nodeToClient.transformProp(proposal)
-    } else {
-      throw new TxFailed(resp, receipt);
-    }
+    return await this._submitProposal(proposal, vote);
   }
+
   // UC6
-  async burnRespect(req: BurnRespectRequest): Promise<Proposal> {
-    throw new NotImplemented("burnRespect");
+  async burnRespect(
+    req: BurnRespectRequest,
+    vote: VoteWithProp = { vote: VoteType.Yes }
+  ): Promise<Proposal> {
+    const proposal = await this._clientToNode.transformBurnRespect(req);
+    return await this._submitProposal(proposal, vote);
   }
   // UC7
   async proposeTick(data?: string, metadata?: ProposalMetadata): Promise<Proposal> {
@@ -127,6 +109,31 @@ export default class ORClient {
   }
   async getLastMeetingNum(): Promise<number> {
     return 0;
+  }
+
+  private async _submitProposal(proposal: NProp, vote?: VoteWithProp): Promise<Proposal> {
+    await this._submitPropToOrnode(proposal);
+    await this._submitPropToChain(proposal, vote);
+    return await this._nodeToClient.transformProp(proposal);
+  }
+
+  private async _submitPropToOrnode(proposal: NProp) {
+    await this._ctx.ornode.putProposal(proposal);
+  }
+
+  private async _submitPropToChain(proposal: NProp, vote?: VoteWithProp) {
+    const resp = vote !== undefined && vote.vote !== VoteType.None
+      ? await this._ctx.orec.vote(
+          proposal.id,
+          vote.vote,
+          vote.memo ?? ""
+        )
+      : await this._ctx.orec.propose(proposal.id);
+
+    const receipt = await resp.wait();
+    if (receipt?.status !== 1) {
+      throw new TxFailed(resp, receipt);
+    }
   }
 
   // TODO: function to list respect NTTs

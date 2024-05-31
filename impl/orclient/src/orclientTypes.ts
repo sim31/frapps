@@ -29,6 +29,7 @@ import {
   zOnchainProp,
   zUint8,
   zProposedMsg,
+  zVoteType,
 } from "./common.js";
 import { IORNode, zPropContent } from "./ornodeTypes.js";
 import { Orec } from "orec/typechain-types/contracts/Orec.js";
@@ -56,6 +57,21 @@ export const zDecodedPropBase = z.object({
 })
 export type DecodedPropBase = z.infer<typeof zDecodedPropBase>;
 
+export const zVoteRequest = z.object({
+  propId: zPropId,
+  vote: zVoteType,
+  memo: z.string().optional()
+});
+export type VoteRequest = z.infer<typeof zVoteRequest>;
+
+export const zVoteWithProp = zVoteRequest
+  .omit({ propId: true })
+  .extend({ vote: zVoteType.default(VoteType.Yes) })
+export type VoteWithProp = z.infer<typeof zVoteWithProp>;
+
+export const zVoteWithPropRequest = zVoteWithProp.partial({ vote: true });
+export type VoteWithPropRequest = z.infer<typeof zVoteWithPropRequest>;
+
 export const zBreakoutResult = z.object({
   groupNum: zGroupNum,
   rankings: zRankings
@@ -64,7 +80,6 @@ export type BreakoutResult = z.infer<typeof zBreakoutResult>;
 
 export const zRespectBreakoutRequest = zBreakoutResult.extend({
   meetingNum: zMeetingNum.optional(),
-  voteMemo: z.string().optional()
 })
 export type RespectBreakoutRequest = z.infer<typeof zRespectBreakoutRequest>;
 
@@ -89,9 +104,6 @@ export type RespectAccount = z.infer<typeof zRespectAccount>;
 export const zRespectAccountRequest = zRespectAccount
   .omit({ propType: true })
   .partial({ mintType: true, meetingNum: true, metadata: true })
-  .extend({
-    voteMemo: z.string().optional()
-  });
 export type RespectAccountRequest = z.infer<typeof zRespectAccountRequest>;
 
 export const zBurnRespect = zDecodedPropBase.extend({
@@ -104,7 +116,6 @@ export type BurnRespect = z.infer<typeof zBurnRespect>;
 export const zBurnRespectRequest = zBurnRespect
   .omit({ propType: true })
   .partial({ metadata: true })
-  .extend({ voteMemo: z.string().optional() })
 export type BurnRespectRequest = z.infer<typeof zBurnRespectRequest>;
 
 export const zCustomSignal = zDecodedPropBase.extend({

@@ -54,7 +54,7 @@ export type RespectAccountAttachment = z.infer<typeof zRespectAccountAttachment>
 
 export const zBurnRespectAttachment = zPropAttachmentBase.extend({
   propType: z.literal(zPropType.Enum.burnRespect),
-  burnReason: z.literal(zPropType.Enum.burnRespect)
+  burnReason: z.string()
 });
 export type BurnRespectAttachment = z.infer<typeof zBurnRespectAttachment>;
 
