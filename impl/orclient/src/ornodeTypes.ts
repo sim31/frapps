@@ -19,15 +19,6 @@ import {
 import { z } from "zod";
 import { Orec } from "orec/typechain-types/index.js";
 
-export enum KnownSignalTypes { 
-  Tick = 0,
-};
-export const zKnownSignalTypes = z.nativeEnum(KnownSignalTypes);
-
-export const zSignalType = zUint8;
-export const zCustomSignalType = zSignalType.gt(0);
-export const zTickSignalType = z.literal(Number(zKnownSignalTypes.enum.Tick));
-
 export const zPropContent = zProposedMsg;
 export type PropContent = z.infer<typeof zPropContent>;
 

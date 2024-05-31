@@ -31,8 +31,6 @@ import {
   zPropAttachmentBase,
   zCustomCallAttachment,
   zTickAttachment,
-  zCustomSignalType,
-  zTickSignalType
 } from "../ornodeTypes.js";
 import {
   EthAddress,
@@ -49,7 +47,9 @@ import {
   zPropType,
   zRankings,
   zTokenIdData,
-  zBigNumberishToBigint
+  zBigNumberishToBigint,
+  zCustomSignalType,
+  zTickSignalType
 } from "../common.js";
 import { z, RefinementCtx } from "zod";
 import { unpackTokenId } from "respect-sc/utils/tokenId.js";
@@ -321,6 +321,8 @@ export const zNProposalToCustomCall = zNProposalFullInContext.transform(async (v
     const attachment = zCustomCallAttachment.parse(val.prop.attachment);
 
     const r: CustomCall = {
+      cdata: zBytesLikeToBytes.parse(val.prop.content.cdata),
+      address: val.prop.content.addr,
       propType: zPropType.Enum.customCall,
       metadata: zNAttachmentToMetadata.parse(attachment)
     }

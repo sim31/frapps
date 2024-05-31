@@ -117,6 +117,16 @@ export const zRankings = z.array(zEthAddress).min(3).max(6);
 
 export const zRankNum = z.number().lte(6).gt(0);
 
+export enum KnownSignalTypes { 
+  Tick = 0,
+};
+export const zKnownSignalTypes = z.nativeEnum(KnownSignalTypes);
+
+export const zSignalType = zUint8;
+export const zCustomSignalType = zSignalType.gt(0);
+export const zTickSignalType = z.literal(Number(zKnownSignalTypes.enum.Tick));
+
+
 export type CMintRespectGroupArgs = Parameters<Respect1155["mintRespectGroup"]>
 export type CMintRespectArgs = Parameters<Respect1155["mintRespect"]>;
 export type CBurnRespectArgs = Parameters<Respect1155['burnRespect']>;

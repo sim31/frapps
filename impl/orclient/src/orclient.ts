@@ -1,6 +1,6 @@
 import { Signer } from "ethers";
 import { EthAddress, PropId, ProposalState, TokenId, VoteType } from "./common.js";
-import { BreakoutResult, BurnRespectRequest, NotImplemented, Proposal, ProposalMetadata, RespectAccountRequest, RespectBreakoutRequest, TxFailed, VoteRequest, VoteWithProp, zVoteWithProp } from "./orclientTypes.js";
+import { BreakoutResult, BurnRespectRequest, CustomCallRequest, CustomSignalRequest, NotImplemented, Proposal, ProposalMetadata, RespectAccountRequest, RespectBreakoutRequest, TickRequest, TxFailed, VoteRequest, VoteWithProp, zVoteWithProp } from "./orclientTypes.js";
 import { ORContext } from "./orContext.js";
 import { NodeToClientTransformer } from "./transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "./transformers/clientToNodeTransformer.js";
@@ -93,22 +93,40 @@ export default class ORClient {
     const proposal = await this._clientToNode.transformBurnRespect(req);
     return await this._submitProposal(proposal, vote);
   }
-  // UC7
-  async proposeTick(data?: string, metadata?: ProposalMetadata): Promise<Proposal> {
-    throw new NotImplemented("proposeTick");
+
+  async proposeCustomSignal(
+    req: CustomSignalRequest,
+    vote: VoteWithProp = { vote: VoteType.Yes }
+  ): Promise<Proposal> {
+    const proposal = await this._clientToNode.transformCustomSignal(req);
+    return await this._submitProposal(proposal, vote);
   }
-  async proposeCustomSignal(data: string, metadata?: ProposalMetadata): Promise<Proposal> {
-    throw new NotImplemented("proposeCustomSignal");
+
+  // UC7
+  async proposeTick(
+    req: TickRequest,
+    vote: VoteWithProp = { vote: VoteType.Yes }
+  ): Promise<Proposal> {
+    const proposal = await this._clientToNode.transformTick(req);
+    return await this._submitProposal(proposal, vote);
+  }
+
+  async proposeCustomCall(
+    req: CustomCallRequest,
+    vote: VoteWithProp = { vote: VoteType.Yes }
+  ): Promise<Proposal> {
+    const proposal = await this._clientToNode.transformCustomCall(req);
+    return await this._submitProposal(proposal, vote);
   }
 
   async getPeriodNum(): Promise<number> {
-    return 0;
+    return await this._ctx.ornode.getPeriodNum();
   }
   async getNextMeetingNum(): Promise<number> {
-    return 0;
+    return await this.getPeriodNum() + 1;
   }
   async getLastMeetingNum(): Promise<number> {
-    return 0;
+    return await this.getPeriodNum();
   }
 
   private async _submitProposal(proposal: NProp, vote?: VoteWithProp): Promise<Proposal> {

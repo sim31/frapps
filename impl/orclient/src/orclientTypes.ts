@@ -30,6 +30,7 @@ import {
   zUint8,
   zProposedMsg,
   zVoteType,
+  zCustomSignalType,
 } from "./common.js";
 import { IORNode, zPropContent } from "./ornodeTypes.js";
 import { Orec } from "orec/typechain-types/contracts/Orec.js";
@@ -120,11 +121,16 @@ export type BurnRespectRequest = z.infer<typeof zBurnRespectRequest>;
 
 export const zCustomSignal = zDecodedPropBase.extend({
   propType: z.literal(zPropType.Enum.customSignal),
-  signalType: zUint8,
+  signalType: zCustomSignalType,
   data: zBytes,
   link: z.string().optional()
 });
 export type CustomSignal = z.infer<typeof zCustomSignal>;
+
+export const zCustomSignalRequest = zCustomSignal
+  .omit({ propType: true })
+  .partial({ metadata: true });
+export type CustomSignalRequest = z.infer<typeof zCustomSignalRequest>;
 
 export const zTick = zDecodedPropBase.extend({
   propType: z.literal(zPropType.Enum.tick),
@@ -133,10 +139,20 @@ export const zTick = zDecodedPropBase.extend({
 })
 export type Tick = z.infer<typeof zTick>;
 
+export const zTickRequest = zTick
+  .omit({ propType: true })
+  .partial({ metadata: true });
+export type TickRequest = z.infer<typeof zTickRequest>;
+
 export const zCustomCall = zDecodedPropBase.extend({
-  propType: z.literal(zPropType.Enum.customCall)
+  propType: z.literal(zPropType.Enum.customCall),
+  cdata: zBytes,
+  address: zEthAddress
 });
 export type CustomCall = z.infer<typeof zCustomCall>;
+
+export const zCustomCallRequest = zCustomCall.omit({ propType: true });
+export type CustomCallRequest = z.infer<typeof zCustomCallRequest>;
 
 export const zDecodedProposal = z.union([
   zCustomCall,
