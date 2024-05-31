@@ -1,6 +1,6 @@
 import { Signer } from "ethers";
 import { EthAddress, PropId, ProposalState, TokenId, VoteType } from "./common.js";
-import { BreakoutResult, BurnRespectRequest, CustomCallRequest, CustomSignalRequest, NotImplemented, Proposal, ProposalMetadata, RespectAccountRequest, RespectBreakoutRequest, TickRequest, TxFailed, VoteRequest, VoteWithProp, zVoteWithProp } from "./orclientTypes.js";
+import { BreakoutResult, BurnRespectRequest, CustomCallRequest, CustomSignalRequest, NotImplemented, Proposal, ProposalMetadata, PutProposalFailure, RespectAccountRequest, RespectBreakoutRequest, TickRequest, TxFailed, VoteRequest, VoteWithProp, zVoteWithProp } from "./orclientTypes.js";
 import { ORContext } from "./orContext.js";
 import { NodeToClientTransformer } from "./transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "./transformers/clientToNodeTransformer.js";
@@ -10,6 +10,15 @@ export function isPropCreated(propState: ProposalState) {
   return propState.createTime > 0n;
 }
 
+/**
+ * @notice When creating proposals this class first creates them onchain then tries to push them to ORNode (because ORNode won't accept them until they are submitted onchain).
+ * This creates a risk that proposal is submitted onchain but fails to be submitted to ORNode.
+ * For now the way we deal with it is that simply throw an exception with a ornode proposal we were trying to push.
+ * The user of this class can then try doing {orclient}.context.ornode.putProposal(prop) again.
+ * Worst case scenario is that some metadata about a proposal won't be visible in the frontend
+ * because the creator of proposal failed to submit to ornode. That's not the worst thing that could happen - other users simply shouldn't vote for proposal if they lack details about it.
+ * 
+ */
 export default class ORClient {
   private _ctx: ORContext;
   private _nodeToClient: NodeToClientTransformer;
@@ -130,13 +139,18 @@ export default class ORClient {
   }
 
   private async _submitProposal(proposal: NProp, vote?: VoteWithProp): Promise<Proposal> {
-    await this._submitPropToOrnode(proposal);
     await this._submitPropToChain(proposal, vote);
+    await this._submitPropToOrnode(proposal);
+    // TODO: Verify that ornode stored the proposal
     return await this._nodeToClient.transformProp(proposal);
   }
 
   private async _submitPropToOrnode(proposal: NProp) {
-    await this._ctx.ornode.putProposal(proposal);
+    try {
+      await this._ctx.ornode.putProposal(proposal);
+    } catch(err) {
+      throw new PutProposalFailure(proposal, err);
+    }
   }
 
   private async _submitPropToChain(proposal: NProp, vote?: VoteWithProp) {

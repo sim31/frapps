@@ -51,6 +51,15 @@ export const zEthAddress = z.string().refine((val) => {
 export type EthAddress = z.infer<typeof zEthAddress>;
 export type Account = EthAddress
 
+export function isEthAddr(val: any): val is EthAddress {
+  try {
+    zEthAddress.parse(val);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
 export enum VoteType {
   None = 0,
   Yes = 1,

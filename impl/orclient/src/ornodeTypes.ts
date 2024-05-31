@@ -127,3 +127,10 @@ export interface IORNode {
   getPeriodNum: () => Promise<number>;
 
 }
+
+export class ProposalNotFound extends Error {
+  constructor(propId: PropId) {
+    const msg = `Proposal with id ${propId} does not exist`;
+    super(msg);
+  }
+}

@@ -32,7 +32,7 @@ import {
   zVoteType,
   zCustomSignalType,
 } from "./common.js";
-import { IORNode, zPropContent } from "./ornodeTypes.js";
+import { IORNode, zPropContent, Proposal as NProp } from "./ornodeTypes.js";
 import { Orec } from "orec/typechain-types/contracts/Orec.js";
 import Rf from "respect-sc/typechain-types/factories/contracts/Respect1155__factory.js";
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
@@ -192,9 +192,22 @@ export class ProposalFailed extends Error {
 
 export class TxFailed extends Error {
   constructor(response: ContractTransactionResponse, receipt: TransactionReceipt | null) {
-    const msg = `Transaction failed. Response: ${response}. Receipt: ${receipt}`;
+    const msg = `Transaction failed. Response: ${JSON.stringify(response)}. Receipt: ${receipt}`;
     super(msg);
+    this.name = 'TxFailed';
   }
+}
+
+/**
+ * Thrown if orclient failed to push proposal to ornode
+ */
+export class PutProposalFailure extends Error {
+  constructor(nprop: NProp, cause: any, msg?: string) {
+    const m = `Failed submitting proposal to ornode. Proposal: ${JSON.stringify(nprop)}. Cause: ${cause}. msg: ${msg}`;
+    super(m);
+    this.name = 'PutProposalFailure';
+  }
+
 }
 
 export type ProposalState = Awaited<ReturnType<Orec["proposals"]>>
