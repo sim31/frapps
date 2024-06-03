@@ -4,7 +4,7 @@ import { BreakoutResult, BurnRespectRequest, CustomCallRequest, CustomSignalRequ
 import { ORContext } from "./orContext.js";
 import { NodeToClientTransformer } from "./transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "./transformers/clientToNodeTransformer.js";
-import { Proposal as NProp } from "./ornodeTypes.js";
+import { ProposalFull as NProp } from "./ornodeTypes.js";
 
 export function isPropCreated(propState: ProposalState) {
   return propState.createTime > 0n;

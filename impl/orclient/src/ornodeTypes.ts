@@ -88,8 +88,9 @@ export type ZProposalType =
     typeof zProposalBaseFull | typeof zRespectBreakout
     | typeof zRespectAccount | typeof zBurnRespect
     | typeof zCustomSignal | typeof zCustomCall
-    | typeof zTick | typeof zProposalFull
+    | typeof zTick | typeof zProposalFull;
 
+const propIdErr = { message: "proposal content does not match its id" };  
 function attachPropIdMatchesContent<T extends ZProposalType>(zType: T) {
   return zType.refine(propIdMatchesContent, { message: "proposal content does not match its id"});
 }
@@ -99,10 +100,11 @@ function propMemoMatchesAttachment(prop: ProposalBaseFull) {
   return memo === attachmentId(prop.attachment);
 }
 
+const memoErr = { message: "proposal memo does not match its attachment" };
 function attachPropMemoMatchesAttachment<
   T extends ZProposalType | ReturnType<typeof attachPropIdMatchesContent>
   >(zType: T) {
-  return zType.refine(propMemoMatchesAttachment, { message: "proposal memo does not match its attachment"});
+  return zType.refine(propMemoMatchesAttachment, memoErr);
 }
 
 function attachPropRefinements<T extends ZProposalType>(zType: T) {
@@ -126,42 +128,60 @@ export const zRespectBreakout = zProposalBaseFull.extend({
 });
 export type RespectBreakout = z.infer<typeof zRespectBreakout>;
 
-export const zRespectBreakoutValid = attachPropRefinements(zRespectBreakout);
+export const zRespectBreakoutValid = zRespectBreakout
+  .refine(propIdMatchesContent, propIdErr).refine(propMemoMatchesAttachment, memoErr)
+  .brand<"respectBreakoutValid">();
+export type RespectBreakoutValid = z.infer<typeof zRespectBreakoutValid>;
 
 export const zRespectAccount = zProposalBaseFull.extend({
   attachment: zRespectAccountAttachment
 })
 export type RespectAccount = z.infer<typeof zRespectAccount>;
 
-export const zRespectAccountValid = attachPropRefinements(zRespectAccount);
+export const zRespectAccountValid = zRespectAccount
+  .refine(propIdMatchesContent, propIdErr).refine(propMemoMatchesAttachment, memoErr)
+  .brand<"RespectAccountValid">();
+export type RespectAccountValid = z.infer<typeof zRespectAccountValid>;
 
 export const zBurnRespect = zProposalBaseFull.extend({
   attachment: zBurnRespectAttachment
 });
 export type BurnRespect = z.infer<typeof zBurnRespect>;
 
-export const zBurnRespectValid = attachPropRefinements(zBurnRespect);
+export const zBurnRespectValid = zBurnRespect
+  .refine(propIdMatchesContent, propIdErr).refine(propMemoMatchesAttachment, memoErr)
+  .brand<"zBurnRespectValid">();
+export type BurnRespectValid = z.infer<typeof zBurnRespectValid>;
 
 export const zCustomSignal = zProposalBaseFull.extend({
   attachment: zCustomSignalAttachment
 });
 export type CustomSignal = z.infer<typeof zCustomSignal>;
 
-export const zCustomSignalValid = attachPropRefinements(zCustomSignal);
+export const zCustomSignalValid = zCustomSignal
+  .refine(propIdMatchesContent, propIdErr).refine(propMemoMatchesAttachment, memoErr)
+  .brand<"CustomSignalValid">();
+export type CustomSignalValid = z.infer<typeof zCustomSignalValid>;
 
 export const zCustomCall = zProposalBaseFull.extend({
   attachment: zCustomCallAttachment
 });
 export type CustomCall = z.infer<typeof zCustomCall>;
 
-export const zCustomCallValid = attachPropRefinements(zCustomCall);
+export const zCustomCallValid = zCustomCall
+  .refine(propIdMatchesContent, propIdErr).refine(propMemoMatchesAttachment, memoErr)
+  .brand<"CustomCallValid">();
+export type CustomCallValid = z.infer<typeof zCustomCallValid>;
 
 export const zTick = zProposalBaseFull.extend({
   attachment: zTickAttachment
 });
 export type Tick = z.infer<typeof zTick>;
 
-export const zTickValid = attachPropRefinements(zTick);
+export const zTickValid = zTick
+  .refine(propIdMatchesContent, propIdErr).refine(propMemoMatchesAttachment, memoErr)
+  .brand<"TickValid">();
+export type TickValid = z.infer<typeof zTickValid>;
 
 export const zProposal = z.union([
   zProposalBase,
@@ -184,19 +204,22 @@ export const zProposalFull = z.union([
   zTick,
   zCustomCall
 ]);
-export type ProposalFull = z.infer<typeof zProposal>;
+export type ProposalFull = z.infer<typeof zProposalFull>;
 
-export const zProposalValid = attachPropRefinements(zProposalFull);
+export const zProposalValid = attachPropRefinements(zProposalFull).brand<"ProposalValid">();
+export type ProposalValid = z.infer<typeof zProposalValid>;
+
+export const zORNodePropStatus = z.enum(["ProposalExists", "ProposalCreated", "ProposalStored"]);
+export type ORNodePropStatus = z.infer<typeof zORNodePropStatus>;
 
 export interface IORNode {
-
   /**
    * Upload a content of a proposal, which is already created onchain.
    * 
    * ORNode checks if proposal with same id was created onchain, otherwise it throws ProposalNotCreated.
    * 
    */
-  putProposal: (proposal: ProposalFull) => Promise<void>;
+  putProposal: (proposal: ProposalFull) => Promise<ORNodePropStatus>;
   /**
    * Should return only proposals which have been submitted onchain
    */
@@ -219,6 +242,14 @@ export class ProposalNotCreated extends Error {
     const msg = `Proposal with id ${proposal.id} has not been created onchain yet. Proposal: ${JSON.stringify(proposal)}`;
     super(msg);
   }
+}
+
+export class ProposalInvalid extends Error {
+  constructor(proposal: Proposal, cause: any) {
+    const msg = `Proposal invalid. Proposal: ${JSON.stringify(proposal)}`;
+    super(msg);
+    this.cause = cause;
+  } 
 }
 
 export function idOfRespectBreakoutAttach(attachment: RespectBreakoutAttachment) {
@@ -310,6 +341,25 @@ export function attachmentId(attachment: PropAttachment) {
       const exhaustiveCheck: never = attachment;
       throw new Error('exhaustive check failed');
   }
+}
 
+export function propContentEq(c1: PropContent, c2: PropContent): boolean {
+  if (c1.addr !== c2.addr) {
+    return false;
+  }
+  const cd1 = zBytesLikeToBytes.parse(c1.cdata);
+  const cd2 = zBytesLikeToBytes.parse(c2.cdata);
+  if (cd1 !== cd2) {
+    return false;
+  }
+  const m1 = zBytesLikeToBytes.parse(c1.memo);
+  const m2 = zBytesLikeToBytes.parse(c2.memo);
+  return m1 === m2;
+}
+
+export function propValidlEq(p1: ProposalValid, p2: ProposalValid): boolean {
+  // We know that proposals are valid. That means that memos contain hashes of attachments.
+  // So if p1.content === p2.content, then attachments are equal too.
+  return propContentEq(p1.content, p2.content);
 }
 

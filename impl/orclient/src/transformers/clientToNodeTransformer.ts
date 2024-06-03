@@ -14,7 +14,7 @@ import {
   zRespectBreakoutRequest,
   zTickRequest,
 } from "../orclientTypes.js";
-import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, idOfBurnRespectAttach, idOfCustomCallAttach, idOfCustomSignalAttach, idOfRespectAccountAttach, idOfRespectBreakoutAttach, zBurnRespect, zBurnRespectValid, zCustomCall, zCustomCallValid, zCustomSignal, zCustomSignalValid, zRespectAccount, zRespectAccountValid, zRespectBreakout, zRespectBreakoutValid, zTick, zTickValid } from "../ornodeTypes.js";
+import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, TickValid, idOfBurnRespectAttach, idOfCustomCallAttach, idOfCustomSignalAttach, idOfRespectAccountAttach, idOfRespectBreakoutAttach, zBurnRespect, zBurnRespectValid, zCustomCall, zCustomCallValid, zCustomSignal, zCustomSignalValid, zRespectAccount, zRespectAccountValid, zRespectBreakout, zRespectBreakoutValid, zTick, zTickValid } from "../ornodeTypes.js";
 import { ORContext } from "../orContext.js";
 import { BurnRespectArgs, CustomSignalArgs, KnownSignalTypes, MintRequest, MintRespectArgs, MintRespectGroupArgs, zBigNumberish, zBigNumberishToBigint, zBreakoutMintType, zGroupNum, zMintRespectArgs, zMintRespectGroupArgs, zPropType, zRankNum, zTickSignalType, zUnspecifiedMintType } from "../common.js";
 import { expect } from "chai";
@@ -344,7 +344,7 @@ export class ClientToNodeTransformer {
     return await zCCustomSignalReqToProposal.parseAsync(c);
   }
 
-  async transformTick(req: TickRequest): Promise<Tick> {
+  async transformTick(req: TickRequest): Promise<TickValid> {
     const c = { ctx: this._cctx, req };
     return await zCTickReqToProposal.parseAsync(c);
   }

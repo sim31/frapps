@@ -1,6 +1,6 @@
 import { Orec, Orec__factory } from "orec/typechain-types/index.js";
-import { EthAddress, PropId, isEthAddr, zEthAddress, zMintRespectGroupArgs } from "./common.js";
-import { IORNode, Proposal, ProposalFull, ProposalNotCreated, ProposalNotFound, zProposal } from "./ornodeTypes.js";
+import { EthAddress, PropId, isEthAddr, zBytesLikeToBytes, zEthAddress, zMintRespectGroupArgs } from "./common.js";
+import { IORNode, ORNodePropStatus, Proposal, ProposalFull, ProposalInvalid, ProposalNotCreated, ProposalNotFound, ProposalValid, zORNodePropStatus, zProposal, zProposalValid } from "./ornodeTypes.js";
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
 import { z } from "zod";
 import { ORContext, Config as ORContextConfig } from "./orContext.js";
@@ -60,19 +60,28 @@ export default class ORNodeMemImpl implements IORNode {
     return new ORNodeMemImpl(ctx, cfg);
   }
   
-  async putProposal(proposal: ProposalFull) {
+  async putProposal(proposal: ProposalFull): Promise<ORNodePropStatus> {
+    let propValid: ProposalValid;
+    try {
+      propValid = zProposalValid.parse(proposal);
+    } catch (err) {
+      throw new ProposalInvalid(proposal, err);
+    }
+
     const exProp = this._propMap[proposal.id];
     if (exProp === undefined) {
       throw new ProposalNotCreated(proposal);
     }
+    expect(exProp.id).to.be.equal(proposal.id);
 
     if (exProp.content !== undefined) {
-      expect(exProp.content).to.deep.equal(proposal.content);
-      expect()
-    }
-
-    if (exProp.content === undefined) {
-      exProp.content = proposal.
+      zProposalValid.parse(exProp);
+      // If both proposals are valid and their id member is the same it means that proposals are equal
+      // Return status saying that proposal already exists.
+      return zORNodePropStatus.Enum.ProposalExists;
+    } else {
+      this._propMap[proposal.id] = propValid;
+      return zORNodePropStatus.Enum.ProposalStored;
     }
   } 
 
@@ -98,7 +107,7 @@ export default class ORNodeMemImpl implements IORNode {
     for (let i = firstIndex; i <= lastIndex; i++) {
       // Checks if proposal is stored
       const propId = this._propIndex[i];
-      const prop = await this.getProposal(propId);
+      const prop = zProposal.parse(this._propMap[propId]);
       proposals.push(prop);
     }
 
