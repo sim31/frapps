@@ -1,5 +1,5 @@
 import { Orec, Orec__factory } from "orec/typechain-types/index.js";
-import { EthAddress, PropId, isEthAddr, zBytesLikeToBytes, zEthAddress, zMintRespectGroupArgs } from "./common.js";
+import { EthAddress, PropId, isEthAddr, zBytesLikeToBytes, zEthAddress, zMintRespectGroupArgs, zSignalType, zTickSignalType } from "./common.js";
 import { IORNode, ORNodePropStatus, Proposal, ProposalFull, ProposalInvalid, ProposalNotCreated, ProposalNotFound, ProposalValid, zORNodePropStatus, zProposal, zProposalValid } from "./ornodeTypes.js";
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
 import { z } from "zod";
@@ -25,10 +25,20 @@ export interface Config extends ConstructorConfig{
 
 type ORNodeContextConfig = Omit<ORContextConfig, "ornode">;
 
+/**
+ * TODO: Currently this class only saves proposals which are created onchain after
+ * it starts running. This means that it will miss any proposals that happened before
+ * ORNode was launched.
+ * TODO: Should save proposals to storage so that ORNode could be restarted
+ * TODO: Would be good to have a method to delete proposals which dot get any
+ * weighted votes during voteTime, to save resources against spam.
+ * TODO: Function to get signal data
+ */
 export default class ORNodeMemImpl implements IORNode {
   // value might be null if proposal has been submitted onchain but not to us
   private _propMap: SafeRecord<PropId, Proposal> = {}
   private _propIndex: PropId[] = [];
+  private _periodNum: number = 0;
   private _ctx: ORContext;
   private _cfg: ConstructorConfig;
 
@@ -57,9 +67,40 @@ export default class ORNodeMemImpl implements IORNode {
       weghtlessPropAliveness: propAliveness
     }
 
-    return new ORNodeMemImpl(ctx, cfg);
+    const ornode = new ORNodeMemImpl(ctx, cfg);
+
+    orec.on(orec.getEvent("ProposalCreated"), (propId) => {
+      ornode._storeNewProposal(propId);
+    });
+
+    orec.on(orec.getEvent("Signal"), (signalType, data) => {
+      const st = zSignalType.parse(signalType);
+      if (st === zTickSignalType.value) {
+        ornode._onTickSignal(data);
+      } else {
+        ornode._onSignal(st, data);
+      }
+    });
+
+    return ornode
   }
-  
+
+  private _storeNewProposal(propId: PropId) {
+    expect(this._propMap[propId]).to.be.undefined;
+    this._propMap[propId] = { id: propId };
+    this._propIndex.push(propId);
+    console.log(`Storing new proposal ${propId}. Index: ${this._propIndex.length - 1}`);
+  }
+
+  private _onTickSignal(data: string) {
+    this._periodNum += 1;
+    console.log(`Tick. Data: ${data}`);
+  }
+
+  private _onSignal(signalType: number, data: string) {
+    console.log(`Signal! Type: ${signalType}, data: ${data}`);
+  }
+
   async putProposal(proposal: ProposalFull): Promise<ORNodePropStatus> {
     let propValid: ProposalValid;
     try {
@@ -116,7 +157,7 @@ export default class ORNodeMemImpl implements IORNode {
 
   // TODO:
   async getPeriodNum(): Promise<number> {
-    return 0;
+    return this._periodNum;
   }
 
 }
