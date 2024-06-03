@@ -14,7 +14,7 @@ import {
   zRespectBreakoutRequest,
   zTickRequest,
 } from "../orclientTypes.js";
-import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, zBurnRespect, zCustomCall, zCustomSignal, zRespectAccount, zRespectBreakout, zTick } from "../ornodeTypes.js";
+import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, idOfBurnRespectAttach, idOfCustomCallAttach, idOfCustomSignalAttach, idOfRespectAccountAttach, idOfRespectBreakoutAttach, zBurnRespect, zBurnRespectValid, zCustomCall, zCustomCallValid, zCustomSignal, zCustomSignalValid, zRespectAccount, zRespectAccountValid, zRespectBreakout, zRespectBreakoutValid, zTick, zTickValid } from "../ornodeTypes.js";
 import { ORContext } from "../orContext.js";
 import { BurnRespectArgs, CustomSignalArgs, KnownSignalTypes, MintRequest, MintRespectArgs, MintRespectGroupArgs, zBigNumberish, zBigNumberishToBigint, zBreakoutMintType, zGroupNum, zMintRespectArgs, zMintRespectGroupArgs, zPropType, zRankNum, zTickSignalType, zUnspecifiedMintType } from "../common.js";
 import { expect } from "chai";
@@ -92,77 +92,6 @@ export const zCRespectBreakoutToMintArgs = zRespBreakoutReqCtx.transform(async (
   }
 }).pipe(zMintRespectGroupArgs);
 
-export function idOfRespectBreakoutAttach(attachment: RespectBreakoutAttachment) {
-  const a: Required<RespectBreakoutAttachment> = {
-    ...attachment,
-    propTitle: attachment.propTitle ?? "",
-    propDescription: attachment.propDescription ?? "",
-    salt: attachment.salt ?? ""
-  };
-
-  return solidityPackedKeccak256(
-    [ "string", "string", "string", "string", "uint" ],
-    [ a.propType, a.propTitle, a.propDescription, a.salt, a.groupNum ]
-  );
-}
-
-export function idOfRespectAccountAttach(attachment: RespectAccountAttachment) {
-  const a: Required<RespectAccountAttachment> = {
-    ...attachment,
-    propTitle: attachment.propTitle ?? "",
-    propDescription: attachment.propDescription ?? "",
-    salt: attachment.salt ?? ""
-  };
-
-  return solidityPackedKeccak256(
-    [ "string", "string", "string", "string", "string", "string" ],
-    [ a.propType, a.propTitle, a.propDescription, a.salt, a.mintReason, a.mintTitle ]
-  );
-}
-
-export function idOfBurnRespectAttach(attachment: BurnRespectAttachment) {
-  const a: Required<BurnRespectAttachment> = {
-    ...attachment,
-    propTitle: attachment.propTitle ?? "",
-    propDescription: attachment.propDescription ?? "",
-    salt: attachment.salt ?? ""
-  };
-
-  return solidityPackedKeccak256(
-    [ "string", "string", "string", "string", "string" ],
-    [ a.propType, a.propTitle, a.propDescription, a.salt, a.burnReason ]
-  );
-}
-
-export function idOfCustomSignalAttach(attachment: CustomSignalAttachment | TickAttachment) {
-  const a: Required<CustomSignalAttachment | TickAttachment> = {
-    ...attachment,
-    link: attachment.link ?? "",
-    propTitle: attachment.propTitle ?? "",
-    propDescription: attachment.propDescription ?? "",
-    salt: attachment.salt ?? ""
-  };
-
-  return solidityPackedKeccak256(
-    [ "string", "string", "string", "string", "string" ],
-    [ a.propType, a.propTitle, a.propDescription, a.salt, a.link ]
-  );
-}
-
-export function idOfCustomCallAttach(attachment: CustomCallAttachment) {
-  const a: Required<CustomCallAttachment> = {
-    ...attachment,
-    propTitle: attachment.propTitle ?? "",
-    propDescription: attachment.propDescription ?? "",
-    salt: attachment.salt ?? ""
-  };
-
-  return solidityPackedKeccak256(
-    [ "string", "string", "string", "string" ],
-    [ a.propType, a.propTitle, a.propDescription, a.salt ]
-  );
-}
-
 export const zCRespBreakoutReqToProposal = zRespBreakoutReqCtx.transform(async (val, ctx) => {
   try {
     const mintArgs = await zCRespectBreakoutToMintArgs.parseAsync(val);
@@ -191,7 +120,7 @@ export const zCRespBreakoutReqToProposal = zRespBreakoutReqCtx.transform(async (
   } catch (err) {
     addIssue(ctx, `Error: ${err}`);
   }
-}).pipe(zRespectBreakout);
+}).pipe(zRespectBreakoutValid);
 
 export const zCRespectAccountReqToMintArgs = zRespAccountReqCtx.transform(async (val, ctx) => {
   try {
@@ -255,7 +184,7 @@ export const zCRespAccountReqToProposal = zRespAccountReqCtx.transform(async (va
   } catch (err) {
     addIssue(ctx, `Error: ${err}`);
   }
-}).pipe(zRespectAccount);
+}).pipe(zRespectAccountValid);
 
 export const zCBurnRespReqToProposal = zBurnRespectReqCtx.transform(async (val, ctx) => {
   try {
@@ -290,7 +219,7 @@ export const zCBurnRespReqToProposal = zBurnRespectReqCtx.transform(async (val, 
   } catch (err) {
     addIssue(ctx, `Error: ${err}`);
   }
-}).pipe(zBurnRespect);
+}).pipe(zBurnRespectValid);
 
 export const zCCustomSignalReqToProposal = zCustomSignalReqCtx.transform(async (val, ctx) => {
   try {
@@ -325,7 +254,7 @@ export const zCCustomSignalReqToProposal = zCustomSignalReqCtx.transform(async (
   } catch (err) {
     addIssue(ctx, `Error: ${err}`);
   }
-}).pipe(zCustomSignal);
+}).pipe(zCustomSignalValid);
 
 export const zCTickReqToProposal = zTickReqCtx.transform(async (val, ctx) => {
   try {
@@ -360,7 +289,7 @@ export const zCTickReqToProposal = zTickReqCtx.transform(async (val, ctx) => {
   } catch (err) {
     addIssue(ctx, `Error: ${err}`);
   }
-}).pipe(zTick);
+}).pipe(zTickValid);
 
 export const zCCustomCallReqToProposal = zCustomCallReqCtx.transform(async (val, ctx) => {
   try {
@@ -386,7 +315,7 @@ export const zCCustomCallReqToProposal = zCustomCallReqCtx.transform(async (val,
   } catch (err) {
     addIssue(ctx, `Error: ${err}`);
   }
-}).pipe(zCustomCall);
+}).pipe(zCustomCallValid);
 
 export class ClientToNodeTransformer {
   private _cctx: CPropContext

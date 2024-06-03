@@ -1,12 +1,14 @@
 import { Orec, Orec__factory } from "orec/typechain-types/index.js";
 import { EthAddress, PropId, isEthAddr, zEthAddress, zMintRespectGroupArgs } from "./common.js";
-import { IORNode, Proposal, ProposalFull, ProposalNotFound, zProposal } from "./ornodeTypes.js";
+import { IORNode, Proposal, ProposalFull, ProposalNotCreated, ProposalNotFound, zProposal } from "./ornodeTypes.js";
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
 import { z } from "zod";
 import { ORContext, Config as ORContextConfig } from "./orContext.js";
 import { Respect1155__factory } from "respect-sc/typechain-types/factories/contracts/Respect1155__factory.js";
 import { FractalRespect } from "op-fractal-sc/typechain-types/contracts/FractalRespect.js";
 import { FractalRespect__factory } from "op-fractal-sc/typechain-types/factories/contracts/FractalRespect__factory.js";
+import { SafeRecord } from "./ts-utils.js";
+import { expect } from 'chai';
 
 export interface ConstructorConfig {
   /**
@@ -25,7 +27,7 @@ type ORNodeContextConfig = Omit<ORContextConfig, "ornode">;
 
 export default class ORNodeMemImpl implements IORNode {
   // value might be null if proposal has been submitted onchain but not to us
-  private _propMap: Record<PropId, ProposalFull> = {}
+  private _propMap: SafeRecord<PropId, Proposal> = {}
   private _propIndex: PropId[] = [];
   private _ctx: ORContext;
   private _cfg: ConstructorConfig;
@@ -58,23 +60,20 @@ export default class ORNodeMemImpl implements IORNode {
     return new ORNodeMemImpl(ctx, cfg);
   }
   
-  // TODO:
-  // * Listen for weighted vote events
-  //   * If proposal exists in staging move it to _propMap
+  async putProposal(proposal: ProposalFull) {
+    const exProp = this._propMap[proposal.id];
+    if (exProp === undefined) {
+      throw new ProposalNotCreated(proposal);
+    }
 
-  // TODO: For config you only need orec address, timeout for clearing staging, API endpoint for Eth provider
+    if (exProp.content !== undefined) {
+      expect(exProp.content).to.deep.equal(proposal.content);
+      expect()
+    }
 
-  /**
-   * Expecting that proposal is already validated against it's type
-   */
-  async putProposal(proposal: Proposal) {
-    // TODO:
-    // * Check if proposal already exists in prop map. If so store it there.
-    // * Then check if proposal is created onchain. If so, create proposal in _propMap
-    // * Otherwise store it in staging. Create a timer to delete it from staging if it is still there after a couple of days;
-    //   * Timer to delete it after 10 minutes if proposal is not created by that time
-    //   * Timer to delete it after vote_period if there are no weighted yes votes
-        
+    if (exProp.content === undefined) {
+      exProp.content = proposal.
+    }
   } 
 
   async getProposal(id: PropId): Promise<Proposal> {
@@ -106,6 +105,7 @@ export default class ORNodeMemImpl implements IORNode {
     return proposals;
   }
 
+  // TODO:
   async getPeriodNum(): Promise<number> {
     return 0;
   }

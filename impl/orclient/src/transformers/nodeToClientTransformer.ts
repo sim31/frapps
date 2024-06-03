@@ -23,7 +23,7 @@ import {
   zRespectBreakout as zNRespectBreakout,
   zRespectAccount as zNRespectAccount,
   Proposal as NProposal,
-  zProposalFull as zNProposalFull,
+  zProposalValid as zNProposalFull,
   zRespectBreakoutAttachment,
   zRespectAccountAttachment,
   zBurnRespectAttachment,

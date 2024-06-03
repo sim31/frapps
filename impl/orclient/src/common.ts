@@ -5,6 +5,8 @@ import { z } from "zod";
 import { TokenId as TokenIdT, unpackTokenId } from "respect-sc/utils/tokenId.js";
 import { ZeroAddress } from "ethers";
 
+// TODO: Move s
+
 export enum Stage {
   Voting,
   Veto,
@@ -135,7 +137,6 @@ export const zSignalType = zUint8;
 export const zCustomSignalType = zSignalType.gt(0);
 export const zTickSignalType = z.literal(Number(zKnownSignalTypes.enum.Tick));
 
-
 export type CMintRespectGroupArgs = Parameters<Respect1155["mintRespectGroup"]>
 export type CMintRespectArgs = Parameters<Respect1155["mintRespect"]>;
 export type CBurnRespectArgs = Parameters<Respect1155['burnRespect']>;
@@ -243,6 +244,7 @@ export const zOnchainProp = zProposalState.extend({
   createTime: z.date()
 });
 export type OnchainProp = z.infer<typeof zOnchainProp>;
+
 
 
 
