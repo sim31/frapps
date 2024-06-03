@@ -5,9 +5,15 @@ import { ORContext } from "./orContext.js";
 import { NodeToClientTransformer } from "./transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "./transformers/clientToNodeTransformer.js";
 import { ProposalFull as NProp } from "./ornodeTypes.js";
+import { sleep } from "./ts-utils.js";
 
 export function isPropCreated(propState: ProposalState) {
   return propState.createTime > 0n;
+}
+
+export interface Config {
+  /// How many onchain confirmations to wait for before considering proposal submitted
+  propConfirms: number
 }
 
 /**
@@ -23,11 +29,13 @@ export default class ORClient {
   private _ctx: ORContext;
   private _nodeToClient: NodeToClientTransformer;
   private _clientToNode: ClientToNodeTransformer;
+  private _cfg: Config;
 
-  constructor(context: ORContext) {
+  constructor(context: ORContext, cfg: Config = { propConfirms: 3 }) {
     this._ctx = context;
     this._nodeToClient = new NodeToClientTransformer(this._ctx);
     this._clientToNode = new ClientToNodeTransformer(this._ctx);
+    this._cfg = cfg;
   }
 
   get context(): ORContext {
@@ -162,7 +170,7 @@ export default class ORClient {
         )
       : await this._ctx.orec.propose(proposal.id);
 
-    const receipt = await resp.wait();
+    const receipt = await resp.wait(this._cfg.propConfirms);
     if (receipt?.status !== 1) {
       throw new TxFailed(resp, receipt);
     }

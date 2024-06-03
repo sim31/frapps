@@ -361,11 +361,13 @@ export const zNPropToProp = zNProposalInContext.transform(async (nodeProp, ctx) 
     const onchainProp = await nodeProp.ctx.getProposalFromChain(propId);
     const rProp: Proposal = onchainProp;
 
-    if (nodeProp.prop.content !== undefined && nodeProp.prop.attachment !== undefined) {
+    if (nodeProp.prop.content !== undefined) {
       rProp.addr = nodeProp.prop.content.addr;
       rProp.cdata = nodeProp.prop.content.cdata;
       rProp.memo = nodeProp.prop.content.memo;
-      rProp.decoded = await zProposalToDecodedProp.parseAsync(nodeProp);
+      if (nodeProp.prop.attachment !== undefined) {
+        rProp.decoded = await zProposalToDecodedProp.parseAsync(nodeProp);
+      }
     }
 
     return rProp;
