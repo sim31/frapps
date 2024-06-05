@@ -31,6 +31,7 @@ import {
   zProposedMsg,
   zVoteType,
   zCustomSignalType,
+  PropTypeValues,
 } from "./common.js";
 import { IORNode, zPropContent, Proposal as NProp } from "./ornodeTypes.js";
 import { Orec } from "orec/typechain-types/contracts/Orec.js";
@@ -141,7 +142,7 @@ export type Tick = z.infer<typeof zTick>;
 
 export const zTickRequest = zTick
   .omit({ propType: true })
-  .partial({ metadata: true });
+  .partial({ metadata: true, data: true });
 export type TickRequest = z.infer<typeof zTickRequest>;
 
 export const zCustomCall = zDecodedPropBase.extend({
@@ -168,6 +169,39 @@ export const zProposal = zOnchainProp.merge(zProposedMsg.partial()).extend({
   decoded: zDecodedProposal.optional(),
 });
 export type Proposal = z.infer<typeof zProposal>;
+
+export const zProposalMsgFull = zProposal.required({
+  addr: true,
+  cdata: true,
+  memo: true,
+})
+export type ProposalMsgFull = z.infer<typeof zProposalMsgFull>;
+
+export function isPropMsgFull(prop: Proposal): prop is ProposalMsgFull {
+  return prop.addr !== undefined && prop.cdata !== undefined && prop.memo !== undefined;
+}
+
+/**
+ * Converts to ProposalMsgFull without parsing, if possible.
+ * Use this instead of zProposalMsgFull.parse to avoid parsing twice
+ */ 
+export function toPropMsgFull(prop: Proposal | ProposalMsgFull): ProposalMsgFull {
+  return isPropMsgFull(prop) ? prop : zProposalMsgFull.parse(prop);
+}
+
+export type PropOfPropType<T extends PropType> =
+  T extends typeof zPropType.Enum.respectBreakout ? RespectBreakout
+  : (T extends typeof zPropType.enum.respectAccount ? RespectAccount
+    : (T extends typeof zPropType.Enum.burnRespect ? BurnRespect
+      : (T extends typeof zPropType.Enum.customSignal ? CustomSignal
+        : (T extends typeof zPropType.Enum.customCall ? CustomCall
+          : (T extends typeof zPropType.Enum.tick ? Tick
+            : never
+          )
+        )
+      )
+    )
+  );
 
 export class NotImplemented extends Error {
   constructor(message: string) {

@@ -1,7 +1,9 @@
 import chai, { expect } from "chai";
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
-import ORClient, { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, VoteEnded, ProposalFailed } from "../src/orclientTypes.js";
-import { EthAddress, Stage, VoteStatus } from "../src/common.js";
+import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, VoteEnded, ProposalFailed, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest } from "../src/orclientTypes.js";
+import ORClient from "../src/orclient.js";
+import ORNodeMemImpl from "../src/ornodeMemImpl.js";
+import { EthAddress, PropType, Stage, VoteStatus, zProposedMsg } from "../src/common.js";
 import hre, { run } from "hardhat";
 import { ZeroAddress, hexlify, Signer } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers.js";
@@ -17,12 +19,14 @@ import RF from "respect-sc/typechain-types/factories/contracts/Respect1155__fact
 const { Respect1155__factory: RespectFactory } = RF;
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
 import { packTokenId } from "op-fractal-sc/utils/tokenId.js";
+import { IORNode } from "../src/ornodeTypes.js";
+import { ORContext } from "../src/orContext.js";
 
 
 describe("orclient", function() {
   let cl: ORClient;
   const ethUrl = "https://localhost:8545";
-  let ornode: ORNode;
+  let ornode: IORNode;
   let addrs: EthAddress[] = []
   let oldRespect: FractalRespect;
   let newRespect: Respect1155;
@@ -59,13 +63,13 @@ describe("orclient", function() {
   const mintReqs: RespectAccountRequest[] = [
     {
       account: addrs[0],
-      value: 10,
+      value: 10n,
       title: "Some work 1",
       reason: "Did some work 1"
     },
     {
       account: addrs[1],
-      value: 15,
+      value: 15n,
       title: "some work 2",
       reason: "did some work 2"
     }
@@ -175,56 +179,72 @@ describe("orclient", function() {
   });
 
   before("create ORNode", async function() {
-    ornode = {};
+    ornode = await ORNodeMemImpl.createORNodeMemImpl({
+      newRespect,
+      orec
+    })
   })
 
   before("create ORClient", async function() {
-    cl = await ORClient.createORClient({ ornode, signer: signers[0] });
+    const ctx = new ORContext({ orec, newRespect, oldRespect, ornode });
+    cl = new ORClient(ctx);
   })
 
-  function expectDecoded<T extends DecodedProposal>(
-    propTypeStr: string,
+  function expectDecoded<T extends PropType>(
+    propTypeStr: T,
     prop: Proposal
-  ): T {
+  ): PropOfPropType<T> {
     expect(prop.decoded).to.not.be.undefined;
     const decoded = prop.decoded as DecodedProposal;
     expect(decoded.propType).to.be.equal(propTypeStr);
-    const d = decoded as T;
+    const d = decoded as PropOfPropType<T>
     return d;
   }
 
   function expectRespectBreakout(prop: Proposal) {
-    return expectDecoded<RespectBreakout>("respectBreakout", prop);
+    return expectDecoded("respectBreakout", prop);
   }
 
   function expectRespectAccount(prop: Proposal) {
-    return expectDecoded<RespectAccount>("respectAccount", prop);
+    return expectDecoded("respectAccount", prop);
   }
 
   function expectTick(prop: Proposal) {
-    return expectDecoded<Tick>("tick", prop);
+    return expectDecoded("tick", prop);
   }
 
   function expectCustomSignal(prop: Proposal) {
-    return expectDecoded<CustomSignal>("customSignal", prop);
+    return expectDecoded("customSignal", prop);
   }
 
-  async function expectInitPropValues(prop: Proposal) {
-    expect(prop.address).to.be.equal(await newRespect.getAddress());
+  async function expectInitPropValues(prop: ProposalMsgFull | Proposal) {
+    const propFull = toPropMsgFull(prop);
 
-    const pId = propId({ addr: prop.address, cdata: prop.cdata, memo: prop.memo});
+    expect(prop.addr).to.be.equal(await newRespect.getAddress());
+
+    const pId = propId({
+      addr: propFull.addr,
+      cdata: propFull.cdata,
+      memo: propFull.memo
+    });
 
     expect(prop.id).to.be.equal(pId);
     expectAproxNow(prop.createTime);
     expect(prop.yesWeight).to.be.equal(prop.noWeight).to.be.equal(0)
     expect(prop.yesWeight).to.be.equal(prop.noWeight).to.be.equal(0)
-    expect(prop.execStatus).to.be.equal(ExecStatus.NotExecuted);
+    expect(prop.status).to.be.equal(ExecStatus.NotExecuted);
     expect(prop.stage).to.be.equal(Stage.Voting);
     expect(prop.voteStatus).to.be.equal(VoteStatus.Failing); // Because there are no votes yet
   }
 
-  async function expectInitOnChainProp(prop: Proposal) {
-    const pId = propId({ addr: prop.address, cdata: prop.cdata, memo: prop.memo});
+  async function expectInitOnChainProp(prop: ProposalMsgFull | Proposal) {
+    const propFull = toPropMsgFull(prop);
+
+    const pId = propId({
+      addr: propFull.addr,
+      cdata: propFull.cdata,
+      memo: propFull.memo
+    });
 
     const onchainProp = await orec.proposals(pId);
 
@@ -269,10 +289,12 @@ describe("orclient", function() {
         for (const [index, prop] of resultProps.entries()) {
           const rb = expectRespectBreakout(prop);
 
+          const propFull = zProposedMsg.parse(prop);
+
           const msg: Orec.MessageStruct = { 
-            addr: prop.address,
-            cdata: prop.cdata,
-            memo: prop.memo
+            addr: propFull.addr,
+            cdata: propFull.cdata,
+            memo: propFull.memo
           };
 
           const pId = propId(msg);
@@ -281,7 +303,7 @@ describe("orclient", function() {
       });
       it("should have new respect contract as the address of proposed message", async function() {
         for (const [index, prop] of resultProps.entries()) {
-          expect(prop.address).to.be.equal(await newRespect.getAddress());
+          expect(prop.addr).to.be.equal(await newRespect.getAddress());
         }
       });
     })
@@ -289,10 +311,12 @@ describe("orclient", function() {
       for (const [index, prop] of resultProps.entries()) {
         const rb = expectRespectBreakout(prop);
 
+        const fullProp = zProposedMsg.parse(prop);
+
         const msg: Orec.MessageStruct = { 
-          addr: prop.address,
-          cdata: prop.cdata,
-          memo: prop.memo
+          addr: fullProp.addr,
+          cdata: fullProp.cdata,
+          memo: fullProp.memo
         };
 
         const pId = propId(msg);
@@ -303,7 +327,7 @@ describe("orclient", function() {
         expectAproxNow(prop.createTime);
         expect(onChainProp.yesWeight).to.be.equal(prop.yesWeight).to.be.equal(0);
         expect(onChainProp.noWeight).to.be.equal(prop.noWeight).to.be.equal(0);
-        expect(onChainProp.status).to.be.equal(prop.execStatus).to.be.equal(ExecStatus.NotExecuted);
+        expect(onChainProp.status).to.be.equal(prop.status).to.be.equal(ExecStatus.NotExecuted);
       }
     });
 
@@ -334,7 +358,7 @@ describe("orclient", function() {
       for (const [index, prop] of mintProps.entries()) {
         const req = mintReqs[index];
 
-        expect(prop.address).to.be.equal(await newRespect.getAddress());
+        expect(prop.addr).to.be.equal(await newRespect.getAddress());
 
         expectInitPropValues(prop);
 
@@ -358,7 +382,7 @@ describe("orclient", function() {
   describe("proposing a tick (to increment meeting number)", function() {
     before("create proposal by calling proposeTick", async function() {
       tickProps.push(await cl.proposeTick());
-      tickProps.push(await cl.proposeTick("some memo"));
+      tickProps.push(await cl.proposeTick({ data: "0x11 "}));
 
       await time.increase(HOUR_1);
     });
@@ -372,7 +396,7 @@ describe("orclient", function() {
       // Take top two proposals
       expectInitPropValues(tickProps[0]);
       const t1 = expectTick(tickProps[0]);
-      expect(t1.data).to.be.equal("some memo");
+      expect(t1.data).to.be.equal("0x11");
 
       expectInitPropValues(tickProps[1]);
       const t2 = expectTick(tickProps[1]);
@@ -387,9 +411,19 @@ describe("orclient", function() {
     })
   });
   describe("proposing a custom signal", function() {
+    const sreq1: CustomSignalRequest = {
+      signalType: 3,
+      data: "0x01",
+      link: "https://someaddr.io"
+    };
+    const sreq2: CustomSignalRequest = {
+      signalType: 4,
+      data: "0x02",
+      link: "https://someaddr2.io"
+    }; 
     before("create proposal by calling proposeSignal", async function() {
-      signalProps.push(await cl.proposeCustomSignal("some memo"));
-      signalProps.push(await cl.proposeCustomSignal("some memo 2"));
+      signalProps.push(await cl.proposeCustomSignal(sreq1));
+      signalProps.push(await cl.proposeCustomSignal(sreq2));
 
       await time.increase(HOUR_1);
     });
@@ -398,11 +432,15 @@ describe("orclient", function() {
       // Take top two proposals
       expectInitPropValues(signalProps[0]);
       const s1 = expectCustomSignal(signalProps[0]);
-      expect(s1.data).to.be.equal("some memo 2");
+      expect(s1.data).to.be.equal(sreq1.data);
+      expect(s1.link).to.be.equal(sreq1.link);
+      expect(s1.signalType).to.be.equal(sreq1.signalType);
 
       expectInitPropValues(signalProps[1]);
-      const s2 = expectTick(signalProps[1]);
-      expect(s2.data).to.be.equal("some memo");
+      const s2 = expectCustomSignal(signalProps[1]);
+      expect(s2.data).to.be.equal(sreq2.data);
+      expect(s2.link).to.be.equal(sreq2.link);
+      expect(s2.signalType).to.be.equal(sreq2.signalType);
     });
 
     it("should have created new proposal onchain", async function() {

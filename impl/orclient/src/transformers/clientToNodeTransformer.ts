@@ -260,7 +260,7 @@ export const zCTickReqToProposal = zTickReqCtx.transform(async (val, ctx) => {
   try {
     const args: CustomSignalArgs = {
       signalType: zTickSignalType.value,
-      data: val.req.data
+      data: val.req.data === undefined ? "" : val.req.data
     };
     const cdata = orecInterface.encodeFunctionData(
       "signal",

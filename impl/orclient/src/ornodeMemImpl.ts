@@ -47,7 +47,7 @@ export default class ORNodeMemImpl implements IORNode {
     this._cfg = config;
   }
 
-  static async createIORNode(config: Config): Promise<IORNode> {
+  static async createORNodeMemImpl(config: Config): Promise<IORNode> {
     const orec: Orec = isEthAddr(config.orec)
       ? Orec__factory.connect(config.orec)
       : config.orec;

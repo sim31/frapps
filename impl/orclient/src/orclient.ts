@@ -1,4 +1,4 @@
-import { Signer } from "ethers";
+import { Signer } from "../node_modules/ethers/lib.commonjs/index.js";
 import { EthAddress, PropId, ProposalState, TokenId, VoteType } from "./common.js";
 import { BreakoutResult, BurnRespectRequest, CustomCallRequest, CustomSignalRequest, NotImplemented, Proposal, ProposalMetadata, PutProposalFailure, RespectAccountRequest, RespectBreakoutRequest, TickRequest, TxFailed, VoteRequest, VoteWithProp, zVoteWithProp } from "./orclientTypes.js";
 import { ORContext } from "./orContext.js";
@@ -38,6 +38,15 @@ export default class ORClient {
     this._cfg = cfg;
   }
 
+  connect(signer: Signer): ORClient {
+    const newOrec = this._ctx.orec.connect(signer);
+    const newCtx = new ORContext({
+      ...this._ctx.config,
+      orec: newOrec
+    });
+    return new ORClient(newCtx);
+  }
+
   get context(): ORContext {
     return this._ctx;
   }
@@ -72,7 +81,15 @@ export default class ORClient {
   }
 
   // UC2
-  async vote(req: VoteRequest) {
+  async vote(propId: PropId, vote: VoteType, memo?: string): Promise<void>;
+  async vote(request: VoteRequest): Promise<void>;
+  async vote(pidOrReq: VoteRequest | PropId, vote?: VoteType, memo?: string): Promise<void> {
+    let req: VoteRequest;
+    if (vote !== undefined && typeof pidOrReq === 'string') {
+      req = { propId: pidOrReq, vote, memo }      
+    } else {
+      req = pidOrReq as VoteRequest;
+    }
     const orec = this._ctx.orec;
     await orec.vote(req.propId, req.vote, req.memo ?? "");
   }
@@ -121,7 +138,7 @@ export default class ORClient {
 
   // UC7
   async proposeTick(
-    req: TickRequest,
+    req: TickRequest = {},
     vote: VoteWithProp = { vote: VoteType.Yes }
   ): Promise<Proposal> {
     const proposal = await this._clientToNode.transformTick(req);

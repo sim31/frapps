@@ -37,6 +37,10 @@ export class ORContext {
     this._cfg.orec = this._cfg.orec.connect(signer);
   }
 
+  get config(): Config {
+    return this._cfg;
+  }
+
   get orec(): Orec {
     return this._cfg.orec;
   }
