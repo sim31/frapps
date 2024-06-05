@@ -1,4 +1,5 @@
-import { Respect1155__factory } from "respect-sc/typechain-types/factories/contracts/Respect1155__factory.js";
+import respect1155FactoryPkg from  "respect-sc/typechain-types/factories/contracts/Respect1155__factory.js";
+const { Respect1155__factory } = respect1155FactoryPkg;
 import {
   RespectBreakout,
   zBreakoutResult,
@@ -52,11 +53,13 @@ import {
   zTickSignalType
 } from "../common.js";
 import { z, RefinementCtx } from "zod";
-import { unpackTokenId } from "respect-sc/utils/tokenId.js";
+import tokenIdPkg from "respect-sc/utils/tokenId.js";
+const { unpackTokenId } = tokenIdPkg;
 import { expect } from "chai";
 import { BigNumberish, ZeroAddress } from "ethers";
 import { Provider } from "ethers";
-import { Orec, Orec__factory } from "orec/typechain-types/index.js";
+import orecTypesPkg from  "orec/typechain-types/index.js";
+const { Orec__factory } = orecTypesPkg;
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
 import { FractalRespect } from "op-fractal-sc/typechain-types/contracts/FractalRespect.js";
 import { ORContext } from "../orContext.js";

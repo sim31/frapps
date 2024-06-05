@@ -20,7 +20,8 @@ import {
 import { z } from "zod";
 import { Orec } from "orec/typechain-types/index.js";
 import { solidityPackedKeccak256 } from "ethers";
-import { propId } from "orec/utils/index.js";
+import orecPkg from "orec/utils/index.js";
+const { propId } = orecPkg;
 
 export const zPropContent = zProposedMsg;
 export type PropContent = z.infer<typeof zPropContent>;

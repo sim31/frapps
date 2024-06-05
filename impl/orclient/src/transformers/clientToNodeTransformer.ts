@@ -18,12 +18,16 @@ import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, C
 import { ORContext } from "../orContext.js";
 import { BurnRespectArgs, CustomSignalArgs, KnownSignalTypes, MintRequest, MintRespectArgs, MintRespectGroupArgs, zBigNumberish, zBigNumberishToBigint, zBreakoutMintType, zGroupNum, zMintRespectArgs, zMintRespectGroupArgs, zPropType, zRankNum, zTickSignalType, zUnspecifiedMintType } from "../common.js";
 import { expect } from "chai";
-import { packTokenId } from "respect-sc/utils/tokenId.js";
+import tokenIdPkg from "respect-sc/utils/tokenId.js";
+const { packTokenId } = tokenIdPkg;
 import { addIssue } from "./common.js";
-import { Respect1155__factory } from "respect-sc/typechain-types/factories/contracts/Respect1155__factory.js";
-import { Orec__factory } from "orec/typechain-types/index.js";
+import respect11155TypesPkg from "respect-sc/typechain-types/index.js"
+const { Respect1155__factory } = respect11155TypesPkg;
+import orecTypesPkg from "orec/typechain-types/index.js";
+const { Orec__factory } = orecTypesPkg;
 import { keccak256, solidityPackedKeccak256 } from "ethers";
-import { propId } from "orec/utils/index.js";
+import orecPkg from "orec/utils/index.js";
+const { propId } = orecPkg;
 
 const respectInterface = Respect1155__factory.createInterface();
 const orecInterface = Orec__factory.createInterface();

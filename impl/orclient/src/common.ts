@@ -2,7 +2,8 @@ import { dataLength, getBigInt, hexlify, isAddress, isHexString } from "ethers";
 import { Orec } from "orec/typechain-types/index.js";
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
 import { z } from "zod";
-import { TokenId as TokenIdT, unpackTokenId } from "respect-sc/utils/tokenId.js";
+import tokenIdPkg from  "respect-sc/utils/tokenId.js"
+const { unpackTokenId } = tokenIdPkg;
 import { ZeroAddress } from "ethers";
 
 // TODO: Move s

@@ -1,12 +1,16 @@
-import { Orec, Orec__factory } from "orec/typechain-types/index.js";
+import orecTypesPkg from "orec/typechain-types/index.js";
+const { Orec__factory } = orecTypesPkg;
+import { Orec } from "orec/typechain-types/index.js";
 import { EthAddress, PropId, isEthAddr, zBytesLikeToBytes, zEthAddress, zMintRespectGroupArgs, zSignalType, zTickSignalType } from "./common.js";
 import { IORNode, ORNodePropStatus, Proposal, ProposalFull, ProposalInvalid, ProposalNotCreated, ProposalNotFound, ProposalValid, zORNodePropStatus, zProposal, zProposalValid } from "./ornodeTypes.js";
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
 import { z } from "zod";
 import { ORContext, Config as ORContextConfig } from "./orContext.js";
-import { Respect1155__factory } from "respect-sc/typechain-types/factories/contracts/Respect1155__factory.js";
+import respectFactoryPkg from "respect-sc/typechain-types/factories/contracts/Respect1155__factory.js"; 
+const { Respect1155__factory } = respectFactoryPkg;
 import { FractalRespect } from "op-fractal-sc/typechain-types/contracts/FractalRespect.js";
-import { FractalRespect__factory } from "op-fractal-sc/typechain-types/factories/contracts/FractalRespect__factory.js";
+import fractalRespectPkg from "op-fractal-sc/typechain-types/index.js";
+const { FractalRespect__factory } = fractalRespectPkg;
 import { SafeRecord } from "./ts-utils.js";
 import { expect } from 'chai';
 
