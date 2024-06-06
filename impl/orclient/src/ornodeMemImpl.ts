@@ -93,7 +93,7 @@ export default class ORNodeMemImpl implements IORNode {
     expect(this._propMap[propId]).to.be.undefined;
     this._propMap[propId] = { id: propId };
     this._propIndex.push(propId);
-    console.log(`Storing new proposal ${propId}. Index: ${this._propIndex.length - 1}`);
+    // console.log(`Storing new proposal ${propId}. Index: ${this._propIndex.length - 1}`);
   }
 
   private _onTickSignal(data: string) {

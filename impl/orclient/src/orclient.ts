@@ -1,4 +1,4 @@
-import { Signer } from "../node_modules/ethers/lib.commonjs/index.js";
+import { Signer, hexlify, toUtf8Bytes } from "../node_modules/ethers/lib.commonjs/index.js";
 import { EthAddress, PropId, ProposalState, TokenId, VoteType } from "./common.js";
 import { BreakoutResult, BurnRespectRequest, CustomCallRequest, CustomSignalRequest, NotImplemented, Proposal, ProposalMetadata, PutProposalFailure, RespectAccountRequest, RespectBreakoutRequest, TickRequest, TxFailed, VoteRequest, VoteWithProp, zVoteWithProp } from "./orclientTypes.js";
 import { ORContext } from "./orContext.js";
@@ -81,6 +81,7 @@ export default class ORClient {
   }
 
   // UC2
+  // TODO: Allow specifying text string instead of hexstring and convert it
   async vote(propId: PropId, vote: VoteType, memo?: string): Promise<void>;
   async vote(request: VoteRequest): Promise<void>;
   async vote(pidOrReq: VoteRequest | PropId, vote?: VoteType, memo?: string): Promise<void> {
@@ -90,8 +91,9 @@ export default class ORClient {
     } else {
       req = pidOrReq as VoteRequest;
     }
+    const m = memo !== undefined ? hexlify(toUtf8Bytes(memo)) : "0x";
     const orec = this._ctx.orec;
-    await orec.vote(req.propId, req.vote, req.memo ?? "");
+    await orec.vote(req.propId, req.vote, m);
   }
   // UC3
   async execute(propId: PropId) {
@@ -115,7 +117,7 @@ export default class ORClient {
     req: RespectAccountRequest,
     vote: VoteWithProp = { vote: VoteType.Yes }
   ): Promise<Proposal> {
-    const proposal = await this._clientToNode.tranformRespectAccount(req);
+    const proposal = await this._clientToNode.transformRespectAccount(req);
     return await this._submitProposal(proposal, vote);
   }
 
@@ -179,18 +181,23 @@ export default class ORClient {
   }
 
   private async _submitPropToChain(proposal: NProp, vote?: VoteWithProp) {
+    const resp = await this._submitPropTx(proposal, vote);
     // console.log(`Submitting proposal to chain: ${JSON.stringify(proposal)}`);
-    const resp = vote !== undefined && vote.vote !== VoteType.None
-      ? await this._ctx.orec.vote(
-          proposal.id,
-          vote.vote,
-          vote.memo ?? "0x"
-        )
-      : await this._ctx.orec.propose(proposal.id);
-
     const receipt = await resp.wait(this._cfg.propConfirms);
     if (receipt?.status !== 1) {
       throw new TxFailed(resp, receipt);
+    }
+  }
+
+  private async _submitPropTx(proposal: NProp, vote?: VoteWithProp) {
+    if (vote !== undefined && vote.vote !== VoteType.None) {
+      return await this._ctx.orec.vote(
+          proposal.id,
+          vote.vote,
+          vote.memo ?? "0x"
+      );
+    } else {
+      return await this._ctx.orec.propose(proposal.id);
     }
   }
 

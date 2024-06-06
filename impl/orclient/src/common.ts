@@ -1,4 +1,4 @@
-import { dataLength, getBigInt, hexlify, isAddress, isHexString } from "ethers";
+import { dataLength, getAddress, getBigInt, hexlify, isAddress, isBytesLike, isHexString } from "ethers";
 import { Orec } from "orec/typechain-types/index.js";
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
 import { preprocess, z } from "zod";
@@ -49,7 +49,14 @@ export const zBytes32 = z.string().refine((val) => {
   return isHexString(val, 32);
 })
 
-export const zBytesLike = z.string().or(z.instanceof(Uint8Array));
+export const zBytesLike = z.string().or(z.instanceof(Uint8Array))
+  .superRefine((val, ctx) => {
+    if (isBytesLike(val)) {
+      return true;
+    } else {
+      addCustomIssue(val, ctx, "Invalid bytes like value");
+    }
+  });
 
 export const zBytesLikeToBytes = zBytesLike.transform((val, ctx) => {
   return hexlify(val);
@@ -58,8 +65,8 @@ export const zBytesLikeToBytes = zBytesLike.transform((val, ctx) => {
 export const zPropId = zBytes32;
 export type PropId = z.infer<typeof zPropId>;
 
-export const zEthAddress = z.string().refine((val) => {
-  return isAddress(val);
+export const zEthAddress = z.string().transform((val) => {
+  return getAddress(val);
 });
 export type EthAddress = z.infer<typeof zEthAddress>;
 export type Account = EthAddress
@@ -114,13 +121,16 @@ export const zUnspecifiedMintType = z.literal(1);
 export const zMeetingNum = z.coerce.number().gt(0);
 export type MeetingNum = z.infer<typeof zMeetingNum>;
 
+export const zPeriodNum = z.coerce.number().gte(0);
+export type PeriodNum = z.infer<typeof zPeriodNum>;
+
 export const zBigNumberishToBigint = zBigNumberish.transform((val, ctx) => {
   return getBigInt(val);
 }).pipe(z.bigint());
 
 
 export const zTokenIdData = z.object({
-  periodNumber: zMeetingNum,
+  periodNumber: zPeriodNum,
   owner: zEthAddress,
   mintType: zMintType
 }).refine(val => {

@@ -51,26 +51,12 @@ describe("orclient", function() {
   let signers: HardhatEthersSigner[];
   const oldRanksDelay = 518400; // 6 days in seconds
   let resultProps: Proposal[] = [];
-  let mintProps: Proposal[];
-  let tickProps: Proposal[];
-  let signalProps: Proposal[];
+  let mintProps: Proposal[] = [];
+  let tickProps: Proposal[] = [];
+  let signalProps: Proposal[] = [];
   let nonRespectedAccs: EthAddress[];
   let groupRes: BreakoutResult[];
-
-  const mintReqs: RespectAccountRequest[] = [
-    {
-      account: addrs[0],
-      value: 10n,
-      title: "Some work 1",
-      reason: "Did some work 1"
-    },
-    {
-      account: addrs[1],
-      value: 15n,
-      title: "some work 2",
-      reason: "did some work 2"
-    }
-  ];
+  let mintReqs: RespectAccountRequest[];
 
   before("launch eth test network", async function() {
     // TODO: set url
@@ -366,12 +352,25 @@ describe("orclient", function() {
 
   describe("proposing to respect an individual account", function() {
     before("create proposals by calling proposeRespectTo", async function() {
-      const p1 = await cl.proposeRespectTo(mintReqs[0]);
-      mintProps.push(p1);
-      const p2 = await cl.proposeRespectTo(mintReqs[1])
-      mintProps.push(p2);
+      mintReqs = [
+        {
+          account: addrs[0],
+          value: 10n,
+          title: "Some work 1",
+          reason: "Did some work 1"
+        },
+        {
+          account: addrs[1],
+          value: 15n,
+          title: "some work 2",
+          reason: "did some work 2"
+        }
+      ];
 
-      await time.increase(HOUR_1);
+      const p1 = await confirm(cl.proposeRespectTo(mintReqs[0]));
+      mintProps.push(p1);
+      const p2 = await confirm(cl.proposeRespectTo(mintReqs[1]));
+      mintProps.push(p2);
     });
 
     it("should have returned expected mint proposals", async function() {
@@ -380,13 +379,13 @@ describe("orclient", function() {
       for (const [index, prop] of mintProps.entries()) {
         const req = mintReqs[index];
 
-        expect(prop.addr).to.be.equal(await newRespect.getAddress());
+        expect(prop.addr).to.be.equal(await newRespect.getAddress(), "wrong proposal address");
 
         expectInitPropValues(prop);
 
         const ra = expectRespectAccount(prop);
         expect(ra.meetingNum).to.be.equal(1);
-        expect(ra.account).to.be.equal(req.account);
+        expect(ra.account).to.be.equal(req.account, "wrong respect receiver");
         expect(ra.reason).to.be.equal(req.reason);
         expect(ra.title).to.be.equal(req.title);
         expect(ra.value).to.be.equal(req.value);
@@ -401,28 +400,27 @@ describe("orclient", function() {
       }
     })
   });
+
   describe("proposing a tick (to increment meeting number)", function() {
     before("create proposal by calling proposeTick", async function() {
-      tickProps.push(await cl.proposeTick());
-      tickProps.push(await cl.proposeTick({ data: "0x11 "}));
-
-      await time.increase(HOUR_1);
+      tickProps.push(await confirm(cl.proposeTick()));
+      tickProps.push(await confirm(cl.proposeTick({ data: "0x11" })));
     });
 
     it("should return period number of 0 before the tick is executed", async function() {
       expect(await cl.getPeriodNum()).to.be.equal(0);
-      expect(await cl.getNextMeetingNum()).to.be.equal(0);
+      expect(await cl.getNextMeetingNum()).to.be.equal(1);
     });
 
     it("should have returned expected tick proposals", async function() {
       // Take top two proposals
       expectInitPropValues(tickProps[0]);
       const t1 = expectTick(tickProps[0]);
-      expect(t1.data).to.be.equal("0x11");
+      expect(t1.data).to.be.oneOf([undefined, "0x"]);
 
       expectInitPropValues(tickProps[1]);
       const t2 = expectTick(tickProps[1]);
-      expect(t2.data).to.be.undefined;
+      expect(t2.data).to.be.equal("0x11");
     });
 
     it("should have created new proposal onchain", async function() {
@@ -444,10 +442,8 @@ describe("orclient", function() {
       link: "https://someaddr2.io"
     }; 
     before("create proposal by calling proposeSignal", async function() {
-      signalProps.push(await cl.proposeCustomSignal(sreq1));
-      signalProps.push(await cl.proposeCustomSignal(sreq2));
-
-      await time.increase(HOUR_1);
+      signalProps.push(await confirm(cl.proposeCustomSignal(sreq1)));
+      signalProps.push(await confirm(cl.proposeCustomSignal(sreq2)));
     });
 
     it("should have returned expected signal proposals", async function() {
@@ -690,13 +686,13 @@ describe("orclient", function() {
 
     before("create new proposals", async function() {
       resultProps = [];
-      resultProps.push(await cl.submitBreakoutResult(groupRes[2]))
+      resultProps.push(await confirm(cl.submitBreakoutResult(groupRes[2])))
 
       mintProps = [];
-      mintProps.push(await cl.proposeRespectTo(mintReqs[0]));
+      mintProps.push(await confirm(cl.proposeRespectTo(mintReqs[0])));
 
       tickProps = [];
-      tickProps.push(await cl.proposeTick());
+      tickProps.push(await confirm(cl.proposeTick()));
     });
 
     before("vote on proposals", async function() {
@@ -746,13 +742,13 @@ describe("orclient", function() {
   describe("passing a proposal", function() {
     before("create new proposals", async function() {
       resultProps = [];
-      resultProps.push(await cl.submitBreakoutResult(groupRes[2]))
+      resultProps.push(await confirm(cl.submitBreakoutResult(groupRes[2])))
 
       mintProps = [];
-      mintProps.push(await cl.proposeRespectTo(mintReqs[0]));
+      mintProps.push(await confirm(cl.proposeRespectTo(mintReqs[0])));
 
       tickProps = [];
-      tickProps.push(await cl.proposeTick());
+      tickProps.push(await confirm(cl.proposeTick()));
     });
 
     before("vote on proposals", async function() {

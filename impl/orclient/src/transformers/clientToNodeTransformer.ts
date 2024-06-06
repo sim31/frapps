@@ -152,7 +152,7 @@ export const zCRespectAccountReqToMintArgs = zRespAccountReqCtx.transform(async 
 
     const r: MintRespectArgs = {
       request: mintReq,
-      data: ""
+      data: "0x"
     };
 
     return r;
@@ -194,7 +194,7 @@ export const zCRespAccountReqToProposal = zRespAccountReqCtx.transform(async (va
     return r;
   } catch (err) {
     addCustomIssue(val, ctx, {
-      message: "exception in zCRespectBreakoutReqToProposal",
+      message: "exception in zCRespectAccountReqToProposal",
       cause: err
     });
   }
@@ -280,7 +280,7 @@ export const zCTickReqToProposal = zTickReqCtx.transform(async (val, ctx) => {
   try {
     const args: CustomSignalArgs = {
       signalType: zTickSignalType.value,
-      data: val.req.data === undefined ? "" : val.req.data
+      data: val.req.data === undefined ? "0x" : val.req.data
     };
     const cdata = orecInterface.encodeFunctionData(
       "signal",
@@ -355,7 +355,7 @@ export class ClientToNodeTransformer {
     return await zCRespBreakoutReqToProposal.parseAsync(c);
   }
 
-  async tranformRespectAccount(req: RespectAccountRequest): Promise<RespectAccount> {
+  async transformRespectAccount(req: RespectAccountRequest): Promise<RespectAccount> {
     const c = { ctx: this._cctx, req };
     return await zCRespAccountReqToProposal.parseAsync(c);
   }

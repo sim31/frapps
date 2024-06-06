@@ -184,7 +184,7 @@ export const zNProposalToRespectAccount = zNProposalFullInContext.transform(asyn
 
     return r;
   } catch(err) {
-    addCustomIssue(val, ctx, err, "Exception in zProposalToRespectAccount");
+    addCustomIssue(val, ctx, err, "Exception in zNProposalToRespectAccount");
   }
 }).pipe(zRespectAccount);
 
