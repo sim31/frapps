@@ -32,6 +32,7 @@ import {
   zVoteType,
   zCustomSignalType,
   PropTypeValues,
+  zProposedMsgBase,
 } from "./common.js";
 import { IORNode, zPropContent, Proposal as NProp } from "./ornodeTypes.js";
 import { Orec } from "orec/typechain-types/contracts/Orec.js";
@@ -165,7 +166,7 @@ export const zDecodedProposal = z.union([
 ]);
 export type DecodedProposal = z.infer<typeof zDecodedProposal>;
 
-export const zProposal = zOnchainProp.merge(zProposedMsg.partial()).extend({
+export const zProposal = zOnchainProp.merge(zProposedMsgBase.partial()).extend({
   decoded: zDecodedProposal.optional(),
 });
 export type Proposal = z.infer<typeof zProposal>;

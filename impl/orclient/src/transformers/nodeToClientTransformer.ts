@@ -50,7 +50,9 @@ import {
   zTokenIdData,
   zBigNumberishToBigint,
   zCustomSignalType,
-  zTickSignalType
+  zTickSignalType,
+  zBreakoutMintRequest,
+  zValueToRanking
 } from "../common.js";
 import { z, RefinementCtx } from "zod";
 import tokenIdPkg from "respect-sc/utils/tokenId.js";
@@ -64,7 +66,8 @@ import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js
 import { FractalRespect } from "op-fractal-sc/typechain-types/contracts/FractalRespect.js";
 import { ORContext } from "../orContext.js";
 import { token } from "orec/typechain-types/@openzeppelin/contracts/index.js";
-import { addCustomIssue } from "./common.js";
+import { addCustomIssue } from "../zErrorHandling.js";
+import { Optional } from "utility-types";
 
 export const zNPropContext = z.instanceof(ORContext);
 export type NPropContext = z.infer<typeof zNPropContext>;
@@ -84,39 +87,13 @@ export const zNAttachmentToMetadata = zPropAttachmentBase.transform((val, ctx) =
     propTitle: val.propTitle,
     propDescription: val.propDescription
   };
+  return r;
 }).pipe(zProposalMetadata);
 
 const respectInterface = Respect1155__factory.createInterface();
 const orecInterface = Orec__factory.createInterface();
 
-export const zValueToRanking = z.bigint().transform((val, ctx) => {
-  switch (val) {
-    case 55n: {
-      return 6;
-    }
-    case 34n: {
-      return 5;
-    }
-    case 21n: {
-      return 4;
-    }
-    case 13n: {
-      return 3;
-    }
-    case 8n: {
-      return 2;
-    }
-    case 5n: {
-      return 1;
-    }
-    default: {
-      addCustomIssue(ctx, "value is not equal to any of possible breakout group rewards");
-      return NaN;
-    }
-  }
-});
-
-export const zMintArgsToRespectBreakout = zMintRespectGroupArgs.transform((val, ctx) => {
+export const zMintArgsToRespectBreakout = zBreakoutMintRequest.transform((val, ctx) => {
   try {
     expect(val.mintRequests.length).to.be.greaterThanOrEqual(3).and.to.be.lessThanOrEqual(6);
 
@@ -124,12 +101,7 @@ export const zMintArgsToRespectBreakout = zMintRespectGroupArgs.transform((val, 
     let meetingNum: MeetingNum | undefined;
 
     for (const [i, req] of val.mintRequests.entries()) {
-      const rankingFromVal = zValueToRanking.parse(req.value);  
-      expect(rankingFromVal).to.be.equal(6 - i);
-
       const tokenIdData = unpackTokenId(req.id);
-      expect(tokenIdData.mintType).to.be.equal(0);
-      expect(tokenIdData.owner).to.be.not.equal(ZeroAddress);
       const periodNum = zBigNumberishToBigint.parse(tokenIdData.periodNumber); 
       if (meetingNum === undefined) {
         meetingNum = zMeetingNum.parse(periodNum + 1n);
@@ -140,20 +112,19 @@ export const zMintArgsToRespectBreakout = zMintRespectGroupArgs.transform((val, 
     }
     
     if (meetingNum !== undefined) {
-      const r: RespectBreakout = {
+      const r: Optional<RespectBreakout, 'groupNum'> = {
         propType: zPropType.Enum.respectBreakout,
         meetingNum: meetingNum,
         rankings,
-        groupNum: 0,
         mintData: zBytesLikeToBytes.parse(val.data),
         metadata: {}
       };
       return r;
     }
   } catch (err) {
-    addCustomIssue(ctx, err, "Exception in zMintArgsToRespectBreakout");
+    addCustomIssue(val, ctx, err, "Exception in zMintArgsToRespectBreakout");
   }
-}).pipe(zRespectBreakout);
+}).pipe(zRespectBreakout.partial({ groupNum: true }));
 
 export const zNProposalToRespectBreakout = zNProposalFullInContext.transform(async (val, ctx) => {
   try {
@@ -170,14 +141,13 @@ export const zNProposalToRespectBreakout = zNProposalFullInContext.transform(asy
       respectInterface.getFunction('mintRespectGroup').name,
       "expected mintRespectGroup function to be called"
     );
-    const args = zMintRespectGroupArgs.parse(tx?.args);
-    const respectBreakout = zMintArgsToRespectBreakout.parse(args);
+    const respectBreakout = zMintArgsToRespectBreakout.parse(tx?.args);
     respectBreakout.groupNum = attachment.groupNum;
     respectBreakout.metadata = zNAttachmentToMetadata.parse(attachment)
 
     return respectBreakout;
   } catch(err) {
-    addCustomIssue(ctx, err, "Exception in zNProposalToRespectBreakout");
+    addCustomIssue(val, ctx, err, "Exception in zNProposalToRespectBreakout");
   }
 }).pipe(zRespectBreakout);
 
@@ -214,7 +184,7 @@ export const zNProposalToRespectAccount = zNProposalFullInContext.transform(asyn
 
     return r;
   } catch(err) {
-    addCustomIssue(ctx, err, "Exception in zProposalToRespectAccount");
+    addCustomIssue(val, ctx, err, "Exception in zProposalToRespectAccount");
   }
 }).pipe(zRespectAccount);
 
@@ -248,7 +218,7 @@ export const zNProposalToBurnRespect = zNProposalFullInContext.transform(async (
 
     return r;
   } catch(err) {
-    addCustomIssue(ctx, err, "Exception in zProposalToBurnRespect");
+    addCustomIssue(val, ctx, err, "Exception in zProposalToBurnRespect");
   }
 }).pipe(zBurnRespect);
 
@@ -282,7 +252,7 @@ export const zNProposalToCustomSignal = zNProposalFullInContext.transform(async 
 
     return r;
   } catch(err) {
-    addCustomIssue(ctx, err, "Exception in zNProposalToCustomSignal");
+    addCustomIssue(val, ctx, err, "Exception in zNProposalToCustomSignal");
   }
 }).pipe(zCustomSignal);
 
@@ -315,7 +285,7 @@ export const zNProposalToTick = zNProposalFullInContext.transform(async (val, ct
 
     return r;
   } catch(err) {
-    addCustomIssue(ctx, err, "Exception in zNProposalToTick")
+    addCustomIssue(val, ctx, err, "Exception in zNProposalToTick")
   }
 }).pipe(zTick);
 
@@ -332,7 +302,7 @@ export const zNProposalToCustomCall = zNProposalFullInContext.transform(async (v
 
     return r;
   } catch(err) {
-    addCustomIssue(ctx, err, "Exception in zNProposalToCustomCall")
+    addCustomIssue(val, ctx, err, "Exception in zNProposalToCustomCall")
   }
 });
 
@@ -354,7 +324,7 @@ export const zProposalToDecodedProp = zNProposalFullInContext.transform(async (v
       return await zNProposalToTick.parseAsync(val);
     default:
       const exhaustiveCheck: never = val.prop.attachment;
-      addCustomIssue(ctx, "Exhaustiveness check failed in zProposalToDecodedProp");
+      addCustomIssue(val, ctx, "Exhaustiveness check failed in zProposalToDecodedProp");
   }
 }).pipe(zDecodedProposal);
 
@@ -375,7 +345,7 @@ export const zNPropToProp = zNProposalInContext.transform(async (nodeProp, ctx) 
 
     return rProp;
   } catch (err) {
-    addCustomIssue(ctx, err, "Error in zProposalToClientProp");
+    addCustomIssue(nodeProp, ctx, err, "Error in zProposalToClientProp");
   }
 }).pipe(zProposal);
 

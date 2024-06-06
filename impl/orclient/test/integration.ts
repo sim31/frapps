@@ -1,5 +1,5 @@
 import chai, { expect } from "chai";
-import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
+import { time, mine } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
 import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, VoteEnded, ProposalFailed, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest } from "../src/orclientTypes.js";
 import ORClient from "../src/orclient.js";
 import ORNodeMemImpl from "../src/ornodeMemImpl.js";
@@ -22,8 +22,23 @@ import { packTokenId } from "op-fractal-sc/utils/tokenId.js";
 import { IORNode } from "../src/ornodeTypes.js";
 import { ORContext } from "../src/orContext.js";
 
-chai.config.truncateThreshold = 0;
+// stack trace line number offset: 69
 
+chai.config.truncateThreshold = 0;
+chai.config.includeStack = true;
+
+type PropFunctionName = "submitBreakoutResult" | "proposeRespectTo"
+  | "burnRespect" | "proposeCustomSignal" | "proposeTick" | "proposeCustomCall";
+
+async function confirm<T>(
+  promise: Promise<T>,
+  increaseTimeS: number = 2
+): Promise<T> {
+  await time.increase(increaseTimeS);  
+  await time.increase(increaseTimeS);
+  await time.increase(increaseTimeS);
+  return await promise;
+}
 
 describe("orclient", function() {
   let cl: ORClient;
@@ -35,7 +50,7 @@ describe("orclient", function() {
   let orec: Orec;
   let signers: HardhatEthersSigner[];
   const oldRanksDelay = 518400; // 6 days in seconds
-  let resultProps: Proposal[];
+  let resultProps: Proposal[] = [];
   let mintProps: Proposal[];
   let tickProps: Proposal[];
   let signalProps: Proposal[];
@@ -236,10 +251,12 @@ describe("orclient", function() {
     expect(onchainProp.status).to.be.equal(ExecStatus.NotExecuted);
   }
 
-  function expectAproxNow(date: Date) {
-    const now = Date.now() / 1000;
-    const diff = now - date.getTime();
-    expect(Math.abs(diff) < 1).to.be.true;
+  async function expectAproxNow(date: Date, maxDiffSec = 60) {
+    const now = await time.latest();
+    // console.log("now: ", now, "date: ", (date.getTime() / 1000));
+    const diff = now - (date.getTime() / 1000);
+    // console.log("diff: ", diff);
+    expect(Math.abs(diff) < maxDiffSec).to.be.true;
   }
 
   describe("submitting breakout room results", function() {
@@ -254,26 +271,28 @@ describe("orclient", function() {
         {
           groupNum: 2,
           rankings: [
-            addrs[6], addrs[7], addrs[8], addrs[9], addrs[10], ZeroAddress
+            addrs[6], addrs[7], addrs[8], addrs[9], addrs[10]
           ]
         },
         {
           groupNum: 3,
           rankings: [
-            addrs[12], addrs[13], addrs[14], addrs[15], addrs[16], ZeroAddress
+            addrs[12], addrs[13], addrs[14], addrs[15], addrs[16] 
           ]
         }
       ]
 
-      await cl.submitBreakoutResult(groupRes[2]);
-      await cl.submitBreakoutResult(groupRes[1]);
-      await cl.submitBreakoutResult(groupRes[0]);
-      // TODO: submit with more different accounts
-
-      await time.increase(HOUR_1);
+      let result = await confirm(cl.submitBreakoutResult(groupRes[2]));
+      resultProps.push(result);
+      result = await confirm(cl.submitBreakoutResult(groupRes[1]));
+      resultProps.push(result);
+      result = await confirm(cl.submitBreakoutResult(groupRes[0]));
+      resultProps.push(result);
     });
 
     describe("lsProposals", function() {
+      let resultProps: Proposal[];
+
       before("call lsProposals", async function() {
         resultProps = await cl.lsProposals();
       });
@@ -282,7 +301,7 @@ describe("orclient", function() {
           const rb = expectRespectBreakout(prop);
 
           expect(rb.meetingNum).to.be.equal(1);
-          expect(rb.groupNum).to.be.equal(groupRes[index].groupNum);
+          expect(rb.groupNum).to.be.equal(groupRes[index].groupNum, "wrong group num");
           expect(rb.rankings).to.be.deep.equal(groupRes[index].rankings);
         }
       });
@@ -325,8 +344,8 @@ describe("orclient", function() {
 
         const onChainProp = await orec.proposals(pId);
 
-        expect(onChainProp.createTime).to.be.equal(prop.createTime);
-        expectAproxNow(prop.createTime);
+        expect(onChainProp.createTime).to.be.equal(prop.createTime.getTime() / 1000);
+        await expectAproxNow(prop.createTime);
         expect(onChainProp.yesWeight).to.be.equal(prop.yesWeight).to.be.equal(0);
         expect(onChainProp.noWeight).to.be.equal(prop.noWeight).to.be.equal(0);
         expect(onChainProp.status).to.be.equal(prop.status).to.be.equal(ExecStatus.NotExecuted);
@@ -341,6 +360,7 @@ describe("orclient", function() {
         }
       })
     });
+
     // it("should have created new proposals according to ornode")
   });
 

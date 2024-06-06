@@ -16,7 +16,7 @@ import {
 } from "../orclientTypes.js";
 import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, TickValid, idOfBurnRespectAttach, idOfCustomCallAttach, idOfCustomSignalAttach, idOfRespectAccountAttach, idOfRespectBreakoutAttach, zBurnRespect, zBurnRespectValid, zCustomCall, zCustomCallValid, zCustomSignal, zCustomSignalValid, zRespectAccount, zRespectAccountValid, zRespectBreakout, zRespectBreakoutValid, zTick, zTickValid } from "../ornodeTypes.js";
 import { ORContext } from "../orContext.js";
-import { BurnRespectArgs, CustomSignalArgs, KnownSignalTypes, MintRequest, MintRespectArgs, MintRespectGroupArgs, zBigNumberish, zBigNumberishToBigint, zBreakoutMintType, zGroupNum, zMintRespectArgs, zMintRespectGroupArgs, zPropType, zRankNum, zTickSignalType, zUnspecifiedMintType } from "../common.js";
+import { BurnRespectArgs, CustomSignalArgs, KnownSignalTypes, MintRequest, MintRespectArgs, MintRespectGroupArgs, zBigNumberish, zBigNumberishToBigint, zBreakoutMintRequest, zBreakoutMintType, zGroupNum, zMintRespectArgs, zMintRespectGroupArgs, zPropType, zRankNum, zTickSignalType, zUnspecifiedMintType } from "../common.js";
 import { expect } from "chai";
 import tokenIdPkg from "respect-sc/utils/tokenId.js";
 const { packTokenId } = tokenIdPkg;
@@ -26,7 +26,7 @@ import orecTypesPkg from "orec/typechain-types/index.js";
 const { Orec__factory } = orecTypesPkg;
 import { keccak256, solidityPackedKeccak256 } from "ethers";
 import orecPkg from "orec/utils/index.js";
-import { addCustomIssue } from "./common.js";
+import { addCustomIssue } from "../zErrorHandling.js";
 const { propId } = orecPkg;
 
 const respectInterface = Respect1155__factory.createInterface();
@@ -59,11 +59,7 @@ export const zRankNumToValue = zRankNum.transform((rankNum, ctx) => {
     const rankIndex = rankNum - 1;
     return _rewards[rankIndex];
   } catch (err) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "exception in zRankNumToValue",
-      params: { cause: err }
-    });
+    addCustomIssue(rankNum, ctx, err, "exception in zRankNumToValue");
   }
 }).pipe(zBigNumberish.gt(0n));
 
@@ -79,7 +75,7 @@ export const zCRespectBreakoutToMintArgs = zRespBreakoutReqCtx.transform(async (
     const mintReqs: MintRequest[] = [];
 
     for (const [i, addr] of val.req.rankings.entries()) {
-      const value = zRankNumToValue.parse(6 - i);
+      const value = zRankNumToValue.parse(i + 1);
       const id = packTokenId({
         owner: addr,
         mintType: zBreakoutMintType.value,
@@ -92,20 +88,14 @@ export const zCRespectBreakoutToMintArgs = zRespBreakoutReqCtx.transform(async (
 
     const r: MintRespectGroupArgs = {
       mintRequests: mintReqs,
-      data: ""
+      data: "0x"
     }
     return r;
   } catch (err) {
     // TODO: pass the parent err in some way, instead of passing it through message...
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "exception in zCRespectBreakoutToMintArgs",
-      params: {
-        cause: err
-      }
-    })
+    addCustomIssue(val, ctx, err, "exception in zCRespectBreakoutToMintArgs");
   }
-}).pipe(zMintRespectGroupArgs);
+}).pipe(zBreakoutMintRequest);
 
 export const zCRespBreakoutReqToProposal = zRespBreakoutReqCtx.transform(async (val, ctx) => {
   try {
@@ -133,7 +123,7 @@ export const zCRespBreakoutReqToProposal = zRespBreakoutReqCtx.transform(async (
     }
     return r;
   } catch (err) {
-    addCustomIssue(ctx, {
+    addCustomIssue(val, ctx, {
       message: "exception in zCRespectBreakoutReqToProposal",
       cause: err
     });
@@ -167,7 +157,7 @@ export const zCRespectAccountReqToMintArgs = zRespAccountReqCtx.transform(async 
 
     return r;
   } catch (err) {
-    addCustomIssue(ctx, {
+    addCustomIssue(val, ctx, {
       message: "exception in zCRespectAccountReqToMintArgs",
       cause: err
     });
@@ -203,7 +193,7 @@ export const zCRespAccountReqToProposal = zRespAccountReqCtx.transform(async (va
     }
     return r;
   } catch (err) {
-    addCustomIssue(ctx, {
+    addCustomIssue(val, ctx, {
       message: "exception in zCRespectBreakoutReqToProposal",
       cause: err
     });
@@ -241,7 +231,7 @@ export const zCBurnRespReqToProposal = zBurnRespectReqCtx.transform(async (val, 
     }
     return r;
   } catch (err) {
-    addCustomIssue(ctx, {
+    addCustomIssue(val, ctx, {
       message: "exception in zCBurnRespReqToProposal",
       cause: err
     });
@@ -279,7 +269,7 @@ export const zCCustomSignalReqToProposal = zCustomSignalReqCtx.transform(async (
     }
     return r;
   } catch (err) {
-    addCustomIssue(ctx, {
+    addCustomIssue(val, ctx, {
       message: "exception in zCCustomSignalReqToProposal",
       cause: err
     });
@@ -317,7 +307,7 @@ export const zCTickReqToProposal = zTickReqCtx.transform(async (val, ctx) => {
     }
     return r;
   } catch (err) {
-    addCustomIssue(ctx, {
+    addCustomIssue(val, ctx, {
       message: "exception in zCTickReqToProposal",
       cause: err
     });
@@ -346,7 +336,7 @@ export const zCCustomCallReqToProposal = zCustomCallReqCtx.transform(async (val,
     }
     return r;
   } catch (err) {
-    addCustomIssue(ctx, {
+    addCustomIssue(val, ctx, {
       message: "exception in zCCustomCallReqToProposal",
       cause: err
     });

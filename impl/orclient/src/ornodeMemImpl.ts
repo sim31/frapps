@@ -142,14 +142,15 @@ export default class ORNodeMemImpl implements IORNode {
   }
 
   async getProposals(from: number, limit: number): Promise<Proposal[]> {
-    const firstIndex = z.number().gte(0).parse(from);
+    const f = z.number().gte(0).lt(this._propIndex.length).parse(from);
     const l = z.number().gt(0).parse(limit);
-    const lastIndex = from + limit < this._propIndex.length
-      ? from + limit
-      : this._propIndex.length - 1;
+    const firstIndex = this._propIndex.length - 1 - f;
+    const lastIndex = firstIndex - limit >= 0
+      ? firstIndex - limit
+      : 0;
     
     const proposals = new Array<Proposal>();
-    for (let i = firstIndex; i <= lastIndex; i++) {
+    for (let i = firstIndex; i >= lastIndex; i--) {
       // Checks if proposal is stored
       const propId = this._propIndex[i];
       const prop = zProposal.parse(this._propMap[propId]);

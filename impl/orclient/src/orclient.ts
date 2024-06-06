@@ -179,11 +179,12 @@ export default class ORClient {
   }
 
   private async _submitPropToChain(proposal: NProp, vote?: VoteWithProp) {
+    // console.log(`Submitting proposal to chain: ${JSON.stringify(proposal)}`);
     const resp = vote !== undefined && vote.vote !== VoteType.None
       ? await this._ctx.orec.vote(
           proposal.id,
           vote.vote,
-          vote.memo ?? ""
+          vote.memo ?? "0x"
         )
       : await this._ctx.orec.propose(proposal.id);
 

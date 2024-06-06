@@ -1,4 +1,4 @@
-import { Provider as EthProvider } from "ethers";
+import { Provider as EthProvider, Result } from "ethers";
 import { Orec } from "orec/typechain-types/index.js";
 import { EthAddress, OnchainProp, PropId, zExecStatus, zProposalState, zStage, zVoteStatus } from "./common.js";
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
@@ -88,7 +88,7 @@ export class ORContext {
       createTime: new Date(Number(propState.createTime) * 1000),
       yesWeight: propState.yesWeight,
       noWeight: propState.noWeight,
-      status: zExecStatus.parse(propState.status),
+      status: propState.status,
       stage,
       voteStatus,
     }

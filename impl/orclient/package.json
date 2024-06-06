@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "NODE_OPTIONS='--enable-source-maps --experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat --network localhost test",
+    "test": "NODE_OPTIONS='--enable-source-maps --experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat --show-stack-traces --network localhost test",
     "script": "NODE_OPTIONS='--experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat run"
   },
   "keywords": [],

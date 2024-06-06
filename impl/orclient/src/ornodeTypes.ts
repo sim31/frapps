@@ -15,7 +15,8 @@ import {
   zPropType,
   zUint8,
   zProposedMsg,
-  zBytesLikeToBytes
+  zBytesLikeToBytes,
+  zGroupNum
 } from "./common.js";
 import { z } from "zod";
 import { Orec } from "orec/typechain-types/index.js";
@@ -36,7 +37,7 @@ export type PropAttachmentBase = z.infer<typeof zPropAttachmentBase>;
 
 export const zRespectBreakoutAttachment = zPropAttachmentBase.extend({
   propType: z.literal(zPropType.Enum.respectBreakout),
-  groupNum: z.number().gt(0)
+  groupNum: zGroupNum
 });
 export type RespectBreakoutAttachment = z.infer<typeof zRespectBreakoutAttachment>;
 
