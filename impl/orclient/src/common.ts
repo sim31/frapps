@@ -3,7 +3,7 @@ import { Orec } from "orec/typechain-types/index.js";
 import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js";
 import { z } from "zod";
 import tokenIdPkg from  "respect-sc/utils/tokenId.js"
-const { unpackTokenId } = tokenIdPkg;
+const { unpackTokenId, isTokenIdValid } = tokenIdPkg;
 import { ZeroAddress } from "ethers";
 
 // TODO: Move s
@@ -71,14 +71,18 @@ export enum VoteType {
 export const zVoteType = z.nativeEnum(VoteType);
 
 export const zTokenId = zBytes32.refine(val => {
-  try {
-    const unpacked = unpackTokenId(val);
-    return unpacked.owner !== ZeroAddress;
-  } catch {
-    return false;
-  }
+  return isTokenIdValid(val);
 });
 export type TokenId = z.infer<typeof zTokenId>;
+
+export const zNonZeroBigInt = z.bigint().nonnegative().or(z.bigint().nonpositive());
+
+export const zNonZeroNumber = z.number().nonnegative().or(z.number().nonpositive());
+
+export const zTokenIdNum = z.bigint().refine(val => {
+  return isTokenIdValid(val);
+})
+export type TokenIdNum = z.infer<typeof zTokenIdNum>;
 
 export const zBigNumberish = z.coerce.bigint();
 
@@ -126,6 +130,7 @@ export const zGroupNum = z.coerce.number().gt(0)
 export type GroupNum = z.infer<typeof zGroupNum>;
 
 export const zRankings = z.array(zEthAddress).min(3).max(6);
+export type Rankings = z.infer<typeof zRankings>;
 
 export const zRankNum = z.number().lte(6).gt(0);
 
@@ -149,7 +154,7 @@ export type CProposalState = Omit<
 >
 
 export const zMintRequest = z.object({
-  id: zBigNumberish.gt(0n),
+  id: zTokenIdNum,
   value: zBigNumberish.gt(0n)
 });
 export type MintRequest = z.infer<typeof zMintRequest>;

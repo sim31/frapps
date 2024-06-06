@@ -50,3 +50,23 @@ export function unpackTokenId(tokenId: TokenId): TokenIdData {
     mintType, periodNumber, owner
   };
 }
+
+export function isTokenIdDataValid(td: TokenIdData): boolean {
+  return td.owner !== ethers.ZeroAddress
+    && ethers.isAddress(td.owner)
+    && ethers.getNumber(td.periodNumber) >= 0
+    && ethers.getNumber(td.mintType) >= 0;
+}
+
+export function isTokenIdValid(tokenId: TokenId | TokenIdData): boolean {
+  if (typeof tokenId === 'object') {
+    return isTokenIdDataValid(tokenId);
+  } else {
+    try {
+      const tid = unpackTokenId(tokenId);
+      return isTokenIdDataValid(tid);
+    } catch {
+      return false;
+    }
+  }
+}

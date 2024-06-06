@@ -64,7 +64,7 @@ import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js
 import { FractalRespect } from "op-fractal-sc/typechain-types/contracts/FractalRespect.js";
 import { ORContext } from "../orContext.js";
 import { token } from "orec/typechain-types/@openzeppelin/contracts/index.js";
-import { addIssue } from "./common.js";
+import { addCustomIssue } from "./common.js";
 
 export const zNPropContext = z.instanceof(ORContext);
 export type NPropContext = z.infer<typeof zNPropContext>;
@@ -110,7 +110,7 @@ export const zValueToRanking = z.bigint().transform((val, ctx) => {
       return 1;
     }
     default: {
-      addIssue(ctx, "value is not equal to any of possible breakout group rewards");
+      addCustomIssue(ctx, "value is not equal to any of possible breakout group rewards");
       return NaN;
     }
   }
@@ -151,7 +151,7 @@ export const zMintArgsToRespectBreakout = zMintRespectGroupArgs.transform((val, 
       return r;
     }
   } catch (err) {
-    addIssue(ctx, `Error: ${err}`);
+    addCustomIssue(ctx, err, "Exception in zMintArgsToRespectBreakout");
   }
 }).pipe(zRespectBreakout);
 
@@ -177,7 +177,7 @@ export const zNProposalToRespectBreakout = zNProposalFullInContext.transform(asy
 
     return respectBreakout;
   } catch(err) {
-    addIssue(ctx, `Exception in zProposalToRespectBreakout: ${err}`);
+    addCustomIssue(ctx, err, "Exception in zNProposalToRespectBreakout");
   }
 }).pipe(zRespectBreakout);
 
@@ -214,7 +214,7 @@ export const zNProposalToRespectAccount = zNProposalFullInContext.transform(asyn
 
     return r;
   } catch(err) {
-    addIssue(ctx, `Exception in zProposalToRespectAccount: ${err}`)
+    addCustomIssue(ctx, err, "Exception in zProposalToRespectAccount");
   }
 }).pipe(zRespectAccount);
 
@@ -248,7 +248,7 @@ export const zNProposalToBurnRespect = zNProposalFullInContext.transform(async (
 
     return r;
   } catch(err) {
-    addIssue(ctx, `Exception in zProposalToBurnRespect: ${err}`)
+    addCustomIssue(ctx, err, "Exception in zProposalToBurnRespect");
   }
 }).pipe(zBurnRespect);
 
@@ -282,7 +282,7 @@ export const zNProposalToCustomSignal = zNProposalFullInContext.transform(async 
 
     return r;
   } catch(err) {
-    addIssue(ctx, `Exception in zNProposalToCustomSignal: ${err}`)
+    addCustomIssue(ctx, err, "Exception in zNProposalToCustomSignal");
   }
 }).pipe(zCustomSignal);
 
@@ -315,7 +315,7 @@ export const zNProposalToTick = zNProposalFullInContext.transform(async (val, ct
 
     return r;
   } catch(err) {
-    addIssue(ctx, `Exception in zNProposalToTick: ${err}`)
+    addCustomIssue(ctx, err, "Exception in zNProposalToTick")
   }
 }).pipe(zTick);
 
@@ -332,7 +332,7 @@ export const zNProposalToCustomCall = zNProposalFullInContext.transform(async (v
 
     return r;
   } catch(err) {
-    addIssue(ctx, `Exception in zNProposalToCustomCall: ${err}`)
+    addCustomIssue(ctx, err, "Exception in zNProposalToCustomCall")
   }
 });
 
@@ -354,7 +354,7 @@ export const zProposalToDecodedProp = zNProposalFullInContext.transform(async (v
       return await zNProposalToTick.parseAsync(val);
     default:
       const exhaustiveCheck: never = val.prop.attachment;
-      break;
+      addCustomIssue(ctx, "Exhaustiveness check failed in zProposalToDecodedProp");
   }
 }).pipe(zDecodedProposal);
 
@@ -375,7 +375,7 @@ export const zNPropToProp = zNProposalInContext.transform(async (nodeProp, ctx) 
 
     return rProp;
   } catch (err) {
-    addIssue(ctx, `Error in zProposalToClientProp: ${err}`);
+    addCustomIssue(ctx, err, "Error in zProposalToClientProp");
   }
 }).pipe(zProposal);
 

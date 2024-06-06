@@ -22,6 +22,8 @@ import { packTokenId } from "op-fractal-sc/utils/tokenId.js";
 import { IORNode } from "../src/ornodeTypes.js";
 import { ORContext } from "../src/orContext.js";
 
+chai.config.truncateThreshold = 0;
+
 
 describe("orclient", function() {
   let cl: ORClient;
@@ -38,27 +40,7 @@ describe("orclient", function() {
   let tickProps: Proposal[];
   let signalProps: Proposal[];
   let nonRespectedAccs: EthAddress[];
-
-  const groupRes: BreakoutResult[] = [
-    {
-      groupNum: 1,
-      rankings: [
-        addrs[0], addrs[1], addrs[2], addrs[3], addrs[4], addrs[5]
-      ]
-    },
-    {
-      groupNum: 2,
-      rankings: [
-        addrs[6], addrs[7], addrs[8], addrs[9], addrs[10], ZeroAddress
-      ]
-    },
-    {
-      groupNum: 3,
-      rankings: [
-        addrs[12], addrs[13], addrs[14], addrs[15], addrs[16], ZeroAddress
-      ]
-    }
-  ]
+  let groupRes: BreakoutResult[];
 
   const mintReqs: RespectAccountRequest[] = [
     {
@@ -262,10 +244,30 @@ describe("orclient", function() {
 
   describe("submitting breakout room results", function() {
     before("submit some results", async function() {
+      groupRes = [
+        {
+          groupNum: 1,
+          rankings: [
+            addrs[0], addrs[1], addrs[2], addrs[3], addrs[4], addrs[5]
+          ]
+        },
+        {
+          groupNum: 2,
+          rankings: [
+            addrs[6], addrs[7], addrs[8], addrs[9], addrs[10], ZeroAddress
+          ]
+        },
+        {
+          groupNum: 3,
+          rankings: [
+            addrs[12], addrs[13], addrs[14], addrs[15], addrs[16], ZeroAddress
+          ]
+        }
+      ]
 
-      await expect(cl.submitBreakoutResult(groupRes[2])).to.not.be.rejected;
-      await expect(cl.submitBreakoutResult(groupRes[1])).to.not.be.rejected;
-      await expect(cl.submitBreakoutResult(groupRes[0])).to.not.be.rejected;
+      await cl.submitBreakoutResult(groupRes[2]);
+      await cl.submitBreakoutResult(groupRes[1]);
+      await cl.submitBreakoutResult(groupRes[0]);
       // TODO: submit with more different accounts
 
       await time.increase(HOUR_1);

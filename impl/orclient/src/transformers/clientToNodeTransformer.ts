@@ -1,4 +1,4 @@
-import { ZodType, ZodTypeAny, z } from "zod";
+import { ZodIssueCode, ZodType, ZodTypeAny, z } from "zod";
 import {
   BurnRespectRequest,
   CustomCallRequest,
@@ -20,13 +20,13 @@ import { BurnRespectArgs, CustomSignalArgs, KnownSignalTypes, MintRequest, MintR
 import { expect } from "chai";
 import tokenIdPkg from "respect-sc/utils/tokenId.js";
 const { packTokenId } = tokenIdPkg;
-import { addIssue } from "./common.js";
 import respect11155TypesPkg from "respect-sc/typechain-types/index.js"
 const { Respect1155__factory } = respect11155TypesPkg;
 import orecTypesPkg from "orec/typechain-types/index.js";
 const { Orec__factory } = orecTypesPkg;
 import { keccak256, solidityPackedKeccak256 } from "ethers";
 import orecPkg from "orec/utils/index.js";
+import { addCustomIssue } from "./common.js";
 const { propId } = orecPkg;
 
 const respectInterface = Respect1155__factory.createInterface();
@@ -59,7 +59,11 @@ export const zRankNumToValue = zRankNum.transform((rankNum, ctx) => {
     const rankIndex = rankNum - 1;
     return _rewards[rankIndex];
   } catch (err) {
-    addIssue(ctx, `${err}`);
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "exception in zRankNumToValue",
+      params: { cause: err }
+    });
   }
 }).pipe(zBigNumberish.gt(0n));
 
@@ -92,7 +96,14 @@ export const zCRespectBreakoutToMintArgs = zRespBreakoutReqCtx.transform(async (
     }
     return r;
   } catch (err) {
-    addIssue(ctx, `Error: ${err}`);
+    // TODO: pass the parent err in some way, instead of passing it through message...
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "exception in zCRespectBreakoutToMintArgs",
+      params: {
+        cause: err
+      }
+    })
   }
 }).pipe(zMintRespectGroupArgs);
 
@@ -122,7 +133,10 @@ export const zCRespBreakoutReqToProposal = zRespBreakoutReqCtx.transform(async (
     }
     return r;
   } catch (err) {
-    addIssue(ctx, `Error: ${err}`);
+    addCustomIssue(ctx, {
+      message: "exception in zCRespectBreakoutReqToProposal",
+      cause: err
+    });
   }
 }).pipe(zRespectBreakoutValid);
 
@@ -153,7 +167,10 @@ export const zCRespectAccountReqToMintArgs = zRespAccountReqCtx.transform(async 
 
     return r;
   } catch (err) {
-    addIssue(ctx, `Error: ${err}`);
+    addCustomIssue(ctx, {
+      message: "exception in zCRespectAccountReqToMintArgs",
+      cause: err
+    });
   }
 }).pipe(zMintRespectArgs);
 
@@ -186,7 +203,10 @@ export const zCRespAccountReqToProposal = zRespAccountReqCtx.transform(async (va
     }
     return r;
   } catch (err) {
-    addIssue(ctx, `Error: ${err}`);
+    addCustomIssue(ctx, {
+      message: "exception in zCRespectBreakoutReqToProposal",
+      cause: err
+    });
   }
 }).pipe(zRespectAccountValid);
 
@@ -221,7 +241,10 @@ export const zCBurnRespReqToProposal = zBurnRespectReqCtx.transform(async (val, 
     }
     return r;
   } catch (err) {
-    addIssue(ctx, `Error: ${err}`);
+    addCustomIssue(ctx, {
+      message: "exception in zCBurnRespReqToProposal",
+      cause: err
+    });
   }
 }).pipe(zBurnRespectValid);
 
@@ -256,7 +279,10 @@ export const zCCustomSignalReqToProposal = zCustomSignalReqCtx.transform(async (
     }
     return r;
   } catch (err) {
-    addIssue(ctx, `Error: ${err}`);
+    addCustomIssue(ctx, {
+      message: "exception in zCCustomSignalReqToProposal",
+      cause: err
+    });
   }
 }).pipe(zCustomSignalValid);
 
@@ -291,7 +317,10 @@ export const zCTickReqToProposal = zTickReqCtx.transform(async (val, ctx) => {
     }
     return r;
   } catch (err) {
-    addIssue(ctx, `Error: ${err}`);
+    addCustomIssue(ctx, {
+      message: "exception in zCTickReqToProposal",
+      cause: err
+    });
   }
 }).pipe(zTickValid);
 
@@ -317,7 +346,10 @@ export const zCCustomCallReqToProposal = zCustomCallReqCtx.transform(async (val,
     }
     return r;
   } catch (err) {
-    addIssue(ctx, `Error: ${err}`);
+    addCustomIssue(ctx, {
+      message: "exception in zCCustomCallReqToProposal",
+      cause: err
+    });
   }
 }).pipe(zCustomCallValid);
 
