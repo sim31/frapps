@@ -44,6 +44,7 @@ export const zExecStatus = z.preprocess(val => zUint8.parse(val), zExecStatusEnu
 export const zBytes = z.string().refine((val) => {
   return isHexString(val);
 });
+export type Bytes = z.infer<typeof zBytes>;
 
 export const zBytes32 = z.string().refine((val) => {
   return isHexString(val, 32);

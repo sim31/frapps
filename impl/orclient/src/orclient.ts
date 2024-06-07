@@ -1,6 +1,6 @@
-import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt } from "../node_modules/ethers/lib.commonjs/index.js";
-import { EthAddress, PropId, ProposalState, TokenId, VoteType } from "./common.js";
-import { BreakoutResult, BurnRespectRequest, CustomCallRequest, CustomSignalRequest, NotImplemented, Proposal, ProposalMetadata, PutProposalFailure, RespectAccountRequest, RespectBreakoutRequest, TickRequest, TxFailed, VoteRequest, VoteWithProp, zVoteWithProp } from "./orclientTypes.js";
+import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt, toBeHex } from "../node_modules/ethers/lib.commonjs/index.js";
+import { Bytes, EthAddress, PropId, ProposalState, TokenId, VoteType } from "./common.js";
+import { BreakoutResult, BurnRespectRequest, CustomCallRequest, CustomSignalRequest, NotImplemented, Proposal, ProposalMetadata, PutProposalFailure, RespectAccountRequest, RespectBreakoutRequest, TickRequest, TxFailed, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp } from "./orclientTypes.js";
 import { ORContext } from "./orContext.js";
 import { NodeToClientTransformer } from "./transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "./transformers/clientToNodeTransformer.js";
@@ -107,12 +107,17 @@ export default class ORClient {
     } else {
       req = pidOrReq as VoteRequest;
     }
-    const m = memo !== undefined ? hexlify(toUtf8Bytes(memo)) : "0x";
+    const m = this.encodeMemo(req.memo);
     const orec = this._ctx.orec;
     const errMsg = `orec.vote(${req.propId}, ${req.vote}, ${m})`
     const promise = orec.vote(req.propId, req.vote, m);
     await this._handleTxPromise(promise, this._cfg.otherConfirms, errMsg);
   }
+
+  encodeMemo(memo?: string): Bytes {
+    return memo !== undefined && memo != "" ? hexlify(toUtf8Bytes(memo)) : "0x";
+  }
+
   // UC3
   async execute(propId: PropId) {
     const orec = this._ctx.orec;
@@ -127,52 +132,63 @@ export default class ORClient {
   // UC{1,4}
   async submitBreakoutResult(
     request: RespectBreakoutRequest,
-    vote: VoteWithProp = { vote: VoteType.Yes }
+    vote: VoteWithPropRequest = { vote: VoteType.Yes }
   ): Promise<Proposal> {
+    const v = zVoteWithProp.parse(vote); 
     const proposal = await this._clientToNode.transformRespectBreakout(request);
-    return await this._submitProposal(proposal, vote);
+    return await this._submitProposal(proposal, v);
   }
   // UC5
   async proposeRespectTo(
     req: RespectAccountRequest,
-    vote: VoteWithProp = { vote: VoteType.Yes }
+    vote: VoteWithPropRequest = { vote: VoteType.Yes }
   ): Promise<Proposal> {
+    const v = zVoteWithProp.parse(vote); 
     const proposal = await this._clientToNode.transformRespectAccount(req);
-    return await this._submitProposal(proposal, vote);
+    return await this._submitProposal(proposal, v);
   }
 
   // UC6
   async burnRespect(
     req: BurnRespectRequest,
-    vote: VoteWithProp = { vote: VoteType.Yes }
+    vote: VoteWithPropRequest = { vote: VoteType.Yes }
   ): Promise<Proposal> {
+    const v = zVoteWithProp.parse(vote); 
     const proposal = await this._clientToNode.transformBurnRespect(req);
-    return await this._submitProposal(proposal, vote);
+    return await this._submitProposal(proposal, v);
   }
 
   async proposeCustomSignal(
     req: CustomSignalRequest,
-    vote: VoteWithProp = { vote: VoteType.Yes }
+    vote: VoteWithPropRequest = { vote: VoteType.Yes }
   ): Promise<Proposal> {
+    const v = zVoteWithProp.parse(vote); 
     const proposal = await this._clientToNode.transformCustomSignal(req);
-    return await this._submitProposal(proposal, vote);
+    return await this._submitProposal(proposal, v);
   }
 
   // UC7
   async proposeTick(
     req: TickRequest = {},
-    vote: VoteWithProp = { vote: VoteType.Yes }
+    vote: VoteWithPropRequest = { vote: VoteType.Yes }
   ): Promise<Proposal> {
+    const v = zVoteWithProp.parse(vote); 
+
+    if (req.data === undefined) {
+      req.data = toBeHex(await this.getNextMeetingNum());
+    }
+
     const proposal = await this._clientToNode.transformTick(req);
-    return await this._submitProposal(proposal, vote);
+    return await this._submitProposal(proposal, v);
   }
 
   async proposeCustomCall(
     req: CustomCallRequest,
-    vote: VoteWithProp = { vote: VoteType.Yes }
+    vote: VoteWithPropRequest = { vote: VoteType.Yes }
   ): Promise<Proposal> {
+    const v = zVoteWithProp.parse(vote); 
     const proposal = await this._clientToNode.transformCustomCall(req);
-    return await this._submitProposal(proposal, vote);
+    return await this._submitProposal(proposal, v);
   }
 
   async getPeriodNum(): Promise<number> {
@@ -209,7 +225,7 @@ export default class ORClient {
       return this._ctx.orec.vote(
           proposal.id,
           vote.vote,
-          vote.memo ?? "0x"
+          this.encodeMemo(vote.memo)
       );
     } else {
       return this._ctx.orec.propose(proposal.id);

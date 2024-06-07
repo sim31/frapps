@@ -1,6 +1,6 @@
 import chai, { expect } from "chai";
 import { time, mine } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
-import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, ProposalFailed, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest, TxFailed } from "../src/orclientTypes.js";
+import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest, TxFailed, RespectBreakoutRequest, VoteRequest, VoteWithProp } from "../src/orclientTypes.js";
 import ORClient from "../src/orclient.js";
 import ORNodeMemImpl from "../src/ornodeMemImpl.js";
 import { EthAddress, PropType, Stage, VoteStatus, zProposedMsg } from "../src/common.js";
@@ -58,6 +58,7 @@ describe("orclient", function() {
   let nonRespectedAccs: EthAddress[];
   let groupRes: BreakoutResult[];
   let mintReqs: RespectAccountRequest[];
+  let threshold = 21;
 
   before("launch eth test network", async function() {
     // TODO: set url
@@ -112,7 +113,7 @@ describe("orclient", function() {
       {
         groupNum: 1,
         ranks: [
-          addrs[14], addrs[11], addrs[16], addrs[12], addrs[13], addrs[15]
+          addrs[7], addrs[11], addrs[16], addrs[12], addrs[13], addrs[14]
         ]
       },
       {
@@ -152,7 +153,7 @@ describe("orclient", function() {
 
     orec = await orecFactory.deploy(
       await oldRespect.getAddress(),
-      DAY_1, DAY_6, 21
+      DAY_1, DAY_6, threshold
     );
   });
 
@@ -417,7 +418,7 @@ describe("orclient", function() {
       // Take top two proposals
       expectInitPropValues(tickProps[0]);
       const t1 = expectTick(tickProps[0]);
-      expect(t1.data).to.be.oneOf([undefined, "0x"]);
+      expect(t1.data).to.be.equal("0x01")
 
       expectInitPropValues(tickProps[1]);
       const t2 = expectTick(tickProps[1]);
@@ -488,6 +489,16 @@ describe("orclient", function() {
 
       await time.increase(HOUR_1);
 
+      const signer3 = signers[6];
+      expect(nonRespectedAccs).to.not.include(signer3.address);
+      const voter3 = cl.connect(signer3);
+      await expect(voter3.vote(resultProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
+
+      const signer4 = signers[12];
+      expect(nonRespectedAccs).to.not.include(signer4.address);
+      const voter4 = cl.connect(signer4);
+      await expect(voter4.vote(resultProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
+
       //// Proposal 2 ///
       // vote 2
       await expect(voter2.vote(mintProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
@@ -508,7 +519,9 @@ describe("orclient", function() {
     it("should update yesWeight", async function() {
       const rWeight1 = await oldRespect.balanceOf(addrs[10]);
       const rWeight2 = await oldRespect.balanceOf(addrs[11]);
-      const rWeight = rWeight1 + rWeight2;
+      const rWeight3 = await oldRespect.balanceOf(addrs[6]);
+      const rWeight4 = await oldRespect.balanceOf(addrs[12]);
+      const rWeight = rWeight1 + rWeight2 + rWeight3 + rWeight4;
 
       const updatedResProp = await cl.getProposal(resultProps[0].id);
       expect(updatedResProp.yesWeight).to.be.equal(rWeight);
@@ -525,7 +538,9 @@ describe("orclient", function() {
     it("should update onchain yesWeight", async function() {
       const rWeight1 = await oldRespect.balanceOf(addrs[10]);
       const rWeight2 = await oldRespect.balanceOf(addrs[11]);
-      const rWeight = rWeight1 + rWeight2;
+      const rWeight3 = await oldRespect.balanceOf(addrs[6]);
+      const rWeight4 = await oldRespect.balanceOf(addrs[12]);
+      const rWeight = rWeight1 + rWeight2 + rWeight3 + rWeight4;
 
       const resPropState = await orec.proposals(resultProps[0].id);
       expect(resPropState.yesWeight).to.be.equal(rWeight);
@@ -543,17 +558,17 @@ describe("orclient", function() {
     it("should vote NO successfully with respect holder account", async function() {
       ///// Proposal 1 ///
       // vote 1
-      const signer = signers[16];
+      const signer = signers[7];
       expect(nonRespectedAccs).to.not.include(signer.address);
-      const voter = cl.connect(signers[16]);
+      const voter = cl.connect(signers[7]);
       await expect(voter.vote(resultProps[0].id, VoteType.No, "")).to.not.be.rejected;
 
       await time.increase(HOUR_1);
 
       // vote 2
-      const signer2 = signers[12];
+      const signer2 = signers[5];
       expect(nonRespectedAccs).to.not.include(signer2.address);
-      const voter2 = cl.connect(signers[12]);
+      const voter2 = cl.connect(signers[5]);
       await expect(voter2.vote(resultProps[0].id, VoteType.No)).to.not.be.rejected;
 
       await time.increase(HOUR_1);
@@ -579,13 +594,15 @@ describe("orclient", function() {
       await time.increase(HOUR_1);
     });
     it("should update noWeight", async function() {
-      const rWeight1 = await oldRespect.balanceOf(addrs[16]);
-      const rWeight2 = await oldRespect.balanceOf(addrs[12]);
+      const rWeight1 = await oldRespect.balanceOf(addrs[7]);
+      const rWeight2 = await oldRespect.balanceOf(addrs[5]);
       const rWeight = rWeight1 + rWeight2;
 
       const yesRWeight1 = await oldRespect.balanceOf(addrs[10]);
       const yesRWeight2 = await oldRespect.balanceOf(addrs[11]);
-      const yesRWeight = yesRWeight1 + yesRWeight2;
+      const yesRWeight3 = await oldRespect.balanceOf(addrs[6]);
+      const yesRWeight4 = await oldRespect.balanceOf(addrs[12]);
+      const yesRWeight = yesRWeight1 + yesRWeight2 + yesRWeight3 + yesRWeight4;
 
       const updatedResProp = await cl.getProposal(resultProps[0].id);
       expect(updatedResProp.yesWeight).to.be.equal(yesRWeight);
@@ -600,13 +617,15 @@ describe("orclient", function() {
       expect(updatedTickProp.noWeight).to.be.equal(rWeight1);
     });
     it("should update onchain noWeight", async function() {
-      const rWeight1 = await oldRespect.balanceOf(addrs[16]);
-      const rWeight2 = await oldRespect.balanceOf(addrs[12]);
+      const rWeight1 = await oldRespect.balanceOf(addrs[7]);
+      const rWeight2 = await oldRespect.balanceOf(addrs[5]);
       const rWeight = rWeight1 + rWeight2;
 
       const yesRWeight1 = await oldRespect.balanceOf(addrs[10]);
       const yesRWeight2 = await oldRespect.balanceOf(addrs[11]);
-      const yesRWeight = yesRWeight1 + yesRWeight2;
+      const yesRWeight3 = await oldRespect.balanceOf(addrs[6]);
+      const yesRWeight4 = await oldRespect.balanceOf(addrs[12]);
+      const yesRWeight = yesRWeight1 + yesRWeight2 + yesRWeight3 + yesRWeight4;
 
       const resPropState = await orec.proposals(resultProps[0].id);
       expect(resPropState.yesWeight).to.be.equal(yesRWeight);
@@ -627,13 +646,15 @@ describe("orclient", function() {
       await expect(voter.vote(resultProps[0].id, VoteType.No, "")).to.not.be.rejected;
 
       // Check if vote weights were updated...
-      const rWeight1 = await oldRespect.balanceOf(addrs[16]);
-      const rWeight2 = await oldRespect.balanceOf(addrs[12]);
+      const rWeight1 = await oldRespect.balanceOf(addrs[7]);
+      const rWeight2 = await oldRespect.balanceOf(addrs[5]);
       const rWeight3 = await oldRespect.balanceOf(addrs[10]);
       const rWeight = rWeight1 + rWeight2 + rWeight3;
 
-      const yesRWeight1 = await oldRespect.balanceOf(addrs[11]);
-      const yesRWeight = yesRWeight1;
+      const yesRWeight2 = await oldRespect.balanceOf(addrs[11]);
+      const yesRWeight3 = await oldRespect.balanceOf(addrs[6]);
+      const yesRWeight4 = await oldRespect.balanceOf(addrs[12]);
+      const yesRWeight = yesRWeight2 + yesRWeight3 + yesRWeight4;
 
       // ...according to orclient...
       const updatedResProp = await cl.getProposal(resultProps[0].id);
@@ -647,7 +668,9 @@ describe("orclient", function() {
     })
 
     it("should throw if attempting to vote YES after voting time ended", async function() {
+      expect(await orec.isVotePeriod(resultProps[0].id)).to.be.true;
       await time.increase(DAY_1 + 1n);
+      expect(await orec.isVotePeriod(resultProps[0].id)).to.be.false;
 
       const voter = cl.connect(signers[14]);
 
@@ -658,15 +681,23 @@ describe("orclient", function() {
             .that.has.property('name', 'VotePeriodOver');
     });
     it("should vote NO successfully during veto time", async function() {
+      const id = resultProps[0].id;
+      expect(await orec.isVetoPeriod(id)).to.be.true;
+      expect(await orec.getVoteStatus(id))
+        .to.be.equal(
+          VoteStatus.Passing,
+          `${(await orec.proposals(id)).yesWeight} / ${(await orec.proposals(id)).noWeight}`
+        );
+
       // Save current weight
       const resProp = await cl.getProposal(resultProps[0].id);
 
       expect(nonRespectedAccs).to.not.include(signers[14].address);
       const voter = cl.connect(signers[14]);
 
-      await expect(voter.vote(resultProps[0].id, VoteType.No, "")).to.not.be.rejected;
+      await expect(voter.vote(resultProps[0].id, VoteType.No)).to.not.be.rejected;
 
-      const newNoWeight = resProp.noWeight - await oldRespect.balanceOf(signers[14].address);
+      const newNoWeight = resProp.noWeight + await oldRespect.balanceOf(signers[14].address);
 
       const updatedResProp = await cl.getProposal(resultProps[0].id);
       expect(updatedResProp.noWeight).to.be.equal(newNoWeight);
@@ -683,24 +714,50 @@ describe("orclient", function() {
       await expect(voter.vote(resultProps[1].id, VoteType.Yes, ""))
         .to.eventually.be.rejectedWith(TxFailed)
           .that.has.property('decodedError')
-            .that.has.property('name', "ProposalInactive");
+            .that.has.property('name', "VotePeriodOver");
       await expect(voter.vote(resultProps[1].id, VoteType.No, ""))
         .to.eventually.be.rejectedWith(TxFailed)
           .that.has.property('decodedError')
             .that.has.property('name', 'ProposalInactive');
     });
   });
+  // TODO: describe creating new proposals
+  // TODO: describe submitting breakout results multiple times instead of submitting once and then voting
   describe("failing a proposal", function() {
+    let groupRes: RespectBreakoutRequest;
+    let mintReq: RespectAccountRequest;
 
     before("create new proposals", async function() {
+      // These requests are identical to the ones already submitted except for metadata
+      // So this is also a test for how to resolve conflicts...
+      // Without metadata you are getting an error that VotePeriodOver...
+      groupRes = {
+        groupNum: 3,
+        rankings: [
+          addrs[12], addrs[13], addrs[14], addrs[15], addrs[16] 
+        ],
+        metadata: {
+          propTitle: "2nd attempt"
+        }
+      }
+      mintReq = {
+        account: addrs[0],
+        value: 10n,
+        title: "Some work 1",
+        reason: "Did some work 1",
+        metadata: {
+          propTitle: "2nd attempt"
+        }
+      };
+
       resultProps = [];
-      resultProps.push(await confirm(cl.submitBreakoutResult(groupRes[2])))
+      resultProps.push(await confirm(cl.submitBreakoutResult(groupRes, { memo: "smth"})))
 
       mintProps = [];
-      mintProps.push(await confirm(cl.proposeRespectTo(mintReqs[0])));
+      mintProps.push(await confirm(cl.proposeRespectTo(mintReq, { memo: "aa"})));
 
       tickProps = [];
-      tickProps.push(await confirm(cl.proposeTick()));
+      tickProps.push(await confirm(cl.proposeTick({ metadata: { propDescription: "B" }})));
     });
 
     before("vote on proposals", async function() {
@@ -742,47 +799,84 @@ describe("orclient", function() {
     });
 
     it("should throw if trying to execute a failed proposal", async function() {
-      await expect(cl.execute(mintProps[0].id)).to.be.rejectedWith(ProposalFailed);
-      await expect(cl.execute(resultProps[0].id)).to.be.rejectedWith(ProposalFailed);
+      await expect(cl.execute(mintProps[0].id))
+        .to.eventually.be.rejectedWith(TxFailed)
+          .that.has.property("decodedError")
+            .that.has.property("name", "ProposalNotPassed");
+      await expect(cl.execute(resultProps[0].id))
+        .to.eventually.be.rejectedWith(TxFailed)
+          .that.has.property("decodedError")
+            .that.has.property("name", "ProposalNotPassed");
     })
   });
   describe("vetoing a proposal", function() {})
   describe("passing a proposal", function() {
+    let groupRes: RespectBreakoutRequest;
+    let mintReq: RespectAccountRequest;
+
     before("create new proposals", async function() {
+      // These requests are identical to the ones already submitted except for metadata
+      // So this is also a test for how to resolve conflicts...
+      // Without metadata you are getting an error that VotePeriodOver...
+      groupRes = {
+        groupNum: 3,
+        rankings: [
+          addrs[12], addrs[13], addrs[14], addrs[15], addrs[16] 
+        ],
+        metadata: {
+          propTitle: "3rd attempt"
+        }
+      }
+      mintReq = {
+        account: addrs[0],
+        value: 10n,
+        title: "Some work 1",
+        reason: "Did some work 1",
+        metadata: {
+          propTitle: "3rd attempt"
+        }
+      };
       resultProps = [];
-      resultProps.push(await confirm(cl.submitBreakoutResult(groupRes[2])))
+      resultProps.push(await confirm(cl.submitBreakoutResult(groupRes)))
 
       mintProps = [];
-      mintProps.push(await confirm(cl.proposeRespectTo(mintReqs[0])));
+      mintProps.push(await confirm(cl.proposeRespectTo(mintReq)));
 
       tickProps = [];
-      tickProps.push(await confirm(cl.proposeTick()));
+      tickProps.push(await confirm(cl.proposeTick({ metadata: { propDescription: "C" }})));
     });
 
     before("vote on proposals", async function() {
       const voter = cl.connect(signers[10]);
+      const voter2 = cl.connect(signers[14]);
 
       await expect(voter.vote(resultProps[0].id, VoteType.Yes, "voting yes")).to.not.be.rejected;
       await expect(voter.vote(tickProps[0].id, VoteType.Yes, "y1")).to.not.be.rejected;
       await expect(voter.vote(mintProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
+      await expect(voter2.vote(tickProps[0].id, VoteType.Yes)).to.not.be.rejected;
+      await expect(voter2.vote(mintProps[0].id, VoteType.Yes)).to.not.be.rejected;
       
-      const noVoter = orec.connect(signers[2]);
+      const noVoter = cl.connect(signers[2]);
       const noWeight = await oldRespect.balanceOf(addrs[2]);
       expect(noWeight).to.be.not.lessThan(await oldRespect.balanceOf(addrs[10]));
       await expect(noVoter.vote(resultProps[0].id, VoteType.No, "voting no"));
 
-      const yesVoter2 = orec.connect(signers[14]);
-      const yesVoter3 = orec.connect(signers[1]);
+      const yesVoter2 = cl.connect(signers[14]);
+      const yesVoter3 = cl.connect(signers[1]);
       const totalYesVotes =
         await oldRespect.balanceOf(addrs[14])
         + await oldRespect.balanceOf(addrs[1])
         + await oldRespect.balanceOf(addrs[10]);
       expect(totalYesVotes).to.be.greaterThan(noWeight * 2n);
+
       await expect(yesVoter2.vote(resultProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
       await expect(yesVoter3.vote(resultProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
     })
 
     it('should return status "passing" for proposal, which does have enough weight', async function() {
+      const mintPropSum = await oldRespect.balanceOf(addrs[10]) + await oldRespect.balanceOf(addrs[14]);
+      expect(mintPropSum).to.be.greaterThanOrEqual(threshold);
+
       const mintProp = await cl.getProposal(mintProps[0].id);
       expect(mintProp.voteStatus).to.be.equal(VoteStatus.Passing);
 
@@ -845,23 +939,27 @@ describe("orclient", function() {
         await expect(cl.execute(mintProps[0].id)).to.not.be.rejected;
       });
       it("should mint a respect token of proposed value for the proposed account", async function() {
-        expect(await newRespect.respectOf(mintReqs[0].account)).to.be.equal(mintReqs[0].value);
+        await time.increase(1);
+        expect(await newRespect.respectOf(addrs[0])).to.be.equal(10, "wrong balance");
 
         const decodedProp = expectRespectAccount(mintProps[0]);
         const tokenId = packTokenId({
           mintType: decodedProp.mintType,
-          periodNumber: decodedProp.meetingNum,
+          periodNumber: decodedProp.meetingNum - 1,
           owner: decodedProp.account
         });
 
-        expect(await newRespect.ownerOf(tokenId)).to.be.equal(mintReqs[0].account);
-        expect(await newRespect.valueOfToken(tokenId)).to.be.equal(mintReqs[0].value);
+        expect(await newRespect.ownerOf(tokenId)).to.be.equal(addrs[0]);
+        expect(await newRespect.valueOfToken(tokenId)).to.be.equal(10, "wrong value of token");
         expect(await newRespect.balanceOf(mintReqs[0].account, tokenId)).to.be.equal(1);
       })
     })
     describe("tick (incrementing period / meeting number)", function() {
       it("should execute successfully", async function() {
         await expect(cl.execute(tickProps[0].id))
+        // Some time for ornode to catch up
+        await time.increase(1);
+        await time.increase(1);
       });
       it("should increment nextMeetingNumber", async function() {
         expect(await cl.getNextMeetingNum()).to.be.equal(2);

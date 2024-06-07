@@ -109,6 +109,8 @@ export const zCRespBreakoutReqToProposal = zRespBreakoutReqCtx.transform(async (
     const attachment: RespectBreakoutAttachment = {
       propType: zPropType.Enum.respectBreakout,
       groupNum: zGroupNum.parse(val.req.groupNum),
+      propTitle: val.req.metadata?.propTitle,
+      propDescription: val.req.metadata?.propDescription
     };
 
     const memo = idOfRespectBreakoutAttach(attachment);

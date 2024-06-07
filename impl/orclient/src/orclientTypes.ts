@@ -84,6 +84,7 @@ export type BreakoutResult = z.infer<typeof zBreakoutResult>;
 
 export const zRespectBreakoutRequest = zBreakoutResult.extend({
   meetingNum: zMeetingNum.optional(),
+  metadata: zProposalMetadata.optional()
 })
 export type RespectBreakoutRequest = z.infer<typeof zRespectBreakoutRequest>;
 
@@ -209,13 +210,6 @@ export class NotImplemented extends Error {
   constructor(message: string) {
     super(message);
     this.message = message + " has not yet been implemented.";
-  }
-}
-
-export class ProposalFailed extends Error {
-  constructor(message?: string) {
-    super(message);
-    this.message = `Proposal has failed. Message: ${message}`;
   }
 }
 

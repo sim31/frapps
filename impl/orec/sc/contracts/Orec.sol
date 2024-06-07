@@ -131,7 +131,7 @@ contract Orec is Ownable {
 
         ProposalState storage prop = _getProposal(pId);
 
-        if (!_isPassed(prop)) {
+        if (_getVoteStatus(prop) != VoteStatus.Passed) {
             revert ProposalNotPassed();
         }
         if (prop.status != ExecStatus.NotExecuted) {
@@ -190,28 +190,24 @@ contract Orec is Ownable {
         } else if (_isExpired(p)) {
             return Stage.Expired;
         } else {
-            assert(_isPassed(p));
+            assert(_getVoteStatus(p) == VoteStatus.Passed);
             return Stage.Execution;
         }
     }
 
     function getVoteStatus(PropId propId) public view returns (VoteStatus) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
-        if (_isPassingThreshold(p)) {
-            return _isVetoOrVotePeriod(p) ? VoteStatus.Passing : VoteStatus.Passed;
-        } else {
-            return _isVetoOrVotePeriod(p) ? VoteStatus.Failing : VoteStatus.Failed;
-        }
+        return _getVoteStatus(p);
     }
 
-    function isRejected(PropId propId) public view returns (bool) {
+    function isActive(PropId propId) public view returns (bool) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return _isRejected(p);
+        return _isActive(p);
     }
 
-    function isPassed(PropId propId) public view returns (bool) {
+    function isExpired(PropId propId) public view returns (bool) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return _isPassed(p);
+        return _isExpired(p);
     }
 
     function setRespectContract(address newAddr) public onlyOwner {
@@ -244,12 +240,6 @@ contract Orec is Ownable {
         emit Signal(signalType, data);
     }
 
-    function _isExpired(ProposalState storage prop) internal view returns (bool) {
-        return _isRejected(prop)
-               || prop.status == ExecStatus.Executed
-               || prop.status == ExecStatus.ExecutionFailed;
-    }
-
     function _propose(PropId propId, ProposalState storage p) private {
         assert(p.yesWeight == 0 && p.noWeight == 0 && p.status == ExecStatus.NotExecuted);
         p.createTime = block.timestamp;
@@ -272,32 +262,27 @@ contract Orec is Ownable {
     }
 
 
-    function _isRejected(ProposalState storage prop) internal view returns (bool) {
-        if (!_isVotePeriod(prop)) {
-            if (!_isPassingThreshold(prop)) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-
-    function _isPassed(ProposalState storage prop) internal view returns (bool) {
-        if (!_isVetoOrVotePeriod(prop) && _isPassingThreshold(prop)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     function _isPassingThreshold(ProposalState storage prop) internal view returns (bool) {
         return prop.noWeight * 2 < prop.yesWeight && prop.yesWeight >= minWeight; 
     }
 
+    function _getVoteStatus(ProposalState storage p) internal view returns (VoteStatus) {
+        if (_isPassingThreshold(p)) {
+            return _isVetoOrVotePeriod(p) ? VoteStatus.Passing : VoteStatus.Passed;
+        } else {
+            return _isVotePeriod(p) ? VoteStatus.Failing : VoteStatus.Failed;
+        }
+    }
+
     function _isActive(ProposalState storage prop) internal view returns (bool) {
-        return _isVetoOrVotePeriod(prop) && !_isRejected(prop);
+        VoteStatus status = _getVoteStatus(prop);
+        return status == VoteStatus.Passing || status == VoteStatus.Failing;
+    }
+
+    function _isExpired(ProposalState storage prop) internal view returns (bool) {
+        return _getVoteStatus(prop) == VoteStatus.Failed
+               || prop.status == ExecStatus.Executed
+               || prop.status == ExecStatus.ExecutionFailed;
     }
 
     function _vote(
