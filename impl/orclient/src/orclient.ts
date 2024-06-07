@@ -1,4 +1,4 @@
-import { Signer, hexlify, toUtf8Bytes } from "../node_modules/ethers/lib.commonjs/index.js";
+import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt } from "../node_modules/ethers/lib.commonjs/index.js";
 import { EthAddress, PropId, ProposalState, TokenId, VoteType } from "./common.js";
 import { BreakoutResult, BurnRespectRequest, CustomCallRequest, CustomSignalRequest, NotImplemented, Proposal, ProposalMetadata, PutProposalFailure, RespectAccountRequest, RespectBreakoutRequest, TickRequest, TxFailed, VoteRequest, VoteWithProp, zVoteWithProp } from "./orclientTypes.js";
 import { ORContext } from "./orContext.js";
@@ -6,6 +6,8 @@ import { NodeToClientTransformer } from "./transformers/nodeToClientTransformer.
 import { ClientToNodeTransformer } from "./transformers/clientToNodeTransformer.js";
 import { ProposalFull as NProp } from "./ornodeTypes.js";
 import { sleep } from "./ts-utils.js";
+import { ErrorDecoder } from 'ethers-decode-error'
+import type { DecodedError } from 'ethers-decode-error'
 
 export function isPropCreated(propState: ProposalState) {
   return propState.createTime > 0n;
@@ -13,7 +15,9 @@ export function isPropCreated(propState: ProposalState) {
 
 export interface Config {
   /// How many onchain confirmations to wait for before considering proposal submitted
-  propConfirms: number
+  propConfirms: number,
+  /// How many onchain confirmations to wait for, for all other transactions
+  otherConfirms: number
 }
 
 /**
@@ -30,12 +34,24 @@ export default class ORClient {
   private _nodeToClient: NodeToClientTransformer;
   private _clientToNode: ClientToNodeTransformer;
   private _cfg: Config;
+  private _errDecoder: ErrorDecoder;
 
-  constructor(context: ORContext, cfg: Config = { propConfirms: 3 }) {
+  constructor(context: ORContext, cfg: Config = { propConfirms: 3, otherConfirms: 1 }) {
     this._ctx = context;
     this._nodeToClient = new NodeToClientTransformer(this._ctx);
     this._clientToNode = new ClientToNodeTransformer(this._ctx);
     this._cfg = cfg;
+    this._errDecoder = ErrorDecoder.create([
+      // TODO: this function accepts interfaces, so you should not need to copy fragments
+      // But for some reason it does not work (throws r.filter is not a function). I think it is this line:
+      // https://github.com/superical/ethers-decode-error/blob/5ba3ce49bcb5cd2824fc25014a00cd1e4f96ede1/src/error-decoder.ts#L116
+      // `instanceof` check fails because interface is being created by a different constructor function than ErrorDecoder uses.
+      // There's a problem with ethers / typechain commonjs vs ESM versions.
+      // Maybe I have a commonjs version of interface created by hardhat
+      // and ErrorDecoder is expecting esm?
+      new Array(...this._ctx.orec.interface.fragments),
+      new Array(...this._ctx.newRespect.interface.fragments),
+    ]);
   }
 
   connect(signer: Signer): ORClient {
@@ -93,14 +109,18 @@ export default class ORClient {
     }
     const m = memo !== undefined ? hexlify(toUtf8Bytes(memo)) : "0x";
     const orec = this._ctx.orec;
-    await orec.vote(req.propId, req.vote, m);
+    const errMsg = `orec.vote(${req.propId}, ${req.vote}, ${m})`
+    const promise = orec.vote(req.propId, req.vote, m);
+    await this._handleTxPromise(promise, this._cfg.otherConfirms, errMsg);
   }
   // UC3
   async execute(propId: PropId) {
     const orec = this._ctx.orec;
     const nprop = await this._ctx.ornode.getProposal(propId);
     if (nprop.content !== undefined) {
-      await orec.execute(nprop.content);
+      const errMsg = `orec.execute(${propId})`;
+      const promise = orec.execute(nprop.content);
+      await this._handleTxPromise(promise, this._cfg.otherConfirms, errMsg);
     }
   }
 
@@ -180,23 +200,43 @@ export default class ORClient {
   }
 
   private async _submitPropToChain(proposal: NProp, vote?: VoteWithProp) {
-    const resp = await this._submitPropTx(proposal, vote);
-    // console.log(`Submitting proposal to chain: ${JSON.stringify(proposal)}`);
-    const receipt = await resp.wait(this._cfg.propConfirms);
-    if (receipt?.status !== 1) {
-      throw new TxFailed(resp, receipt);
-    }
+    const errMsg = `Submitting proposal: ${JSON.stringify(proposal)}`;
+    const resp = this._submitPropTx(proposal, vote);
+    await this._handleTxPromise(resp, this._cfg.propConfirms, errMsg);
   }
-
   private async _submitPropTx(proposal: NProp, vote?: VoteWithProp) {
     if (vote !== undefined && vote.vote !== VoteType.None) {
-      return await this._ctx.orec.vote(
+      return this._ctx.orec.vote(
           proposal.id,
           vote.vote,
           vote.memo ?? "0x"
       );
     } else {
-      return await this._ctx.orec.propose(proposal.id);
+      return this._ctx.orec.propose(proposal.id);
+    }
+  }
+
+  private async _handleTxPromise(
+    promise: Promise<ContractTransactionResponse>,
+    confirms: number,
+    errMsg?: string
+  ) {
+    let resp: Awaited<typeof promise>;
+    let receipt: Awaited<ReturnType<typeof resp.wait>>;
+    try {
+      resp = await promise;
+      receipt = await resp.wait(confirms);
+    } catch(err) {
+      let decoded: DecodedError;
+      try {
+        decoded = await this._errDecoder.decode(err);
+      } catch(err2) {
+        throw new TxFailed(err2, undefined, `Error decoding error. errMsg: ${errMsg}`);
+      }
+      throw new TxFailed(err, decoded, errMsg);
+    }
+    if (receipt?.status !== 1) {
+      throw new TxFailed(resp, receipt, errMsg);
     }
   }
 

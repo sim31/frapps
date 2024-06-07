@@ -74,7 +74,7 @@ contract Orec is Ownable {
     error ProposalNotExpired();
     error VotePeriodOver();
     error AlreadyVoted(VoteType prevVote, VoteType newVote);
-    /// Means that either both vote and veto periods are over or proposal is already rejected (see _isActive())
+    /// @notice Means that either both vote and veto periods are over or proposal is already rejected (see _isActive())
     error ProposalInactive();
     error ProposalDoesNotExist();
     error InvalidVote();

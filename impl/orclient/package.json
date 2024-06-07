@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "ethers": "^6.12.1",
+    "ethers-decode-error": "^2.1.3",
     "op-fractal-sc": "github:Optimystics/op-fractal-sc#main",
     "orec": "file:../orec/sc",
     "respect-sc": "file:../respect/sc",

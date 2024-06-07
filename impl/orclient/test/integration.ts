@@ -1,6 +1,6 @@
 import chai, { expect } from "chai";
 import { time, mine } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
-import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, VoteEnded, ProposalFailed, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest } from "../src/orclientTypes.js";
+import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, ProposalFailed, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest, TxFailed } from "../src/orclientTypes.js";
 import ORClient from "../src/orclient.js";
 import ORNodeMemImpl from "../src/ornodeMemImpl.js";
 import { EthAddress, PropType, Stage, VoteStatus, zProposedMsg } from "../src/common.js";
@@ -21,6 +21,7 @@ import { Respect1155 } from "respect-sc/typechain-types/contracts/Respect1155.js
 import { packTokenId } from "op-fractal-sc/utils/tokenId.js";
 import { IORNode } from "../src/ornodeTypes.js";
 import { ORContext } from "../src/orContext.js";
+import { DecodedError } from "ethers-decode-error";
 
 // stack trace line number offset: 69
 
@@ -151,7 +152,7 @@ describe("orclient", function() {
 
     orec = await orecFactory.deploy(
       await oldRespect.getAddress(),
-      DAY_6, DAY_1, 21
+      DAY_1, DAY_6, 21
     );
   });
 
@@ -646,12 +647,15 @@ describe("orclient", function() {
     })
 
     it("should throw if attempting to vote YES after voting time ended", async function() {
-      await time.increase(DAY_1);
+      await time.increase(DAY_1 + 1n);
 
       const voter = cl.connect(signers[14]);
 
+      console.log(`voting for: ${resultProps[0].id}`);
       await expect(voter.vote(resultProps[0].id, VoteType.Yes, ""))
-        .to.be.rejectedWith(VoteEnded);
+        .to.eventually.be.rejectedWith(TxFailed)
+          .that.has.property('decodedError')
+            .that.has.property('name', 'VotePeriodOver');
     });
     it("should vote NO successfully during veto time", async function() {
       // Save current weight
@@ -677,9 +681,13 @@ describe("orclient", function() {
       const voter = cl.connect(signers[6]);
 
       await expect(voter.vote(resultProps[1].id, VoteType.Yes, ""))
-        .to.be.rejectedWith(VoteEnded);
+        .to.eventually.be.rejectedWith(TxFailed)
+          .that.has.property('decodedError')
+            .that.has.property('name', "ProposalInactive");
       await expect(voter.vote(resultProps[1].id, VoteType.No, ""))
-        .to.be.rejectedWith(VoteEnded);
+        .to.eventually.be.rejectedWith(TxFailed)
+          .that.has.property('decodedError')
+            .that.has.property('name', 'ProposalInactive');
     });
   });
   describe("failing a proposal", function() {

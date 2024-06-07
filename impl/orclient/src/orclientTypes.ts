@@ -45,6 +45,7 @@ import { expect } from 'chai';
 import { z } from "zod";
 import { zNProposalToRespectBreakout } from "./transformers/nodeToClientTransformer.js";
 import { ContractTransactionResponse, TransactionReceipt } from "../node_modules/ethers/lib.commonjs/index.js";
+import { DecodedError } from "ethers-decode-error";
 
 type Signer = HardhatEthersSigner;
 
@@ -211,13 +212,6 @@ export class NotImplemented extends Error {
   }
 }
 
-export class VoteEnded extends Error {
-  constructor(stage?: Stage, message?: string) {
-    super(message);
-    this.message = `Vote has ended. Currenct stage: ${stage}. Message: ${message}`;
-  }
-}
-
 export class ProposalFailed extends Error {
   constructor(message?: string) {
     super(message);
@@ -226,10 +220,30 @@ export class ProposalFailed extends Error {
 }
 
 export class TxFailed extends Error {
-  constructor(response: ContractTransactionResponse, receipt: TransactionReceipt | null) {
-    const msg = `Transaction failed. Response: ${JSON.stringify(response)}. Receipt: ${receipt}`;
+  public decodedError?: DecodedError
+  public receipt?: TransactionReceipt;
+
+  constructor(
+    response: ContractTransactionResponse,
+    receipt: TransactionReceipt | null,
+    message?: string
+  );
+  constructor(cause: unknown, decodedErr?: DecodedError, message?: string);
+  constructor(
+    responseOrCause: ContractTransactionResponse | unknown,
+    receiptOrDec: TransactionReceipt | null | DecodedError| undefined,
+    message?: string
+  ) {
+    const msg = `Transaction failed. Message: ${message}. responseOrCause: ${JSON.stringify(responseOrCause)}. receiptOrDecodedError: ${JSON.stringify(receiptOrDec)}`;
     super(msg);
     this.name = 'TxFailed';
+    if (typeof receiptOrDec === 'object' && receiptOrDec !== null) {
+      if ('name' in receiptOrDec) {
+        this.decodedError = receiptOrDec;
+      } else {
+        this.receipt = receiptOrDec;
+      }
+    }
   }
 }
 
