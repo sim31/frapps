@@ -544,27 +544,27 @@ describe("orclient", function() {
       // vote 1
       const signer = signers[16];
       expect(nonRespectedAccs).to.not.include(signer.address);
-      const voter = cl.connect(signers[9]);
+      const voter = cl.connect(signers[16]);
       await expect(voter.vote(resultProps[0].id, VoteType.No, "")).to.not.be.rejected;
 
       await time.increase(HOUR_1);
 
       // vote 2
-      const signer2 = signers[17];
+      const signer2 = signers[12];
       expect(nonRespectedAccs).to.not.include(signer2.address);
-      const voter2 = cl.connect(signers[11]);
-      await expect(voter2.vote(resultProps[0].id, VoteType.No, "")).to.not.be.rejected;
+      const voter2 = cl.connect(signers[12]);
+      await expect(voter2.vote(resultProps[0].id, VoteType.No)).to.not.be.rejected;
 
       await time.increase(HOUR_1);
 
       //// Proposal 2 ///
       // vote 2
-      await expect(voter2.vote(mintProps[0].id, VoteType.No, "")).to.not.be.rejected;
+      await expect(voter2.vote(mintProps[0].id, VoteType.No)).to.not.be.rejected;
 
       await time.increase(HOUR_1);
 
       //// Proposal 3 ///
-      await expect(voter.vote(tickProps[0].id, VoteType.No, "")).to.not.be.rejected;
+      await expect(voter.vote(tickProps[0].id, VoteType.No)).to.not.be.rejected;
 
     });
     it("should vote NO successfully with account which does not have any respect", async function() {
@@ -579,7 +579,7 @@ describe("orclient", function() {
     });
     it("should update noWeight", async function() {
       const rWeight1 = await oldRespect.balanceOf(addrs[16]);
-      const rWeight2 = await oldRespect.balanceOf(addrs[17]);
+      const rWeight2 = await oldRespect.balanceOf(addrs[12]);
       const rWeight = rWeight1 + rWeight2;
 
       const yesRWeight1 = await oldRespect.balanceOf(addrs[10]);
@@ -600,7 +600,7 @@ describe("orclient", function() {
     });
     it("should update onchain noWeight", async function() {
       const rWeight1 = await oldRespect.balanceOf(addrs[16]);
-      const rWeight2 = await oldRespect.balanceOf(addrs[17]);
+      const rWeight2 = await oldRespect.balanceOf(addrs[12]);
       const rWeight = rWeight1 + rWeight2;
 
       const yesRWeight1 = await oldRespect.balanceOf(addrs[10]);
@@ -627,7 +627,7 @@ describe("orclient", function() {
 
       // Check if vote weights were updated...
       const rWeight1 = await oldRespect.balanceOf(addrs[16]);
-      const rWeight2 = await oldRespect.balanceOf(addrs[17]);
+      const rWeight2 = await oldRespect.balanceOf(addrs[12]);
       const rWeight3 = await oldRespect.balanceOf(addrs[10]);
       const rWeight = rWeight1 + rWeight2 + rWeight3;
 

@@ -67,6 +67,18 @@ contract Orec is Ownable {
     event ProposalCreated(PropId propId);
     event Signal(uint8 indexed signalType, bytes data);
 
+    error VoteEnded();
+    error ProposalAlreadyExists();
+    error ProposalNotPassed();
+    error ProposalAlreadyExecuted();
+    error ProposalNotExpired();
+    error VotePeriodOver();
+    error AlreadyVoted(VoteType prevVote, VoteType newVote);
+    /// Means that either both vote and veto periods are over or proposal is already rejected (see _isActive())
+    error ProposalInactive();
+    error ProposalDoesNotExist();
+    error InvalidVote();
+
     // TODO: make configurable
     uint64 public voteLen = 1 days;
     uint64 public vetoLen = 6 days;
@@ -108,7 +120,9 @@ contract Orec is Ownable {
     /// Propose but don't vote
     function propose(PropId propId) public {
         ProposalState storage p = proposals[propId];
-        require(!_proposalExists(p), "Proposal already exists");
+        if (_proposalExists(p)) {
+            revert ProposalAlreadyExists();
+        }
         _propose(propId, p);
     }
 
@@ -117,8 +131,12 @@ contract Orec is Ownable {
 
         ProposalState storage prop = _getProposal(pId);
 
-        require(_isPassed(prop), "Proposal has to be passed");
-        require(prop.status == ExecStatus.NotExecuted, "Proposal can be executed only once");
+        if (!_isPassed(prop)) {
+            revert ProposalNotPassed();
+        }
+        if (prop.status != ExecStatus.NotExecuted) {
+            revert ProposalAlreadyExecuted();
+        }
 
         (bool success, bytes memory retVal) = message.addr.call(message.cdata);
 
@@ -136,12 +154,9 @@ contract Orec is Ownable {
     function remove(PropId propId) public {
         ProposalState storage prop = _getProposal(propId);
 
-        require(
-            _isRejected(prop) ||
-            prop.status == ExecStatus.Executed ||
-            prop.status == ExecStatus.ExecutionFailed,
-            "Proposal has to be rejected or executed in order to be removed"
-        );
+        if (!_isExpired(prop)) {
+            revert ProposalNotExpired();
+        }
 
         delete proposals[propId];
     }
@@ -172,7 +187,7 @@ contract Orec is Ownable {
             return Stage.Voting;
         } else if (_isVetoPeriod(p)) {
             return Stage.Veto;
-        } else if (_isRejected(p) || p.status == ExecStatus.Executed || p.status == ExecStatus.ExecutionFailed) {
+        } else if (_isExpired(p)) {
             return Stage.Expired;
         } else {
             assert(_isPassed(p));
@@ -229,6 +244,12 @@ contract Orec is Ownable {
         emit Signal(signalType, data);
     }
 
+    function _isExpired(ProposalState storage prop) internal view returns (bool) {
+        return _isRejected(prop)
+               || prop.status == ExecStatus.Executed
+               || prop.status == ExecStatus.ExecutionFailed;
+    }
+
     function _propose(PropId propId, ProposalState storage p) private {
         assert(p.yesWeight == 0 && p.noWeight == 0 && p.status == ExecStatus.NotExecuted);
         p.createTime = block.timestamp;
@@ -253,7 +274,7 @@ contract Orec is Ownable {
 
     function _isRejected(ProposalState storage prop) internal view returns (bool) {
         if (!_isVotePeriod(prop)) {
-            if (prop.noWeight * 2 >= prop.yesWeight) {
+            if (!_isPassingThreshold(prop)) {
                 return true;
             } else {
                 return false;
@@ -289,13 +310,18 @@ contract Orec is Ownable {
         Vote storage currentVote = votes[propId][msg.sender];
         Vote memory newVote;
 
-        require(
-            currentVote.vtype != VoteType.No, "Can't change vote from no"
-        );
+        // TODO: is this really needed
+        if (currentVote.vtype == VoteType.No) {
+            revert AlreadyVoted(currentVote.vtype, voteType);
+        }
 
         if (voteType == VoteType.Yes) {
-            require(_isVotePeriod(p), "Voting period is over");
-            require(currentVote.weight == 0, "Already voted yes");
+            if (!_isVotePeriod(p)) {
+                revert VotePeriodOver();
+            }
+            if (currentVote.weight != 0) {
+                revert AlreadyVoted(currentVote.vtype, voteType);
+            }
 
             uint256 w = respectContract.balanceOf(msg.sender);
             newVote = Vote(VoteType.Yes, w);
@@ -305,7 +331,9 @@ contract Orec is Ownable {
             p.yesWeight += w;
             votes[propId][msg.sender] = newVote;
         } else if (voteType == VoteType.No) {
-            require(_isActive(p), "Voting and Veto time is over or proposal is already rejected");
+            if (!_isActive(p)) {
+                revert ProposalInactive();
+            }
             // console.log("Voting no. Account: ", msg.sender);
             if (currentVote.vtype == VoteType.Yes) {
                 newVote = Vote(VoteType.No, currentVote.weight);
@@ -318,7 +346,7 @@ contract Orec is Ownable {
             }
             votes[propId][msg.sender] = newVote;
         } else {
-            revert("Cannot vote with none type"); 
+            revert InvalidVote();
         }
 
         if (newVote.weight == 0) {
@@ -330,7 +358,9 @@ contract Orec is Ownable {
 
     function _getProposal(PropId propId) internal view returns (ProposalState storage) {
         ProposalState storage p = proposals[propId];
-        require(_proposalExists(p), "Proposal dne");
+        if (!_proposalExists(p)) {
+            revert ProposalDoesNotExist();
+        }
         return p;
     }
 

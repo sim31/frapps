@@ -168,7 +168,6 @@ export default class ORClient {
   private async _submitProposal(proposal: NProp, vote?: VoteWithProp): Promise<Proposal> {
     await this._submitPropToChain(proposal, vote);
     await this._submitPropToOrnode(proposal);
-    // TODO: Verify that ornode stored the proposal
     return await this._nodeToClient.transformProp(proposal);
   }
 

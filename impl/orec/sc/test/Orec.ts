@@ -756,7 +756,8 @@ describe("Orec", function () {
       const { orec, accounts, token, voteLen, vetoLen, buildBurnProp, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
 
       const signalBytes = toUtf8Bytes("Next meeting: 2024-05-28");
-      const cdata = orec.interface.encodeFunctionData("signal", [signalBytes]);
+      const signalType = 3;
+      const cdata = orec.interface.encodeFunctionData("signal", [signalType, signalBytes]);
       const msg: Orec.MessageStruct = {
         addr: await orec.getAddress(),
         cdata,
@@ -770,13 +771,13 @@ describe("Orec", function () {
 
       await expect(orec.execute(msg))
         .to.emit(orec, "Executed").and
-        .to.emit(orec, "Signal").withArgs(signalBytes);
+        .to.emit(orec, "Signal").withArgs(signalType, signalBytes);
     });
 
     it("should not allow calling signal for anyone else", async function() {
       const { orec, accounts, token, voteLen, vetoLen, buildBurnProp, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
 
-      await expect(orec.signal(toUtf8Bytes("some data"))).to.be.reverted;
+      await expect(orec.signal(3, toUtf8Bytes("some data"))).to.be.reverted;
     });
   })
 
