@@ -22,6 +22,7 @@ import { packTokenId } from "op-fractal-sc/utils/tokenId.js";
 import { IORNode } from "../src/ornodeTypes.js";
 import { ORContext } from "../src/orContext.js";
 import { DecodedError } from "ethers-decode-error";
+import { sleep } from "../src/ts-utils.js";
 
 // stack trace line number offset: 69
 
@@ -956,10 +957,12 @@ describe("orclient", function() {
     })
     describe("tick (incrementing period / meeting number)", function() {
       it("should execute successfully", async function() {
-        await expect(cl.execute(tickProps[0].id))
+        await expect(cl.execute(tickProps[0].id)).to.not.be.rejected;
         // Some time for ornode to catch up
         await time.increase(1);
         await time.increase(1);
+        await time.increase(1);
+        await sleep(1000);
       });
       it("should increment nextMeetingNumber", async function() {
         expect(await cl.getNextMeetingNum()).to.be.equal(2);
