@@ -1,0 +1,31 @@
+{
+  "name": "orec",
+  "version": "1.0.0",
+  "description": "Optimistic Executive Contract",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "test": "NODE_OPTIONS='--experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat test",
+    "script": "NODE_OPTIONS='--experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat run",
+    "prepare-full": "npx hardhat compile && npx hardhat test --typecheck",
+    "prepare": "npx hardhat compile"
+  },
+  "keywords": [
+    "solidity",
+    "ethereum"
+  ],
+  "author": "sim31",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.3"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.2",
+    "op-fractal-sc": "github:Optimystics/op-fractal-sc#weeks-1-24"
+  }
+}

@@ -2,24 +2,33 @@
 	"folders": [
 		{
 			"name": "orec-sc",
-			"path": "./orec/sc/"
+			"path": "./orec/"
 		},
 		{
-			"name": "orec-gui",
-			"path": "./orec/gui/"
+			"name": "respect1155-sc",
+			"path": "./respect1155/sc/"
 		},
+    {
+      "name": "ortypes",
+      "path": "./ortypes/"
+    },
 		{
-			"name": "respect-sc",
-			"path": "./respect/sc/"
+			"name": "ts-utils",
+			"path": "./ts-utils/"
 		},
 		{
 			"name": "ornode",
-			"path": "./ornode"
+			"path": "./ornode/"
 		},
+    {
+      "name": "orclient",
+      "path": "./orclient/"
+    },
 		{
-			"name": "orclient",
-			"path": "./orclient"
+			"name": "ordao-tests",
+			"path": "./ordao/tests/"
 		}
 	],
-	"settings": {}
+	"settings": {
+	}
 }

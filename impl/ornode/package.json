@@ -3,14 +3,17 @@
   "version": "1.0.0",
   "description": "Helper node for OREC (optimistic respect-based executive contract) based DAO",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc",
     "build-watch": "npx tsc --watch",
     "start": "node dist/index.js",
-    "dev": "nodemon src/index.ts",
-    "postinstall": "patch-package"
+    "dev": "nodemon src/index.ts"
   },
   "author": "sim31",
   "license": "GPL-3.0",
@@ -33,6 +36,9 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "helia": "^4.2.1",
-    "tsx": "^4.10.2"
+    "ortypes": "file:../ortypes/dist",
+    "ts-utils": "file:../ts-utils/dist",
+    "tsx": "^4.10.2",
+    "zod": "^3.23.8"
   }
 }

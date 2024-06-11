@@ -1,0 +1,33 @@
+{
+  "name": "ortypes",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Types for Optimystic Respect Based DAO and its components",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "DAO"
+  ],
+  "author": "sim31",
+  "license": "GPL-3.0",
+  "files": [
+    "/dist"
+  ],
+  "devDependencies": {
+    "@types/chai": "^4.3.16",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "chai": "^5.1.1",
+    "ethers": "^6.13.0",
+    "op-fractal-sc": "github:Optimystics/op-fractal-sc#main",
+    "orec": "file:../orec/dist",
+    "respect1155-sc": "file:../respect1155/sc/dist",
+    "ts-utils": "file:../ts-utils/dist",
+    "utility-types": "^3.11.0",
+    "zod": "^3.23.8"
+  }
+}

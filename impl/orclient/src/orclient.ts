@@ -1,13 +1,13 @@
-import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt, toBeHex } from "../node_modules/ethers/lib.commonjs/index.js";
-import { Bytes, EthAddress, PropId, ProposalState, TokenId, VoteType } from "./common.js";
-import { BreakoutResult, BurnRespectRequest, CustomCallRequest, CustomSignalRequest, NotImplemented, Proposal, ProposalMetadata, PutProposalFailure, RespectAccountRequest, RespectBreakoutRequest, TickRequest, TxFailed, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp } from "./orclientTypes.js";
-import { ORContext } from "./orContext.js";
-import { NodeToClientTransformer } from "./transformers/nodeToClientTransformer.js";
-import { ClientToNodeTransformer } from "./transformers/clientToNodeTransformer.js";
-import { ProposalFull as NProp } from "./ornodeTypes.js";
-import { sleep } from "./ts-utils.js";
+import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt, toBeHex } from "ethers";
+import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp } from "ortypes/orclient.js";
+import { PutProposalFailure, TxFailed } from "./errors.js";
+import { ORContext } from "ortypes/orContext.js";
+import { NodeToClientTransformer } from "ortypes/transformers/nodeToClientTransformer.js";
+import { ClientToNodeTransformer } from "ortypes/transformers/clientToNodeTransformer.js";
+import { ProposalFull as NProp } from "ortypes/ornode.js";
 import { ErrorDecoder } from 'ethers-decode-error'
 import type { DecodedError } from 'ethers-decode-error'
+import { Bytes, PropId, ProposalState, VoteType } from "ortypes/index.js";
 
 export function isPropCreated(propState: ProposalState) {
   return propState.createTime > 0n;
@@ -29,7 +29,7 @@ export interface Config {
  * because the creator of proposal failed to submit to ornode. That's not the worst thing that could happen - other users simply shouldn't vote for proposal if they lack details about it.
  * 
  */
-export default class ORClient {
+export class ORClient {
   private _ctx: ORContext;
   private _nodeToClient: NodeToClientTransformer;
   private _clientToNode: ClientToNodeTransformer;
