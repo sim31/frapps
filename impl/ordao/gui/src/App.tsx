@@ -1,11 +1,11 @@
 // import { useState } from 'react'
 // import './App.css'
-import { Proposal } from "./global/types"
-import AppBar from "./components/AppBar"
+import { Proposal } from "./global/types.js"
+import AppBar from "./components/AppBar.js"
 import { useDisclosure } from "@chakra-ui/react"
-import ProposalsTable from "./components/ProposalsTable"
-import ProposalModal from "./components/ProposalModal"
-import ProposalFormModal from './components/ProposalFormModal'
+import ProposalsTable from "./components/ProposalsTable.js"
+import ProposalModal from "./components/ProposalModal.js"
+import ProposalFormModal from './components/ProposalFormModal.js'
 // import { Box, Center, Flex } from "@chakra-ui/react"
 
 const proposals: Proposal[] = [

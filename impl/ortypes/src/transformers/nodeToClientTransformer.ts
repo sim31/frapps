@@ -41,10 +41,10 @@ import { ORContext } from "../orContext.js";
 import { addCustomIssue } from "../zErrorHandling.js";
 import { Optional } from "utility-types";
 import { MeetingNum, Factory as Respect1155Factory, zBurnRespectArgs, zMeetingNum, zMintRespectArgs, zTokenIdData } from "../respect1155.js";
-import { Orec__factory as OrecFactory } from "orec/typechain-types/index.js";
+import { Orec__factory as OrecFactory } from "orec-tc/index.js";
 import { zBreakoutMintRequest, zPropType } from "../fractal.js";
 import { expect } from "chai";
-import { unpackTokenId } from "respect1155-sc/utils/tokenId.js";
+import { unpackTokenId } from "respect1155-sc/dist/utils/tokenId.js";
 import { zCustomSignalType, zSignalArgs, zTickSignalType } from "../orec.js";
 
 export const zNPropContext = z.instanceof(ORContext);

@@ -13,10 +13,10 @@
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
-    "@helia/car": "^3.1.5",
-    "@multiformats/sha3": "^3.0.2",
     "framer-motion": "^11.1.7",
-    "helia": "^4.2.1",
+    "orclient": "file:../../orclient",
+    "ortypes": "file:../../ortypes",
+    "respect1155-tc": "file:../../respect1155/sc/typechain-types",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

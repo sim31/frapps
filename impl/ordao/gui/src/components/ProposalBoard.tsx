@@ -1,7 +1,7 @@
-import { Button, Center, Stack, useDisclosure } from "@chakra-ui/react"
-import ProposalsTable from "./ProposalsTable"
-import { Proposal } from "../global/types"
-import ProposalModal from "./ProposalModal"
+import { useDisclosure } from "@chakra-ui/react"
+import ProposalsTable from "./ProposalsTable.js"
+import { Proposal } from "../global/types.js"
+import ProposalModal from "./ProposalModal.js"
 
 
 export type ProposalBoardProps = {

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { solidityPackedKeccak256 } from "ethers";
 import { PropId, zPropId, zProposedMsg } from "./orec.js";
 import { zGroupNum, zPropType } from "./fractal.js";
-import { propId } from "orec/utils/index.js";
+import { propId } from "orec/dist/utils/index.js";
 import { zBytesLikeToBytes } from "./eth.js";
 
 export const zPropContent = zProposedMsg;

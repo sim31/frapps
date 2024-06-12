@@ -7,7 +7,7 @@ import {
   Td,
   TableContainer,
 } from '@chakra-ui/react'
-import { Proposal } from '../global/types';
+import { Proposal } from '../global/types.js';
 
 
 export type ProposalsTableProps = {

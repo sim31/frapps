@@ -1,13 +1,13 @@
 import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt, toBeHex } from "ethers";
-import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp } from "ortypes/orclient.js";
+import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp } from "ortypes/dist/orclient.js";
 import { PutProposalFailure, TxFailed } from "./errors.js";
-import { ORContext } from "ortypes/orContext.js";
-import { NodeToClientTransformer } from "ortypes/transformers/nodeToClientTransformer.js";
-import { ClientToNodeTransformer } from "ortypes/transformers/clientToNodeTransformer.js";
-import { ProposalFull as NProp } from "ortypes/ornode.js";
+import { ORContext } from "ortypes/dist/orContext.js";
+import { NodeToClientTransformer } from "ortypes/dist/transformers/nodeToClientTransformer.js";
+import { ClientToNodeTransformer } from "ortypes/dist/transformers/clientToNodeTransformer.js";
+import { ProposalFull as NProp } from "ortypes/dist/ornode.js";
 import { ErrorDecoder } from 'ethers-decode-error'
 import type { DecodedError } from 'ethers-decode-error'
-import { Bytes, PropId, ProposalState, VoteType } from "ortypes/index.js";
+import { Bytes, PropId, ProposalState, VoteType } from "ortypes";
 
 export function isPropCreated(propState: ProposalState) {
   return propState.createTime > 0n;

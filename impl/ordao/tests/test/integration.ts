@@ -1,9 +1,9 @@
 import chai, { expect } from "chai";
 import { time, mine } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
-import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest, RespectBreakoutRequest, VoteRequest, VoteWithProp } from "ortypes/orclient.js";
-import { TxFailed, ORClient } from "orclient/index.js";
-import { ORNodeMemImpl } from "ornode/index.js";
-import { EthAddress, ExecStatus, PropType, Stage, VoteStatus, VoteType, zProposedMsg } from "ortypes/index.js";
+import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest, RespectBreakoutRequest, VoteRequest, VoteWithProp } from "ortypes/dist/orclient.js";
+import { TxFailed, ORClient } from "orclient/dist/index.js";
+import { ORNodeMemImpl } from "ornode/dist/index.js";
+import { EthAddress, ExecStatus, PropType, Stage, VoteStatus, VoteType, zProposedMsg } from "ortypes/dist/index.js";
 import hre from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers.js";
 import { Signer } from "ethers";
@@ -12,18 +12,18 @@ import {
   WEEK_1, DAY_6, DAY_1, HOUR_1,
   IORNode,
   propId
-} from "ortypes/index.js";
-import { packTokenId } from "ortypes/respect1155.js";
-import { ORContext } from "ortypes/orContext.js";
-import { sleep } from "ts-utils/index.js";
+} from "ortypes/dist/index.js";
+import { packTokenId } from "ortypes/dist/respect1155.js";
+import { ORContext } from "ortypes/dist/orContext.js";
+import { sleep } from "ts-utils/dist/index.js";
 import {
   FractalRespect,
   FractalRespect__factory as FractalRespectFactory
- } from "op-fractal-sc/dist/typechain-types/index.js"
+ } from "op-fractal-sc";
  import {
   Orec,
   Orec__factory as OrecFactory
- } from "orec/typechain-types/index.js";
+ } from "orec-tc/index.js";
 
 // stack trace line number offset: 69
 

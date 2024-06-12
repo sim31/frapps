@@ -24,9 +24,11 @@
     "chai": "^5.1.1",
     "ethers": "^6.13.0",
     "op-fractal-sc": "github:Optimystics/op-fractal-sc#main",
-    "orec": "file:../orec/dist",
-    "respect1155-sc": "file:../respect1155/sc/dist",
-    "ts-utils": "file:../ts-utils/dist",
+    "orec": "file:../orec",
+    "orec-tc": "file:../orec/dist/typechain-types",
+    "respect1155-sc": "file:../respect1155/sc",
+    "respect1155-tc": "file:../respect1155/sc/dist/typechain-types",
+    "ts-utils": "file:../ts-utils",
     "utility-types": "^3.11.0",
     "zod": "^3.23.8"
   }

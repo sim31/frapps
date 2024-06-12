@@ -1,4 +1,4 @@
-import { getAddress, getBigInt, hexlify, isBytesLike, isHexString } from 'ethers';
+import { getAddress, getBigInt, hexlify, isBytesLike, isHexString, ZeroAddress } from 'ethers';
 import { z } from "zod";
 import { addCustomIssue } from './zErrorHandling.js';
 
@@ -29,6 +29,8 @@ export const zEthAddress = z.string().transform((val) => {
 });
 export type EthAddress = z.infer<typeof zEthAddress>;
 export type Account = EthAddress
+
+export const EthZeroAddress = ZeroAddress;
 
 export function isEthAddr(val: any): val is EthAddress {
   try {

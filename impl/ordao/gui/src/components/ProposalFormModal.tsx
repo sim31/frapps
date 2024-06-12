@@ -10,8 +10,8 @@ import {
   Select,
 } from '@chakra-ui/react'
 import { ChangeEvent, useState } from 'react';
-import MintRespectForm from './MintRespectForm';
-import BurnRespectForm from './BurnRespectForm';
+import MintRespectForm from './MintRespectForm.js';
+import BurnRespectForm from './BurnRespectForm.js';
 
 export type ProposalFormModalProps = {
   isOpen: boolean;

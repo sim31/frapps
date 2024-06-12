@@ -27,7 +27,11 @@
 		{
 			"name": "ordao-tests",
 			"path": "./ordao/tests/"
-		}
+		},
+		{
+			"name": "ordao-gui",
+			"path": "./ordao/gui/"
+		},
 	],
 	"settings": {
 	}

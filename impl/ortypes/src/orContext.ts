@@ -1,5 +1,5 @@
 import { Provider as EthProvider, Result, Signer } from "ethers";
-import { Orec } from "orec/typechain-types/index.js";
+import { Orec } from "orec-tc/index.js";
 import { EthAddress } from "./eth.js";
 import { IORNode } from "./iornode.js";
 import { FractalRespect } from "op-fractal-sc/dist/typechain-types/index.js";

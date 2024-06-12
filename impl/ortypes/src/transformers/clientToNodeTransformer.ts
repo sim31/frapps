@@ -18,11 +18,11 @@ import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, C
 import { ORContext } from "../orContext.js";
 import { CustomSignalArgs, OrecFactory, zTickSignalType } from "../orec.js";
 import { BurnRespectArgs, MintRequest, MintRespectArgs, MintRespectGroupArgs, Factory as Respect1155Factory, zBreakoutMintType, zMintRespectArgs, zUnspecifiedMintType } from "../respect1155.js";
-import { propId } from "orec/utils/index.js";
+import { propId } from "orec/dist/utils/index.js";
 import { addCustomIssue } from "../zErrorHandling.js";
 import { zBreakoutMintRequest, zGroupNum, zPropType, zRankNum } from "../fractal.js";
 import { zBigNumberish, zBigNumberishToBigint } from "../eth.js";
-import { packTokenId } from "respect1155-sc/utils/tokenId.js";
+import { packTokenId } from "respect1155-sc/dist/utils/tokenId.js";
 
 const respectInterface = Respect1155Factory.createInterface();
 const orecInterface = OrecFactory.createInterface();
