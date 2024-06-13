@@ -6,4 +6,4 @@ export const ornode = ORNodeMemImpl.ORNodeMemImpl.createORNodeMemImpl({
   orec: EthZeroAddress
 });
 
-ornode.then(v => console.log("ok", v), reason => console.log("rejected: "< reason));
+ornode.then(v => console.log("ok", v), reason => console.log("rejected: ", reason));

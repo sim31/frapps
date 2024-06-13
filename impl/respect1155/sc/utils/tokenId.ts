@@ -80,3 +80,5 @@ export function isTokenIdValid(tokenId: TokenId | TokenIdData): boolean {
     }
   }
 }
+
+export const value = 10;

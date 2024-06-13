@@ -6,7 +6,7 @@ import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs.js";
 import { expect } from "chai";
 import hre from "hardhat";
 import { Respect1155 } from "../typechain-types/contracts/Respect1155.js";
-import { normTokenIdData, packTokenId, unpackTokenId } from "../utils/tokenId.js";
+import { normTokenIdData, packTokenId, unpackTokenId } from "../utils/tokenId";
 import { ZeroAddress, hexlify } from "ethers";
 
 type MintRequest = Respect1155.MintRequestStruct;

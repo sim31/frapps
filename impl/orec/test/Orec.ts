@@ -16,7 +16,7 @@ import {
   isPropId, propId, PropId,
   MIN_1, DAY_1, HOUR_1, DAY_6,
   ExecStatus, VoteType
-} from "../utils/index.js";
+} from "../utils";
 
 async function deployToken() {
   // Contracts are deployed using the first signer/account by default

@@ -2,15 +2,12 @@
   "name": "respect1155-sc",
   "version": "1.0.0",
   "description": "Solidity smart contract for Respect non-transferrable token. Based on ERC1155 standard.",
-  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "/dist"
   ],
   "scripts": {
-    "test": "NODE_OPTIONS='--experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat test",
-    "script": "NODE_OPTIONS='--experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat run"
   },
   "keywords": [
     "solidity",

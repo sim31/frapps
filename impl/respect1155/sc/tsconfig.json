@@ -11,9 +11,5 @@
     "declaration": true,
     "declarationMap": true,
     "outDir": "./dist",
-  },
-  "ts-node": {
-    "experimentalResolver": true,
-    "skipIgnore": true,
   }
 }
