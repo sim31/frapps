@@ -1,5 +1,5 @@
 import { Result, ZeroAddress } from "ethers";
-import { Respect1155, Respect1155Interface } from "respect1155-tc/contracts/Respect1155.js";
+import { Respect1155, Respect1155Interface } from "respect1155-sc/dist/typechain-types/contracts/Respect1155.js";
 import { Respect1155__factory } from "respect1155-sc/typechain-types/index.js";
 import { isTokenIdValid } from "respect1155-sc/dist/utils/tokenId.js";
 import { zBigNumberish, zBytes32, zBytesLike, zEthAddress } from "./eth.js";

@@ -22,6 +22,9 @@ subtask(TASK_COMPILE_SOLIDITY).setAction(async (_, { config }, runSuper) => {
 
 const config: HardhatUserConfig = {
   solidity: "0.8.24",
+  typechain: {
+    node16Modules: true
+  }
 };
 
 export default config;

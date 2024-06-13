@@ -1,4 +1,4 @@
-import { Orec, Orec__factory } from "orec-tc/index.js";
+import { Orec, Orec__factory } from "orec/typechain-types/index.js";
 import { z } from "zod";
 import { zBytes32, zBytesLike, zEthAddress, zUint8 } from "./eth.js";
 import { preprocessResultOrObj } from "./utils.js";

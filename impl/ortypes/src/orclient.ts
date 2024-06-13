@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Orec } from "orec-tc/contracts/Orec.js";
+import { Orec } from "orec/dist/typechain-types/contracts/Orec.js";
 import { PropType, zGroupNum, zPropType, zRankings } from "./fractal.js";
 import { VoteType, zCustomSignalType, zOnchainProp, zPropId, zProposedMsgBase, zVoteType } from "./orec.js";
 import { zMeetingNum, zMintType, zTokenId } from "./respect1155.js";
