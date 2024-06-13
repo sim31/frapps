@@ -1,10 +1,11 @@
-import { Orec, Orec__factory } from "orec/dist/typechain-types/index.js";
+import { Orec, Orec__factory } from "orec/typechain-types";
 import { z } from "zod";
 import { zBytes32, zBytesLike, zEthAddress, zUint8 } from "./eth.js";
 import { preprocessResultOrObj } from "./utils.js";
 
 export type OrecContract = Orec;
 export const OrecFactory = Orec__factory;
+export type MessageStruct = Orec.MessageStruct;
 
 export enum Stage {
   Voting,
@@ -125,5 +126,5 @@ export type OnchainProp = z.infer<typeof zOnchainProp>;
 export {
   MIN_1, HOUR_1, DAY_1, DAY_6, WEEK_1,
   propId
-} from "orec/dist/utils/index.js";
+} from "orec/utils";
 

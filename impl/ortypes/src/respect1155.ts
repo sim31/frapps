@@ -1,7 +1,7 @@
 import { Result, ZeroAddress } from "ethers";
-import { isTokenIdValid } from "respect1155-sc/dist/utils/tokenId.js";
-import { Respect1155, Respect1155Interface } from "respect1155-sc/dist/typechain-types/contracts/Respect1155.js";
-import { Respect1155__factory } from "respect1155-sc/dist/typechain-types/index.js";
+import { isTokenIdValid } from "respect1155-sc/utils/tokenId.js";
+import { Respect1155, Respect1155Interface } from "respect1155-sc/typechain-types/contracts/Respect1155.js";
+import { Respect1155__factory } from "respect1155-sc/typechain-types/index.js";
 import { zBigNumberish, zBytes32, zBytesLike, zEthAddress } from "./eth.js";
 import { z } from "zod";
 import { preprocessResultOrObj } from "./utils.js";
@@ -104,4 +104,4 @@ const burnRespectVerify = zBurnRespectArgs.refine((val) => {
 });
 export type BurnRespectArgs = z.infer<typeof zBurnRespectArgs>;
 
-export * from "respect1155-sc/dist/utils/tokenId.js";
+export * from "respect1155-sc/utils/tokenId.js";

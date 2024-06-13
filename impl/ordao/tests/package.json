@@ -22,7 +22,6 @@
     "ethers-decode-error": "^2.1.3",
     "op-fractal-sc": "github:Optimystics/op-fractal-sc#main",
     "orclient": "file:../../orclient",
-    "orec-tc": "file:../../orec/dist/typechain-types",
     "ornode": "file:../../ornode",
     "ortypes": "file:../../ortypes",
     "ts-utils": "file:../../ts-utils",

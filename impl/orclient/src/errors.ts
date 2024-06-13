@@ -1,6 +1,6 @@
 import { ContractTransactionResponse, TransactionReceipt } from "ethers";
 import { DecodedError } from "ethers-decode-error";
-import { Proposal as NProp } from "ortypes/dist/ornode.js"
+import { Proposal as NProp } from "ortypes/ornode.js"
 
 export class NotImplemented extends Error {
   constructor(message: string) {

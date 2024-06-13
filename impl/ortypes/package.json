@@ -16,6 +16,14 @@
   "files": [
     "/dist"
   ],
+  "exports": {
+    ".": {
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "default": "./dist/*"
+    }
+  },
   "devDependencies": {
     "@typechain/ethers-v6": "^0.5.1",
     "@types/chai": "^4.3.16",

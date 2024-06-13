@@ -15,7 +15,7 @@ import {
   ProposalNotCreated,
   ProposalNotFound
 } from "ortypes"
-import { ORNodePropStatus, Proposal, ProposalFull, ProposalValid, zORNodePropStatus, zProposal, zProposalValid } from "ortypes/dist/ornode.js";
+import { ORNodePropStatus, Proposal, ProposalFull, ProposalValid, zORNodePropStatus, zProposal, zProposalValid } from "ortypes/ornode.js";
 import { SafeRecord } from "ts-utils";
 import { z } from "zod";
 

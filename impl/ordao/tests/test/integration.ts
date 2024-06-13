@@ -1,9 +1,9 @@
 import chai, { expect } from "chai";
 import { time, mine } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
-import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest, RespectBreakoutRequest, VoteRequest, VoteWithProp } from "ortypes/dist/orclient.js";
-import { TxFailed, ORClient } from "orclient/dist/index.js";
+import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest, RespectBreakoutRequest, VoteRequest, VoteWithProp } from "ortypes/orclient.js";
+import { TxFailed, ORClient } from "orclient";
 import { ORNodeMemImpl } from "ornode/dist/index.js";
-import { EthAddress, ExecStatus, PropType, Stage, VoteStatus, VoteType, zProposedMsg } from "ortypes/dist/index.js";
+import { EthAddress, ExecStatus, PropType, Stage, VoteStatus, VoteType, zProposedMsg } from "ortypes";
 import hre from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers.js";
 import { Signer } from "ethers";
@@ -12,18 +12,19 @@ import {
   WEEK_1, DAY_6, DAY_1, HOUR_1,
   IORNode,
   propId
-} from "ortypes/dist/index.js";
-import { packTokenId } from "ortypes/dist/respect1155.js";
-import { ORContext } from "ortypes/dist/orContext.js";
+} from "ortypes";
+import { packTokenId } from "ortypes/respect1155.js";
+import { ORContext } from "ortypes/orContext.js";
 import { sleep } from "ts-utils/dist/index.js";
 import {
   FractalRespect,
   FractalRespect__factory as FractalRespectFactory
- } from "op-fractal-sc";
- import {
-  Orec,
-  Orec__factory as OrecFactory
- } from "orec-tc/index.js";
+} from "op-fractal-sc";
+import {
+  OrecContract as Orec,
+  OrecFactory,
+  MessageStruct
+} from "ortypes/orec.js";
 
 // stack trace line number offset: 69
 
@@ -302,7 +303,7 @@ describe("orclient", function() {
 
           const propFull = zProposedMsg.parse(prop);
 
-          const msg: Orec.MessageStruct = { 
+          const msg: MessageStruct = { 
             addr: propFull.addr,
             cdata: propFull.cdata,
             memo: propFull.memo
@@ -324,7 +325,7 @@ describe("orclient", function() {
 
         const fullProp = zProposedMsg.parse(prop);
 
-        const msg: Orec.MessageStruct = { 
+        const msg: MessageStruct = { 
           addr: fullProp.addr,
           cdata: fullProp.cdata,
           memo: fullProp.memo

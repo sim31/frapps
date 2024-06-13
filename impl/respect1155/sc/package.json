@@ -7,6 +7,20 @@
   "files": [
     "/dist"
   ],
+  "exports": {
+    ".": {
+      "default": "./dist/index.js"
+    },
+    "./utils/*": {
+      "default": "./dist/utils/*"
+    },
+    "./typechain-types": {
+      "default": "./dist/index.js"
+    },
+    "./typechain-types/*": {
+      "default": "./dist/typechain-types/*"
+    }
+  },
   "scripts": {
   },
   "keywords": [
