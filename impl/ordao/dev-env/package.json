@@ -27,7 +27,8 @@
     "chain": "npx hardhat node",
     "gui-dev": "cd $npm_package_config_ordao_gui && npm run dev -- --clearScreen false",
     "ornode-dev": "cd $npm_package_config_ornode && npx nodemon dist/index.js",
-    "dev": "concurrently --kill-others \"npm:watch-respect1155\" \"npm:watch-orec\" \"npm:watch-ts-utils\" \"npm:watch-ortypes\" \"npm:watch-orclient\" \"npm:watch-ornode\" \"npm:chain\" \"npm:ornode-dev\" \"npm:gui-dev\""
+    "ornode-swagger-ui": "cd $npm_package_config_ornode && npm run swagger-ui",
+    "dev": "concurrently --kill-others \"npm:watch-respect1155\" \"npm:watch-orec\" \"npm:watch-ts-utils\" \"npm:watch-ortypes\" \"npm:watch-orclient\" \"npm:watch-ornode\" \"npm:chain\" \"npm:ornode-dev\" \"npm:ornode-swagger-ui\" \"npm:gui-dev\""
 
   },
   "author": "sim31",

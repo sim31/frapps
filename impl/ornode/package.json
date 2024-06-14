@@ -13,7 +13,8 @@
     "build": "npx tsc",
     "build-watch": "npx tsc --watch",
     "start": "node dist/index.js",
-    "dev": "./run-dev.sh"
+    "dev": "./run-dev.sh",
+    "swagger-ui": "nodemon dist/swagger-ui/index.js"
   },
   "author": "sim31",
   "license": "GPL-3.0",
@@ -24,6 +25,7 @@
     "@types/http-errors": "^2.0.4",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.14.2",
+    "@types/swagger-ui-express": "^4.1.6",
     "chai": "^5.1.1",
     "mocha": "^10.4.0",
     "nodemon": "^3.1.0",
@@ -40,6 +42,7 @@
     "helia": "^4.2.1",
     "http-errors": "^2.0.0",
     "ortypes": "file:../ortypes/dist",
+    "swagger-ui-express": "^5.0.1",
     "ts-utils": "file:../ts-utils/dist",
     "tsx": "^4.10.2",
     "zod": "^3.23.8"
