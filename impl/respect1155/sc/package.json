@@ -22,6 +22,9 @@
     }
   },
   "scripts": {
+    "build": "npx hardhat compile && tsc",
+    "build-watch": "npx hardhat compile && tsc --watch",
+    "test": "npx hardhat test"
   },
   "keywords": [
     "solidity",

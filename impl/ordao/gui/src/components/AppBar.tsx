@@ -80,7 +80,7 @@ export default function AppBar(props: AppBarProps) {
                 </Center>
                 <br />
                 <Center>
-                  <p>Username</p>
+                  <p>Username BBA</p>
                 </Center>
                 <br />
                 <MenuDivider />

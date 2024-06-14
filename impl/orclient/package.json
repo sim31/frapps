@@ -16,7 +16,8 @@
     }
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "build-watch": "tsc --watch"
   },
   "author": "sim31",
   "license": "GPL-3.0",

@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import { time, mine } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
 import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest, RespectBreakoutRequest, VoteRequest, VoteWithProp } from "ortypes/orclient.js";
 import { TxFailed, ORClient } from "orclient";
-import { ORNodeMemImpl } from "ornode/dist/index.js";
+import { ORNodeMemImpl } from "ornode/index.js";
 import { EthAddress, ExecStatus, PropType, Stage, VoteStatus, VoteType, zProposedMsg } from "ortypes";
 import hre from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers.js";

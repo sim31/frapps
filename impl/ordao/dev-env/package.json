@@ -1,0 +1,43 @@
+{
+  "name": "ordao-dev-env",
+  "version": "1.0.0",
+  "main": "index.js",
+  "config": {
+    "respect1155": "../../respect1155/sc/",
+    "orec": "../../orec/",
+    "ordao_tests": "../tests/",
+    "ts_utils": "../../ts-utils",
+    "ortypes": "../../ortypes",
+    "orclient": "../../orclient",
+    "ornode": "../../ornode",
+    "ordao_gui": "../gui"
+  },
+  "scripts": {
+    "watch-respect1155": "cd $npm_package_config_respect1155 && npm run build-watch -- --preserveWatchOutput",
+    "test-respect1155": "cd $npm_package_config_respect1155 && npm run test",
+    "watch-orec": "cd $npm_package_config_orec && npm run build-watch -- --preserveWatchOutput",
+    "test-orec": "cd $npm_package_config_orec && npm run test",
+    "test-ordao": "cd $npm_package_config_ordao_tests && npm run test",
+    "test": "npm run test-respect1155 && npm run test-orec && npm run test-ordao",
+    "watch-ts-utils": "cd $npm_package_config_ts_utils && npm run build-watch -- --preserveWatchOutput",
+    "watch-ortypes": "cd $npm_package_config_ortypes && npm run build-watch -- --preserveWatchOutput",
+    "watch-orclient": "cd $npm_package_config_orclient && npm run build-watch -- --preserveWatchOutput",
+    "watch-ornode": "cd $npm_package_config_ornode && npm run build-watch -- --preserveWatchOutput",
+    "build-watch": "concurrently --kill-others \"npm:watch-respect1155\" \"npm:watch-orec\" \"npm:watch-ts-utils\" \"npm:watch-ortypes\" \"npm:watch-orclient\" \"npm:watch-ornode\"",
+    "chain": "npx hardhat node",
+    "gui-dev": "cd $npm_package_config_ordao_gui && npm run dev -- --clearScreen false",
+    "ornode-dev": "cd $npm_package_config_ornode && npx nodemon dist/index.js",
+    "dev": "concurrently --kill-others \"npm:watch-respect1155\" \"npm:watch-orec\" \"npm:watch-ts-utils\" \"npm:watch-ortypes\" \"npm:watch-orclient\" \"npm:watch-ornode\" \"npm:chain\" \"npm:ornode-dev\" \"npm:gui-dev\""
+
+  },
+  "author": "sim31",
+  "license": "GPL-3.0",
+  "description": "",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "concurrently": "^8.2.2",
+    "hardhat": "^2.22.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
