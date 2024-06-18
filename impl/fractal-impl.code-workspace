@@ -25,17 +25,13 @@
       "path": "./orclient/"
     },
 		{
-			"name": "ordao-tests",
-			"path": "./ordao/tests/"
+			"name": "ordao-sys",
+			"path": "./ordao/sys/"
 		},
 		{
 			"name": "ordao-gui",
 			"path": "./ordao/gui/"
-		},
-		{
-			"name": "ordao-dev-env",
-			"path": "./ordao/dev-env"
-		},
+		}
 	],
 	"settings": {
 	}

@@ -4,6 +4,7 @@ import { zBytes32, zBytesLike, zEthAddress, zUint8 } from "./eth.js";
 import { preprocessResultOrObj } from "./utils.js";
 
 export type OrecContract = Orec;
+export { Orec__factory };
 export const OrecFactory = Orec__factory;
 export type MessageStruct = Orec.MessageStruct;
 

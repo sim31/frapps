@@ -1,4 +1,7 @@
-import { config, routing } from "./routes.js";
+import { routing } from "./routing.js";
+import { ezConfig } from "./config.js"
 import { createServer } from "express-zod-api";
 
-createServer(config, routing);
+export { Config, ContractsAddrs } from "./config.js";
+
+createServer(ezConfig, routing);

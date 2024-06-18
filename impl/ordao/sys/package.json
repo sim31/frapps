@@ -1,11 +1,13 @@
 {
-  "name": "ordao-dev-env",
+  "name": "ordao-sys",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
+  "type": "module",
   "config": {
     "respect1155": "../../respect1155/sc/",
     "orec": "../../orec/",
-    "ordao_tests": "../tests/",
+    "ordao_tests": "./",
     "ts_utils": "../../ts-utils",
     "ortypes": "../../ortypes",
     "orclient": "../../orclient",
@@ -13,32 +15,55 @@
     "ordao_gui": "../gui"
   },
   "scripts": {
+    "test-ordao": "NODE_OPTIONS='--enable-source-maps --experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat --show-stack-traces --network localhost test",
+    "script": "NODE_OPTIONS='--experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat run",
+    "testnet": "npm run script src/runLocalTestnet.ts",
     "watch-respect1155": "cd $npm_package_config_respect1155 && npm run build-watch -- --preserveWatchOutput",
+    "build-respect1155": "cd $npm_package_config_respect1155 && npm run build",
     "test-respect1155": "cd $npm_package_config_respect1155 && npm run test",
     "watch-orec": "cd $npm_package_config_orec && npm run build-watch -- --preserveWatchOutput",
+    "build-orec": "cd $npm_package_config_orec && npm run build",
     "test-orec": "cd $npm_package_config_orec && npm run test",
-    "test-ordao": "cd $npm_package_config_ordao_tests && npm run test",
     "test": "npm run test-respect1155 && npm run test-orec && npm run test-ordao",
     "watch-ts-utils": "cd $npm_package_config_ts_utils && npm run build-watch -- --preserveWatchOutput",
+    "build-ts-utils": "cd $npm_package_config_ts_utils && npm run build",
     "watch-ortypes": "cd $npm_package_config_ortypes && npm run build-watch -- --preserveWatchOutput",
+    "build-ortypes": "cd $npm_package_config_ortypes && npm run build",
     "watch-orclient": "cd $npm_package_config_orclient && npm run build-watch -- --preserveWatchOutput",
+    "build-orclient": "cd $npm_package_config_orclient && npm run build",
     "watch-ornode": "cd $npm_package_config_ornode && npm run build-watch -- --preserveWatchOutput",
+    "build-ornode": "cd $npm_package_config_ornode && npm run build",
     "build-watch": "concurrently --kill-others \"npm:watch-respect1155\" \"npm:watch-orec\" \"npm:watch-ts-utils\" \"npm:watch-ortypes\" \"npm:watch-orclient\" \"npm:watch-ornode\"",
-    "chain": "npx hardhat node",
+    "build": "concurrently \"npm:build-respect1155\" \"npm:build-orec\" \"npm:build-ts-utils\" \"npm:build-ortypes\" \"npm:build-orclient\" \"npm:build-ornode\"",
     "gui-dev": "cd $npm_package_config_ordao_gui && npm run dev -- --clearScreen false",
     "ornode-dev": "cd $npm_package_config_ornode && npx nodemon dist/index.js",
+    "testnet-ornode": "npm run script src/runLocalTestnetWithOrnode.ts",
     "ornode-swagger-ui": "cd $npm_package_config_ornode && npm run swagger-ui",
-    "dev": "concurrently --kill-others \"npm:watch-respect1155\" \"npm:watch-orec\" \"npm:watch-ts-utils\" \"npm:watch-ortypes\" \"npm:watch-orclient\" \"npm:watch-ornode\" \"npm:chain\" \"npm:ornode-dev\" \"npm:ornode-swagger-ui\" \"npm:gui-dev\""
-
+    "dev": "npm run build && concurrently --kill-others \"npm:testnet-ornode\" \"npm:watch-*\" \"npm:ornode-swagger-ui\" \"npm:gui-dev\""
   },
+  "keywords": [],
   "author": "sim31",
   "license": "GPL-3.0",
-  "description": "",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@types/jsonfile": "^6.1.4",
+    "@types/shelljs": "^0.8.15",
+    "chai-as-promised": "^7.1.2",
     "concurrently": "^8.2.2",
     "hardhat": "^2.22.5",
-    "ts-node": "^10.9.2",
+    "jsonfile": "^6.1.0",
+    "shelljs": "^0.8.5",
     "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "ethers": "^6.12.1",
+    "ethers-decode-error": "^2.1.3",
+    "op-fractal-sc": "github:Optimystics/op-fractal-sc#main",
+    "orclient": "file:../../orclient",
+    "ornode": "file:../../ornode",
+    "ortypes": "file:../../ortypes",
+    "ts-utils": "file:../../ts-utils",
+    "utility-types": "^3.11.0",
+    "zod": "^3.23.8"
   }
 }

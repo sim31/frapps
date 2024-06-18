@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import { time, mine } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
 import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest, RespectBreakoutRequest, VoteRequest, VoteWithProp } from "ortypes/orclient.js";
 import { TxFailed, ORClient } from "orclient";
-import { ORNodeMemImpl } from "ornode/index.js";
+import { ORNodeMemImpl } from "ornode/dist/ornodeMemImpl.js";
 import { EthAddress, ExecStatus, PropType, Stage, VoteStatus, VoteType, zProposedMsg } from "ortypes";
 import hre from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers.js";
@@ -25,14 +25,12 @@ import {
   OrecFactory,
   MessageStruct
 } from "ortypes/orec.js";
+import { LocalTestnet, defaultConfig } from "../src/localTestnet.js";
 
 // stack trace line number offset: 69
 
 chai.config.truncateThreshold = 0;
 chai.config.includeStack = true;
-
-type PropFunctionName = "submitBreakoutResult" | "proposeRespectTo"
-  | "burnRespect" | "proposeCustomSignal" | "proposeTick" | "proposeCustomCall";
 
 async function confirm<T>(
   promise: Promise<T>,
@@ -46,14 +44,12 @@ async function confirm<T>(
 
 describe("orclient", function() {
   let cl: ORClient;
-  const ethUrl = "https://localhost:8545";
   let ornode: IORNode;
   let addrs: EthAddress[] = []
   let oldRespect: FractalRespect;
   let newRespect: Respect1155.Contract;
   let orec: Orec;
   let signers: HardhatEthersSigner[];
-  const oldRanksDelay = 518400; // 6 days in seconds
   let resultProps: Proposal[] = [];
   let mintProps: Proposal[] = [];
   let tickProps: Proposal[] = [];
@@ -61,111 +57,21 @@ describe("orclient", function() {
   let nonRespectedAccs: EthAddress[];
   let groupRes: BreakoutResult[];
   let mintReqs: RespectAccountRequest[];
-  let threshold = 21;
+  let threshold: number;
+  let lt: LocalTestnet;
 
   before("launch eth test network", async function() {
-    // TODO: set url
-    console.log(hre.network);
-  })
+    lt = await LocalTestnet.create({ ...defaultConfig, redirectOutTo: "./chain.log" });
+
+    signers = lt.state.signers;
+    addrs = lt.state.addrs;
+    oldRespect = lt.state.oldRespect;
+    nonRespectedAccs = lt.state.nonRespectedAccs;
+    orec = lt.state.orec;
+    newRespect = lt.state.newRespect;
+    threshold = lt.state.voteThreshold;
+  });
   
-  before("create test accounts", async function() {
-    // console.log(await hre.ethers.getSigners())
-    signers = await hre.ethers.getSigners();
-    addrs = signers.map(signer => signer.address);
-  });
-
-  before("deploy old respect smart contract", async function() {
-    const signer: HardhatEthersSigner = signers[0];
-    const oldRespectFactory = new FractalRespectFactory(signer);
-
-    oldRespect = await oldRespectFactory.deploy(
-      "TestFractal",
-      "TF",
-      signer,
-      signer,
-      oldRanksDelay
-    );
-  });
-
-  before("run old fractal contract", async function() {
-    const groupRes1: FractalRespect.GroupRanksStruct[] = [
-      {
-        groupNum: 1,
-        ranks: [
-          addrs[16], addrs[15], addrs[14], addrs[13], addrs[12], addrs[11]
-        ]
-      }
-    ]
-    await expect(oldRespect.submitRanks(groupRes1)).to.not.be.reverted;
-
-    await time.increase(WEEK_1);
-
-    const groupRes2: FractalRespect.GroupRanksStruct[] = [
-      {
-        groupNum: 1,
-        ranks: [
-          addrs[14], addrs[11], addrs[16], addrs[12], addrs[13], addrs[15]
-        ]
-      }
-    ]
-    await expect(oldRespect.submitRanks(groupRes2)).to.not.be.reverted;
-
-    await time.increase(WEEK_1);
-
-    const groupRes3: FractalRespect.GroupRanksStruct[] = [
-      {
-        groupNum: 1,
-        ranks: [
-          addrs[7], addrs[11], addrs[16], addrs[12], addrs[13], addrs[14]
-        ]
-      },
-      {
-        groupNum: 2,
-        ranks: [
-          addrs[1], addrs[2], addrs[3], addrs[4], addrs[5], addrs[6]
-        ]
-      }
-    ]
-    await expect(oldRespect.submitRanks(groupRes3)).to.not.be.reverted;
-
-    await time.increase(WEEK_1);
-
-    const groupRes4: FractalRespect.GroupRanksStruct[] = [
-      {
-        groupNum: 1,
-        ranks: [
-          addrs[6], addrs[2], addrs[3], addrs[1], addrs[4], addrs[5]
-        ]
-      },
-      {
-        groupNum: 2,
-        ranks: [
-          addrs[12], addrs[10], addrs[8], addrs[13], addrs[14], addrs[15]
-        ]
-      }
-    ]
-    await expect(oldRespect.submitRanks(groupRes4)).to.not.be.reverted;
-
-    nonRespectedAccs = [ addrs[0], addrs[9], addrs[17], addrs[18] ];
-
-  });
-
-  before("deploy orec", async function() {
-    const signer = signers[0];
-    const orecFactory = new OrecFactory(signer);
-
-    orec = await orecFactory.deploy(
-      await oldRespect.getAddress(),
-      DAY_1, DAY_6, threshold
-    );
-  });
-
-  before("deploy new respect contract", async function() {
-    const respectFactory = new Respect1155.Factory(signers[0]);
-
-    newRespect = await respectFactory.deploy(orec, "https://tf.io");
-  });
-
   before("create ORNode", async function() {
     ornode = await ORNodeMemImpl.createORNodeMemImpl({
       newRespect,
@@ -985,4 +891,8 @@ describe("orclient", function() {
   // TODO:
   describe("proposing to burn respect of an individual account", function() {})
   describe("burning respect of individual account", function() {});
+
+  // after("shutdown hardhat local testnet", async function() {
+  //   await lt.shutDown();
+  // })
 });

@@ -35,15 +35,17 @@
   "dependencies": {
     "@chainsafe/libp2p-gossipsub": "^13.0.0",
     "@orbitdb/core": "^2.2.0",
+    "@types/jsonfile": "^6.1.4",
     "blockstore-level": "^1.1.8",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-zod-api": "^19.2.2",
     "helia": "^4.2.1",
     "http-errors": "^2.0.0",
-    "ortypes": "file:../ortypes/dist",
+    "jsonfile": "^6.1.0",
+    "ortypes": "file:../ortypes",
     "swagger-ui-express": "^5.0.1",
-    "ts-utils": "file:../ts-utils/dist",
+    "ts-utils": "file:../ts-utils",
     "tsx": "^4.10.2",
     "zod": "^3.23.8"
   }

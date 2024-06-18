@@ -16,7 +16,7 @@ import {
   ProposalNotFound
 } from "ortypes/index.js"
 import { ORNodePropStatus, Proposal, ProposalFull, ProposalValid, zORNodePropStatus, zProposal, zProposalValid } from "ortypes/ornode.js";
-import { SafeRecord } from "ts-utils/index.js";
+import { SafeRecord } from "ts-utils";
 import { z } from "zod";
 
 export interface ConstructorConfig {
@@ -36,8 +36,7 @@ type ORNodeContextConfig = Omit<ORContext.Config, "ornode">;
 
 /**
  * TODO: Currently this class only saves proposals which are created onchain after
- * it starts running. This means that it will miss any proposals that happened before
- * ORNode was launched.
+ * it starts running. This means that it will miss any proposals that happened before ORNode was launched.
  * TODO: Should save proposals to storage so that ORNode could be restarted
  * TODO: Would be good to have a method to delete proposals which dot get any
  * weighted votes during voteTime, to save resources against spam.

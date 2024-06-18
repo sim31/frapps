@@ -1,15 +1,6 @@
-import { createConfig } from "express-zod-api";
 import { defaultEndpointsFactory } from "express-zod-api";
 import { z } from "zod";
 import { Routing } from "express-zod-api";
-
-export const config = createConfig({
-  server: {
-    listen: 8090, // port, UNIX socket or options
-  },
-  cors: true,
-  logger: { level: "debug", color: true },
-});
 
 const helloWorldEndpoint = defaultEndpointsFactory.build({
   method: "get", // or methods: ["get", "post", ...]
