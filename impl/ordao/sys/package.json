@@ -15,9 +15,15 @@
     "ordao_gui": "../gui"
   },
   "scripts": {
-    "test-ordao": "NODE_OPTIONS='--enable-source-maps --experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat --show-stack-traces --network localhost test",
-    "script": "NODE_OPTIONS='--experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat run",
-    "testnet": "npm run script src/runLocalTestnet.ts",
+    "hh-test-ordao": "NODE_OPTIONS='--enable-source-maps --experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat --show-stack-traces --network localhost test",
+    "hh-dev-script": "NODE_OPTIONS='--experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat --config ./hardhat-dev.config.cts --show-stack-traces --network localhost run",
+    "hh-test-script": "NODE_OPTIONS='--experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat --show-stack-traces --network localhost run",
+    "hh-dev-chain": "npx hardhat --config ./hardhat-dev.config.cts node",
+    "hh-test-chain": "npx hardhat node",
+    "test-deployment": "npm run hh-test-script ./src/devDeployment.ts",
+    "dev-deployment": "npm run hh-dev-script ./src/devDeployment.ts",
+    "test-ordao": "node ./src/testOrdao.js",
+    "testnet": "npx hardhat --config ./hardhat-dev.config.cts node",
     "watch-respect1155": "cd $npm_package_config_respect1155 && npm run build-watch -- --preserveWatchOutput",
     "build-respect1155": "cd $npm_package_config_respect1155 && npm run build",
     "test-respect1155": "cd $npm_package_config_respect1155 && npm run test",
@@ -36,10 +42,10 @@
     "build-watch": "concurrently --kill-others \"npm:watch-respect1155\" \"npm:watch-orec\" \"npm:watch-ts-utils\" \"npm:watch-ortypes\" \"npm:watch-orclient\" \"npm:watch-ornode\"",
     "build": "concurrently \"npm:build-respect1155\" \"npm:build-orec\" \"npm:build-ts-utils\" \"npm:build-ortypes\" \"npm:build-orclient\" \"npm:build-ornode\"",
     "gui-dev": "cd $npm_package_config_ordao_gui && npm run dev -- --clearScreen false",
-    "ornode-dev": "cd $npm_package_config_ornode && npx nodemon dist/index.js",
-    "testnet-ornode": "npm run script src/runLocalTestnetWithOrnode.ts",
-    "ornode-swagger-ui": "cd $npm_package_config_ornode && npm run swagger-ui",
-    "dev": "npm run build && concurrently --kill-others \"npm:testnet-ornode\" \"npm:watch-*\" \"npm:ornode-swagger-ui\" \"npm:gui-dev\""
+    "ornode-dev": "node src/devOrnode.js",
+    "ornode-dev-swagger-ui": "cd $npm_package_config_ornode && ORNODE_CFG_PATH=../ordao/sys/tmp/ornode-dev-cfg.json npm run swagger-ui",
+    "dev-servers": "npm run build && concurrently --kill-others \"npm:ornode-dev\" \"npm:watch-*\" \"npm:ornode-dev-swagger-ui\" \"npm:gui-dev\"",
+    "dev": "node src/dev.js"
   },
   "keywords": [],
   "author": "sim31",
@@ -62,6 +68,7 @@
     "orclient": "file:../../orclient",
     "ornode": "file:../../ornode",
     "ortypes": "file:../../ortypes",
+    "respect1155-sc": "file:../../respect1155/sc",
     "ts-utils": "file:../../ts-utils",
     "utility-types": "^3.11.0",
     "zod": "^3.23.8"

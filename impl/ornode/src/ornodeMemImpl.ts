@@ -7,17 +7,18 @@ import {
   IORNode,
   PropId,
   isEthAddr,
-  OrecFactory,
   FractalRespect,
   zSignalType,
   zTickSignalType,
   ProposalInvalid,
   ProposalNotCreated,
-  ProposalNotFound
+  ProposalNotFound,
+  OrecFactory
 } from "ortypes/index.js"
 import { ORNodePropStatus, Proposal, ProposalFull, ProposalValid, zORNodePropStatus, zProposal, zProposalValid } from "ortypes/ornode.js";
 import { SafeRecord } from "ts-utils";
 import { z } from "zod";
+import { JsonRpcProvider, Provider } from "ethers";
 
 export interface ConstructorConfig {
   /**
@@ -29,7 +30,8 @@ export interface ConstructorConfig {
 
 export interface Config extends ConstructorConfig{
   newRespect: EthAddress | Respect1155.Contract,
-  orec: EthAddress | OrecContract
+  orec: EthAddress | OrecContract,
+  providerUrl?: string
 }
 
 type ORNodeContextConfig = Omit<ORContext.Config, "ornode">;
@@ -49,6 +51,7 @@ export class ORNodeMemImpl implements IORNode {
   private _periodNum: number = 0;
   private _ctx: ORContext.ORContext;
   private _cfg: ConstructorConfig;
+  private _provider?: JsonRpcProvider;
 
   private constructor(contextCfg: ORNodeContextConfig, config: ConstructorConfig) {
     this._ctx = new ORContext.ORContext({ ...contextCfg, ornode: this });
@@ -56,12 +59,48 @@ export class ORNodeMemImpl implements IORNode {
   }
 
   static async createORNodeMemImpl(config: Config): Promise<IORNode> {
-    const orec: OrecContract = isEthAddr(config.orec)
-      ? OrecFactory.connect(config.orec)
-      : config.orec;
-    const newRespect = isEthAddr(config.newRespect)
-      ? Respect1155.Factory.connect(config.newRespect)
-      : config.newRespect;
+    console.debug("ornode mem impl 1");
+    let provider: Provider | undefined | null;
+    if (isEthAddr(config.orec) || isEthAddr(config.newRespect)) {
+      const url = z.string().url().parse(config.providerUrl);
+      provider = new JsonRpcProvider(url);
+    } else if (!isEthAddr(config.orec)) {
+      provider = config.orec.runner?.provider;
+    } else {
+      provider = config.newRespect.runner?.provider;
+    }
+
+    const network = await provider?.getNetwork();
+    console.log("provider.getNetwork().chainId: ", network?.chainId);
+
+    let orec: OrecContract;
+    if (isEthAddr(config.orec)) {
+      if (!provider) {
+        throw new Error("Failed to resolve provider. Invalid argument");
+      }
+      orec = OrecFactory.connect(config.orec, provider);
+    } else {
+      orec = config.orec;
+    }
+
+
+    let newRespect: Respect1155.Contract;
+    if (isEthAddr(config.newRespect)) {
+      if (!provider) {
+        throw new Error("Failed to resolve provider. Invalid argument");
+      }
+      newRespect = await Respect1155.Factory.connect(config.newRespect, provider);
+    } else {
+      newRespect = config.newRespect;
+    }
+    // console.debug("getCode(newRespect): ", await provider?.getCode(config.newRespect));
+    console.debug("orec.getAddress(): ", await orec.getAddress());
+    console.debug("orec.voteLen: ", await orec.voteLen());
+    console.debug("block number: ", await provider?.getBlockNumber())
+    // console.debug("getCode(orec)", await provider?.getCode(config.orec));
+
+    console.debug("ornode mem impl 2");
+
     const oldRespectAddr = await orec.respectContract();
     const oldRespect: FractalRespect.Contract = FractalRespect.Factory.connect(oldRespectAddr);
 
@@ -76,6 +115,9 @@ export class ORNodeMemImpl implements IORNode {
     }
 
     const ornode = new ORNodeMemImpl(ctx, cfg);
+
+    console.debug("ornode mem impl 4");
+
 
     orec.on(orec.getEvent("ProposalCreated"), (propId) => {
       ornode._storeNewProposal(propId);
@@ -146,6 +188,9 @@ export class ORNodeMemImpl implements IORNode {
   }
 
   async getProposals(from: number, limit: number): Promise<Proposal[]> {
+    if (this._propIndex.length === 0) {
+      return [];
+    }
     const f = z.number().gte(0).lt(this._propIndex.length).parse(from);
     const l = z.number().gt(0).parse(limit);
     const firstIndex = this._propIndex.length - 1 - f;
@@ -167,6 +212,7 @@ export class ORNodeMemImpl implements IORNode {
   // TODO:
   async getPeriodNum(): Promise<number> {
     return this._periodNum;
+
   }
 
 }

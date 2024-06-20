@@ -13,7 +13,8 @@ export const zContractsAddrs = z.object({
 export type ContractsAddrs = z.infer<typeof zContractsAddrs>;
 
 export const zConfig = z.object({
-  contracts: zContractsAddrs
+  contracts: zContractsAddrs,
+  providerUrl: z.string().url(),
 });
 export type Config = z.infer<typeof zConfig>;
 

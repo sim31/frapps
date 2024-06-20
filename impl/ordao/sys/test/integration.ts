@@ -25,7 +25,7 @@ import {
   OrecFactory,
   MessageStruct
 } from "ortypes/orec.js";
-import { LocalTestnet, defaultConfig } from "../src/localTestnet.js";
+import { DeployState, Deployment, SerializableState as DeploymentState } from "../src/deployment.js";
 
 // stack trace line number offset: 69
 
@@ -58,18 +58,20 @@ describe("orclient", function() {
   let groupRes: BreakoutResult[];
   let mintReqs: RespectAccountRequest[];
   let threshold: number;
-  let lt: LocalTestnet;
+  let st: DeployState
 
   before("launch eth test network", async function() {
-    lt = await LocalTestnet.create({ ...defaultConfig, redirectOutTo: "./chain.log" });
+    const d = await Deployment.devConnect("./tmp/dev-deployment.json");
+    st = d.state;
 
-    signers = lt.state.signers;
-    addrs = lt.state.addrs;
-    oldRespect = lt.state.oldRespect;
-    nonRespectedAccs = lt.state.nonRespectedAccs;
-    orec = lt.state.orec;
-    newRespect = lt.state.newRespect;
-    threshold = lt.state.voteThreshold;
+    signers = await hre.ethers.getSigners();
+    addrs = st.addrs;
+    nonRespectedAccs = st.nonRespectedAccs;
+    threshold = st.voteThreshold;
+
+    oldRespect = st.oldRespect;
+    orec = st.orec;
+    newRespect = st.newRespect;
   });
   
   before("create ORNode", async function() {

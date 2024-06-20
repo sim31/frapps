@@ -5,7 +5,7 @@ import { routing } from "../routing.js";
 import { ezConfig } from "../config.js";
 import fs from "fs";
 
-const apiSpec = new Documentation({ routing, config: ezConfig, title: "Ornode", version: "3.0.0", serverUrl: "http://localhost:8090" });
+const apiSpec = new Documentation({ routing, config: ezConfig, title: "Ornode", version: "1.2.3", serverUrl: "http://localhost:8090" });
 const specObj = JSON.parse(apiSpec.getSpecAsJson());
 
 const app = express();

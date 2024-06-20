@@ -38,6 +38,7 @@
     "@types/jsonfile": "^6.1.4",
     "blockstore-level": "^1.1.8",
     "dotenv": "^16.4.5",
+    "ethers": "^6.13.1",
     "express": "^4.19.2",
     "express-zod-api": "^19.2.2",
     "helia": "^4.2.1",
