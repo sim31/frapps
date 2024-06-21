@@ -61,6 +61,14 @@ export const zRespectAccount = zDecodedPropBase.extend({
 });
 export type RespectAccount = z.infer<typeof zRespectAccount>;
 
+// const respectAccountRequestEx = {
+//   meetingNum: 1,
+//   mintType: 1,
+//   account: "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+//   value: 10n,
+//   title
+
+// }
 export const zRespectAccountRequest = zRespectAccount
   .omit({ propType: true })
   .partial({ mintType: true, meetingNum: true, metadata: true })

@@ -1,8 +1,7 @@
 import chai, { expect } from "chai";
 import { time, mine } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
 import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest, RespectBreakoutRequest, VoteRequest, VoteWithProp } from "ortypes/orclient.js";
-import { TxFailed, ORClient } from "orclient";
-import { ORNodeMemImpl } from "ornode/dist/ornodeMemImpl.js";
+import { TxFailed, ORClient, RemoteOrnode } from "orclient";
 import { EthAddress, ExecStatus, PropType, Stage, VoteStatus, VoteType, zProposedMsg } from "ortypes";
 import hre from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers.js";
@@ -27,6 +26,10 @@ import {
 } from "ortypes/orec.js";
 import { DeployState, Deployment, SerializableState as DeploymentState } from "../src/deployment.js";
 
+if (!process.env.DEBUGLOG) {
+  console.debug = () => {};
+}
+
 // stack trace line number offset: 69
 
 chai.config.truncateThreshold = 0;
@@ -36,9 +39,9 @@ async function confirm<T>(
   promise: Promise<T>,
   increaseTimeS: number = 2
 ): Promise<T> {
-  await time.increase(increaseTimeS);  
-  await time.increase(increaseTimeS);
-  await time.increase(increaseTimeS);
+  // await time.increase(increaseTimeS);  
+  // await time.increase(increaseTimeS);
+  // await time.increase(increaseTimeS);
   return await promise;
 }
 
@@ -75,11 +78,8 @@ describe("orclient", function() {
   });
   
   before("create ORNode", async function() {
-    ornode = await ORNodeMemImpl.createORNodeMemImpl({
-      newRespect,
-      orec
-    })
-  })
+    ornode = new RemoteOrnode("http://localhost:8090");
+  });
 
   before("create ORClient", async function() {
     const ctx = new ORContext({ orec, newRespect, oldRespect, ornode });
@@ -160,6 +160,8 @@ describe("orclient", function() {
 
   describe("submitting breakout room results", function() {
     before("submit some results", async function() {
+      console.debug("test debug");
+
       groupRes = [
         {
           groupNum: 1,
@@ -182,11 +184,11 @@ describe("orclient", function() {
       ]
 
       let result = await confirm(cl.submitBreakoutResult(groupRes[2]));
-      resultProps.push(result);
+      resultProps.push(result.proposal);
       result = await confirm(cl.submitBreakoutResult(groupRes[1]));
-      resultProps.push(result);
+      resultProps.push(result.proposal);
       result = await confirm(cl.submitBreakoutResult(groupRes[0]));
-      resultProps.push(result);
+      resultProps.push(result.proposal);
     });
 
     describe("lsProposals", function() {
@@ -281,9 +283,9 @@ describe("orclient", function() {
       ];
 
       const p1 = await confirm(cl.proposeRespectTo(mintReqs[0]));
-      mintProps.push(p1);
+      mintProps.push(p1.proposal);
       const p2 = await confirm(cl.proposeRespectTo(mintReqs[1]));
-      mintProps.push(p2);
+      mintProps.push(p2.proposal);
     });
 
     it("should have returned expected mint proposals", async function() {
@@ -316,8 +318,8 @@ describe("orclient", function() {
 
   describe("proposing a tick (to increment meeting number)", function() {
     before("create proposal by calling proposeTick", async function() {
-      tickProps.push(await confirm(cl.proposeTick()));
-      tickProps.push(await confirm(cl.proposeTick({ data: "0x11" })));
+      tickProps.push((await confirm(cl.proposeTick())).proposal);
+      tickProps.push((await confirm(cl.proposeTick({ data: "0x11" }))).proposal);
     });
 
     it("should return period number of 0 before the tick is executed", async function() {
@@ -355,8 +357,8 @@ describe("orclient", function() {
       link: "https://someaddr2.io"
     }; 
     before("create proposal by calling proposeSignal", async function() {
-      signalProps.push(await confirm(cl.proposeCustomSignal(sreq1)));
-      signalProps.push(await confirm(cl.proposeCustomSignal(sreq2)));
+      signalProps.push((await confirm(cl.proposeCustomSignal(sreq1))).proposal);
+      signalProps.push((await confirm(cl.proposeCustomSignal(sreq2))).proposal);
     });
 
     it("should have returned expected signal proposals", async function() {
@@ -662,13 +664,13 @@ describe("orclient", function() {
       };
 
       resultProps = [];
-      resultProps.push(await confirm(cl.submitBreakoutResult(groupRes, { memo: "smth"})))
+      resultProps.push((await confirm(cl.submitBreakoutResult(groupRes, { memo: "smth"}))).proposal)
 
       mintProps = [];
-      mintProps.push(await confirm(cl.proposeRespectTo(mintReq, { memo: "aa"})));
+      mintProps.push((await confirm(cl.proposeRespectTo(mintReq, { memo: "aa"}))).proposal);
 
       tickProps = [];
-      tickProps.push(await confirm(cl.proposeTick({ metadata: { propDescription: "B" }})));
+      tickProps.push((await confirm(cl.proposeTick({ metadata: { propDescription: "B" }}))).proposal);
     });
 
     before("vote on proposals", async function() {
@@ -748,13 +750,13 @@ describe("orclient", function() {
         }
       };
       resultProps = [];
-      resultProps.push(await confirm(cl.submitBreakoutResult(groupRes)))
+      resultProps.push((await confirm(cl.submitBreakoutResult(groupRes))).proposal)
 
       mintProps = [];
-      mintProps.push(await confirm(cl.proposeRespectTo(mintReq)));
+      mintProps.push((await confirm(cl.proposeRespectTo(mintReq))).proposal);
 
       tickProps = [];
-      tickProps.push(await confirm(cl.proposeTick({ metadata: { propDescription: "C" }})));
+      tickProps.push((await confirm(cl.proposeTick({ metadata: { propDescription: "C" }}))).proposal);
     });
 
     before("vote on proposals", async function() {

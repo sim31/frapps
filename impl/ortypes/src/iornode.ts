@@ -20,6 +20,8 @@ export interface IORNode {
 }
 
 export class ProposalNotFound extends Error {
+  name: string = "ProposalNotFound";
+
   constructor(propId: PropId) {
     const msg = `Proposal with id ${propId} does not exist`;
     super(msg);
@@ -27,6 +29,7 @@ export class ProposalNotFound extends Error {
 }
 
 export class ProposalNotCreated extends Error {
+  name: string = "ProposalNotCreated";
   constructor(proposal: Proposal) {
     const msg = `Proposal with id ${proposal.id} has not been created onchain yet. Proposal: ${JSON.stringify(proposal)}`;
     super(msg);
@@ -34,7 +37,8 @@ export class ProposalNotCreated extends Error {
 }
 
 export class ProposalInvalid extends Error {
-  public cause: string;
+  name: string = "ProposalInvalid";
+  cause: string;
 
   constructor(proposal: Proposal, cause: any) {
     const msg = `Proposal invalid. Proposal: ${JSON.stringify(proposal)}`;

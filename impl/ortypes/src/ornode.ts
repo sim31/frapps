@@ -192,7 +192,7 @@ export type ProposalFull = z.infer<typeof zProposalFull>;
 export const zProposalValid = attachPropRefinements(zProposalFull).brand<"ProposalValid">();
 export type ProposalValid = z.infer<typeof zProposalValid>;
 
-export const zORNodePropStatus = z.enum(["ProposalExists", "ProposalCreated", "ProposalStored"]);
+export const zORNodePropStatus = z.enum(["ProposalExists", "ProposalStored"]);
 export type ORNodePropStatus = z.infer<typeof zORNodePropStatus>;
 
 

@@ -46,5 +46,4 @@ export class PutProposalFailure extends Error {
     super(m);
     this.name = 'PutProposalFailure';
   }
-
 }

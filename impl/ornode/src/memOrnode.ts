@@ -44,7 +44,7 @@ type ORNodeContextConfig = Omit<ORContext.Config, "ornode">;
  * weighted votes during voteTime, to save resources against spam.
  * TODO: Function to get signal data
  */
-export class ORNodeMemImpl implements IORNode {
+export class MemOrnode implements IORNode {
   // value might be null if proposal has been submitted onchain but not to us
   private _propMap: SafeRecord<PropId, Proposal> = {}
   private _propIndex: PropId[] = [];
@@ -114,10 +114,9 @@ export class ORNodeMemImpl implements IORNode {
       weghtlessPropAliveness: propAliveness
     }
 
-    const ornode = new ORNodeMemImpl(ctx, cfg);
+    const ornode = new MemOrnode(ctx, cfg);
 
     console.debug("ornode mem impl 4");
-
 
     orec.on(orec.getEvent("ProposalCreated"), (propId) => {
       ornode._storeNewProposal(propId);

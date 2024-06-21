@@ -90,9 +90,9 @@ export class Deployment {
   public static async devConnect(serializedStatePath: string): Promise<Deployment> {
     const st = Deployment.deserializeState(serializedStatePath);
     const signers = await hre.ethers.getSigners();
-    const oldRespect: FractalRespect = FractalRespectFactory.connect(st.oldRespectAddr, hre.ethers.provider);
-    const newRespect: Respect1155.Contract = Respect1155.Factory.connect(st.newRespectAddr, hre.ethers.provider);
-    const orec: Orec = OrecFactory.connect(st.orecAddr, hre.ethers.provider);
+    const oldRespect: FractalRespect = FractalRespectFactory.connect(st.oldRespectAddr, signers[0]);
+    const newRespect: Respect1155.Contract = Respect1155.Factory.connect(st.newRespectAddr, signers[0]);
+    const orec: Orec = OrecFactory.connect(st.orecAddr, signers[0]);
 
     const oldRespOwnerAddr = await oldRespect.owner();
     const oldRespExecAddr = await oldRespect.executor();

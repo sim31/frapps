@@ -1,25 +1,37 @@
 import shelljs from "shelljs";
+import concurrently from "concurrently";
 import { sleep } from "ts-utils";
+import treeKill from "tree-kill";
 
 async function main() {
-  const hhNode = shelljs.exec("npm run hh-test-chain", { async: true });
-  await sleep(3000);
+  try {
+    const hhNode = shelljs.exec("npm run hh-test-chain > ./tmp/chain-test.log", { async: true });
 
-  shelljs.exec("npm run test-deployment"); // Synchronous
-  // const ornode = shelljs.exec("npm run ornode-dev", { async: true });
-  const tests = shelljs.exec("npm run hh-test-ordao"); // Synchronous
+    shelljs.exec("npm run build")
 
-  hhNode.on("exit", (code, signal) => {
-    console.log("hhNode process exiting with code: ", code, ", signal: ", signal);
-  });
+    shelljs.exec("npm run test-deployment"); // Synchronous
 
-  // ornode.on("exit", (code, signal) => {
-  //   console.log("ornode process exiting with code: ", code, ", signal: ", signal);
-  // });
+    // Using concurrently just for prefix in the outputs
+    const ornode = concurrently([
+      "npm:ornode-dev",
+    ]);
 
-  hhNode.kill();
-  // ornode.kill();
+    shelljs.exec("npm run hh-test-ordao");
 
+    hhNode.on("exit", (code, signal) => {
+      console.log("hhNode process exiting with code: ", code, ", signal: ", signal);
+    });
+
+    // ornode.on("exit", (code, signal) => {
+    //   console.log("ornode process exiting with code: ", code, ", signal: ", signal);
+    // });
+
+    treeKill(hhNode.pid);
+    treeKill(ornode.commands[0].pid);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 main();
+

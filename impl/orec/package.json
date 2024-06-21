@@ -25,6 +25,8 @@
     }
   },
   "scripts": {
+    "clean": "rm -rf dist/*",
+    "build-clean": "npm run clean && npx hardhat compile && tsc",
     "build": "npx hardhat compile && tsc",
     "build-watch": "npx hardhat compile && tsc --watch",
     "test": "npx hardhat test"
