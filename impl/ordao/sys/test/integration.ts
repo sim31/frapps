@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import { time, mine } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
 import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest, RespectBreakoutRequest, VoteRequest, VoteWithProp } from "ortypes/orclient.js";
-import { TxFailed, ORClient, RemoteOrnode } from "orclient";
+import { TxFailed, ORClient, RemoteOrnode, defaultConfig } from "orclient";
 import { EthAddress, ExecStatus, PropType, Stage, VoteStatus, VoteType, zProposedMsg } from "ortypes";
 import hre from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers.js";
@@ -83,7 +83,7 @@ describe("orclient", function() {
 
   before("create ORClient", async function() {
     const ctx = new ORContext({ orec, newRespect, oldRespect, ornode });
-    cl = new ORClient(ctx);
+    cl = new ORClient(ctx, { ...defaultConfig, propResubmitInterval: 1000 });
   })
 
   function expectDecoded<T extends PropType>(

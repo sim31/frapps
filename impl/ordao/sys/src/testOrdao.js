@@ -11,10 +11,7 @@ async function main() {
 
     shelljs.exec("npm run test-deployment"); // Synchronous
 
-    // Using concurrently just for prefix in the outputs
-    const ornode = concurrently([
-      "npm:ornode-dev",
-    ]);
+    const ornode = shelljs.exec("npm run ornode-dev > ./tmp/ornode-test.log", { async: true })
 
     shelljs.exec("npm run hh-test-ordao");
 
@@ -22,12 +19,12 @@ async function main() {
       console.log("hhNode process exiting with code: ", code, ", signal: ", signal);
     });
 
-    // ornode.on("exit", (code, signal) => {
-    //   console.log("ornode process exiting with code: ", code, ", signal: ", signal);
-    // });
+    ornode.on("exit", (code, signal) => {
+      console.log("ornode process exiting with code: ", code, ", signal: ", signal);
+    });
 
     treeKill(hhNode.pid);
-    treeKill(ornode.commands[0].pid);
+    treeKill(ornode.pid);
   } catch (err) {
     console.error(err);
   }

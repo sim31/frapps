@@ -7,8 +7,9 @@ import { ClientToNodeTransformer } from "ortypes/transformers/clientToNodeTransf
 import { ProposalFull as NProp, ORNodePropStatus } from "ortypes/ornode.js";
 import { ErrorDecoder } from 'ethers-decode-error'
 import type { DecodedError } from 'ethers-decode-error'
-import { Bytes, PropId, ProposalState, VoteType } from "ortypes";
+import { Bytes, PropId, ProposalNotCreated, ProposalState, VoteType } from "ortypes";
 import { Method, Path, Input, Response } from "./ornodeClient/ornodeClient.js";
+import { sleep } from "ts-utils";
 
 export function isPropCreated(propState: ProposalState) {
   return propState.createTime > 0n;
@@ -18,7 +19,16 @@ export interface Config {
   /// How many onchain confirmations to wait for before considering proposal submitted
   propConfirms: number,
   /// How many onchain confirmations to wait for, for all other transactions
-  otherConfirms: number
+  otherConfirms: number,
+  propSubmitRetries: number,
+  propResubmitInterval: number
+}
+
+export const defaultConfig: Config = {
+  propConfirms: 3,
+  otherConfirms: 3,
+  propSubmitRetries: 3,
+  propResubmitInterval: 2000
 }
 
 export interface PutProposalRes {
@@ -42,7 +52,7 @@ export class ORClient {
   private _cfg: Config;
   private _errDecoder: ErrorDecoder;
 
-  constructor(context: ORContext, cfg: Config = { propConfirms: 3, otherConfirms: 3 }) {
+  constructor(context: ORContext, cfg: Config = defaultConfig) {
     this._ctx = context;
     this._nodeToClient = new NodeToClientTransformer(this._ctx);
     this._clientToNode = new ClientToNodeTransformer(this._ctx);
@@ -225,7 +235,27 @@ export class ORClient {
   }
 
   private async _submitPropToOrnode(proposal: NProp): Promise<ORNodePropStatus> {
-    return await this._ctx.ornode.putProposal(proposal);
+    let attempts = 0;
+    let _err: any;
+    while (attempts < this._cfg.propSubmitRetries) {
+      try {
+        if (attempts > 0) {
+          await sleep(this._cfg.propResubmitInterval);
+        }
+        const status = await this._ctx.ornode.putProposal(proposal);
+        return status;
+      } catch (error) {
+        _err = error;
+        if (error instanceof ProposalNotCreated) {
+          attempts += 1;
+          console.log("Submitting proposal to ornode failed with error ProposalNotCreated. Attempt count: ", attempts, ". Proposal: ", JSON.stringify(proposal));
+        } else {
+          throw error;
+        }
+      }
+    }
+    console.error("Attempt limit for submitting proposal exceeded.");
+    throw _err;
   }
 
   private async _submitPropToChain(proposal: NProp, vote?: VoteWithProp) {

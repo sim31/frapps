@@ -1,5 +1,5 @@
 import { PropId } from "./orec.js";
-import { ORNodePropStatus, Proposal, ProposalFull } from "./ornode.js";
+import { ErrorType, ORNodePropStatus, Proposal, ProposalFull, zErrorType } from "./ornode.js";
 
 export interface IORNode {
   /**
@@ -20,7 +20,7 @@ export interface IORNode {
 }
 
 export class ProposalNotFound extends Error {
-  name: string = "ProposalNotFound";
+  name: ErrorType = zErrorType.enum.ProposalNotFound;
 
   constructor(propId: PropId) {
     const msg = `Proposal with id ${propId} does not exist`;
@@ -29,7 +29,7 @@ export class ProposalNotFound extends Error {
 }
 
 export class ProposalNotCreated extends Error {
-  name: string = "ProposalNotCreated";
+  name: ErrorType = zErrorType.enum.ProposalNotCreated;
   constructor(proposal: Proposal) {
     const msg = `Proposal with id ${proposal.id} has not been created onchain yet. Proposal: ${JSON.stringify(proposal)}`;
     super(msg);
@@ -37,7 +37,7 @@ export class ProposalNotCreated extends Error {
 }
 
 export class ProposalInvalid extends Error {
-  name: string = "ProposalInvalid";
+  name: ErrorType = zErrorType.enum.ProposalNotCreated;
   cause: string;
 
   constructor(proposal: Proposal, cause: any) {

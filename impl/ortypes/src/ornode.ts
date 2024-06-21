@@ -195,6 +195,13 @@ export type ProposalValid = z.infer<typeof zProposalValid>;
 export const zORNodePropStatus = z.enum(["ProposalExists", "ProposalStored"]);
 export type ORNodePropStatus = z.infer<typeof zORNodePropStatus>;
 
+export const zErrorType = z.enum([
+  "ProposalNotFound",
+  "ProposalNotCreated",
+  "ProposalInvalid"
+]);
+export type ErrorType = z.infer<typeof zErrorType>;
+
 
 export function idOfRespectBreakoutAttach(attachment: RespectBreakoutAttachment) {
   const a: Required<RespectBreakoutAttachment> = {

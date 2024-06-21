@@ -1,10 +1,11 @@
-import { defaultEndpointsFactory } from "express-zod-api";
+import { EndpointsFactory } from "express-zod-api";
 import { z } from "zod";
 import { Routing } from "express-zod-api";
 import { MemOrnode } from "./memOrnode.js";
 import { config } from "./config.js";
 import { zORNodePropStatus, zProposal, zProposalFull } from "ortypes/ornode.js";
 import { zPropId } from "ortypes";
+import { resultHandler } from "./resultHandler.js";
 
 const ornode = MemOrnode.createORNodeMemImpl({
   newRespect: config.contracts.newRespect,
@@ -16,7 +17,9 @@ async function getOrnode() {
   return await ornode;
 }
 
-const putProposal = defaultEndpointsFactory.build({
+const factory = new EndpointsFactory(resultHandler);
+
+const putProposal = factory.build({
   method: "post",
   // All inputs have to be `posts` for some reason
   input: z.object({ proposal: zProposalFull }),
@@ -31,7 +34,7 @@ const putProposal = defaultEndpointsFactory.build({
   },
 });
 
-const getPeriodNum = defaultEndpointsFactory.build({
+const getPeriodNum = factory.build({
   method: "get",
   input: z.object({}),
   output: z.object({ periodNum: z.number() }),
@@ -43,7 +46,7 @@ const getPeriodNum = defaultEndpointsFactory.build({
   },
 })
 
-const getProposal = defaultEndpointsFactory.build({
+const getProposal = factory.build({
   method: "post",
   input: z.object({ propId: zPropId }),
   output: zProposal,
@@ -54,7 +57,7 @@ const getProposal = defaultEndpointsFactory.build({
   }
 });
 
-const getProposals = defaultEndpointsFactory.build({
+const getProposals = factory.build({
   method: "post",
   input: z.object({
     from: z.number(),
