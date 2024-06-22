@@ -79,7 +79,7 @@ export class MemOrnode implements IORNode {
     const contextCfg: ORNodeContextConfig = {
       orec: config.orec,
       newRespect: config.newRespect,
-      ethProvider: config.providerUrl
+      contractRunner: config.providerUrl
     };
     const ctx = await ORContext.ORContext.create(contextCfg);
 

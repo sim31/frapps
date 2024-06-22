@@ -1,4 +1,4 @@
-import { Provider as EthProvider, JsonRpcProvider, Provider, Result, Signer } from "ethers";
+import { ContractRunner, Provider as EthProvider, JsonRpcProvider, Provider, Result, Signer } from "ethers";
 import { OrecContract as Orec, OrecFactory } from "./orec.js";
 import { EthAddress, isEthAddr, zEthNonZeroAddress } from "./eth.js";
 import { IORNode } from "./iornode.js";
@@ -23,7 +23,7 @@ export interface Config {
   orec: EthAddress | Orec,
   newRespect: EthAddress | Respect1155,
   ornode?: IORNode,
-  ethProvider?: Provider | Url
+  contractRunner?: ContractRunner | Url
 }
 
 export type ConfigWithOrnode = Required<Config, 'ornode'>;
@@ -67,46 +67,46 @@ export class ORContext<CT extends Config> {
     console.log("orContext validation successful");
   }
 
-  private static _determineProvider(config: Config): Provider {
-    let provider: Provider | undefined | null;
-    if (config.ethProvider) {
-      if (typeof config.ethProvider === 'string') {
-        const url = zUrl.parse(config.ethProvider);
-        provider = new JsonRpcProvider(url);
+  private static _determineRunner(config: Config): ContractRunner {
+    let runner: ContractRunner | undefined | null;
+    if (config.contractRunner) {
+      if (typeof config.contractRunner === 'string') {
+        const url = zUrl.parse(config.contractRunner);
+        runner = new JsonRpcProvider(url);
       } else {
-        provider = config.ethProvider;
+        runner = config.contractRunner;
       }
     } else {
       if (!isEthAddr(config.orec)) {
-        provider = config.orec.runner?.provider;
+        runner = config.orec.runner;
       } else if (!isEthAddr(config.newRespect)) {
-        provider = config.newRespect.runner?.provider;
+        runner = config.newRespect.runner;
       }
     }
-    if (!provider) {
+    if (!runner) {
       throw new InvalidArgumentError("Could not determine provider");
     }
 
-    return provider;
+    return runner;
   }
 
   static async create<CT extends Config>(config: CT): Promise<ORContext<CT>> {
-    const provider = this._determineProvider(config);
+    const runner = this._determineRunner(config);
 
-    const network = await provider.getNetwork();
-    console.debug("provider.getNetwork().chainId: ", network.chainId);
+    const network = await runner.provider?.getNetwork();
+    console.debug("provider.getNetwork().chainId: ", network?.chainId);
 
     const orec: Orec = isEthAddr(config.orec)
-      ? OrecFactory.connect(config.orec, provider)
+      ? OrecFactory.connect(config.orec, runner)
       : config.orec;
 
     const newRespect = isEthAddr(config.newRespect)
-      ? Respect1155Factory.connect(config.newRespect, provider)
+      ? Respect1155Factory.connect(config.newRespect, runner)
       : config.newRespect; 
 
     const oldRespAddr = zEthNonZeroAddress.parse(await orec.respectContract());
     console.debug("oldRespectAddr: ", oldRespAddr);
-    const oldRespect = FractalRespectFactory.connect(oldRespAddr, provider);
+    const oldRespect = FractalRespectFactory.connect(oldRespAddr, runner);
 
     const st: State = {
       orec, newRespect, oldRespect,
