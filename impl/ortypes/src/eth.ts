@@ -41,6 +41,32 @@ export function isEthAddr(val: any): val is EthAddress {
   }
 }
 
+export const zEthNonZeroAddress = zEthAddress.refine((val) => {
+  return val !== ZeroAddress;
+});
+
+export const zEthZeroAddress = zEthAddress.refine((val) => {
+  return val === ZeroAddress;
+});
+
+export function isEthNonZeroAddr(val: any): boolean {
+  try {
+    zEthNonZeroAddress.parse(val);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+export function isEthZeroAddr(val: any): boolean {
+  try {
+    zEthZeroAddress.parse(val);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
 export const zNonZeroBigInt = z.bigint().nonnegative().or(z.bigint().nonpositive());
 
 export const zNonZeroNumber = z.number().nonnegative().or(z.number().nonpositive());

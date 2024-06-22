@@ -13,12 +13,14 @@ import {
   ProposalInvalid,
   ProposalNotCreated,
   ProposalNotFound,
-  OrecFactory
+  OrecFactory,
+  Url
 } from "ortypes/index.js"
 import { ORNodePropStatus, Proposal, ProposalFull, ProposalValid, zORNodePropStatus, zProposal, zProposalValid } from "ortypes/ornode.js";
 import { SafeRecord } from "ts-utils";
 import { z } from "zod";
 import { JsonRpcProvider, Provider } from "ethers";
+
 
 export interface ConstructorConfig {
   /**
@@ -28,13 +30,15 @@ export interface ConstructorConfig {
   weghtlessPropAliveness?: number
 }
 
-export interface Config extends ConstructorConfig{
+export interface Config extends ConstructorConfig {
   newRespect: EthAddress | Respect1155.Contract,
   orec: EthAddress | OrecContract,
-  providerUrl?: string
+  providerUrl?: Url
 }
 
 type ORNodeContextConfig = Omit<ORContext.Config, "ornode">;
+
+type ORContext = ORContext.ORContext<ORNodeContextConfig>;
 
 /**
  * TODO: Currently this class only saves proposals which are created onchain after
@@ -49,87 +53,43 @@ export class MemOrnode implements IORNode {
   private _propMap: SafeRecord<PropId, Proposal> = {}
   private _propIndex: PropId[] = [];
   private _periodNum: number = 0;
-  private _ctx: ORContext.ORContext;
+  private _ctx: ORContext;
   private _cfg: ConstructorConfig;
   private _provider?: JsonRpcProvider;
 
-  private constructor(contextCfg: ORNodeContextConfig, config: ConstructorConfig) {
-    this._ctx = new ORContext.ORContext({ ...contextCfg, ornode: this });
+  private constructor(orcontext: ORContext, config: ConstructorConfig) {
+    this._ctx = orcontext;
     this._cfg = config;
+
+    this._ctx.orec.on(this._ctx.orec.getEvent("ProposalCreated"), (propId) => {
+      this._storeNewProposal(propId);
+    });
+
+    this._ctx.orec.on(this._ctx.orec.getEvent("Signal"), (signalType, data) => {
+      const st = zSignalType.parse(signalType);
+      if (st === zTickSignalType.value) {
+        this._onTickSignal(data);
+      } else {
+        this._onSignal(st, data);
+      }
+    });
   }
 
-  static async createORNodeMemImpl(config: Config): Promise<IORNode> {
-    console.debug("ornode mem impl 1");
-    let provider: Provider | undefined | null;
-    if (isEthAddr(config.orec) || isEthAddr(config.newRespect)) {
-      const url = z.string().url().parse(config.providerUrl);
-      provider = new JsonRpcProvider(url);
-    } else if (!isEthAddr(config.orec)) {
-      provider = config.orec.runner?.provider;
-    } else {
-      provider = config.newRespect.runner?.provider;
-    }
-
-    const network = await provider?.getNetwork();
-    console.log("provider.getNetwork().chainId: ", network?.chainId);
-
-    let orec: OrecContract;
-    if (isEthAddr(config.orec)) {
-      if (!provider) {
-        throw new Error("Failed to resolve provider. Invalid argument");
-      }
-      orec = OrecFactory.connect(config.orec, provider);
-    } else {
-      orec = config.orec;
-    }
-
-
-    let newRespect: Respect1155.Contract;
-    if (isEthAddr(config.newRespect)) {
-      if (!provider) {
-        throw new Error("Failed to resolve provider. Invalid argument");
-      }
-      newRespect = await Respect1155.Factory.connect(config.newRespect, provider);
-    } else {
-      newRespect = config.newRespect;
-    }
-    // console.debug("getCode(newRespect): ", await provider?.getCode(config.newRespect));
-    console.debug("orec.getAddress(): ", await orec.getAddress());
-    console.debug("orec.voteLen: ", await orec.voteLen());
-    console.debug("block number: ", await provider?.getBlockNumber())
-    // console.debug("getCode(orec)", await provider?.getCode(config.orec));
-
-    console.debug("ornode mem impl 2");
-
-    const oldRespectAddr = await orec.respectContract();
-    const oldRespect: FractalRespect.Contract = FractalRespect.Factory.connect(oldRespectAddr);
-
-    const ctx: ORNodeContextConfig = {
-      orec, newRespect, oldRespect
+  static async create(config: Config): Promise<IORNode> {
+    const contextCfg: ORNodeContextConfig = {
+      orec: config.orec,
+      newRespect: config.newRespect,
+      ethProvider: config.providerUrl
     };
+    const ctx = await ORContext.ORContext.create(contextCfg);
 
-    const propAliveness = config.weghtlessPropAliveness ?? Number(await orec.voteLen());
+    const propAliveness = config.weghtlessPropAliveness ?? Number(await ctx.orec.voteLen());
 
     const cfg: ConstructorConfig = {
       weghtlessPropAliveness: propAliveness
     }
 
     const ornode = new MemOrnode(ctx, cfg);
-
-    console.debug("ornode mem impl 4");
-
-    orec.on(orec.getEvent("ProposalCreated"), (propId) => {
-      ornode._storeNewProposal(propId);
-    });
-
-    orec.on(orec.getEvent("Signal"), (signalType, data) => {
-      const st = zSignalType.parse(signalType);
-      if (st === zTickSignalType.value) {
-        ornode._onTickSignal(data);
-      } else {
-        ornode._onSignal(st, data);
-      }
-    });
 
     return ornode
   }

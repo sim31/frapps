@@ -13,7 +13,7 @@ import {
   propId
 } from "ortypes";
 import { packTokenId } from "ortypes/respect1155.js";
-import { ORContext } from "ortypes/orContext.js";
+import { ConfigWithOrnode, ORContext } from "ortypes/orContext.js";
 import { sleep } from "ts-utils/dist/index.js";
 import {
   FractalRespect,
@@ -82,7 +82,7 @@ describe("orclient", function() {
   });
 
   before("create ORClient", async function() {
-    const ctx = new ORContext({ orec, newRespect, oldRespect, ornode });
+    const ctx = new ORContext<ConfigWithOrnode>({ orec, newRespect, oldRespect, ornode });
     cl = new ORClient(ctx, { ...defaultConfig, propResubmitInterval: 1000 });
   })
 

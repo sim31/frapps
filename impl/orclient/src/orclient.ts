@@ -1,7 +1,7 @@
 import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt, toBeHex } from "ethers";
 import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp } from "ortypes/orclient.js";
 import { TxFailed } from "./errors.js";
-import { ORContext } from "ortypes/orContext.js";
+import { ORContext, ConfigWithOrnode } from "ortypes/orContext.js";
 import { NodeToClientTransformer } from "ortypes/transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "ortypes/transformers/clientToNodeTransformer.js";
 import { ProposalFull as NProp, ORNodePropStatus } from "ortypes/ornode.js";
@@ -46,13 +46,13 @@ export interface PutProposalRes {
  * 
  */
 export class ORClient {
-  private _ctx: ORContext;
+  private _ctx: ORContext<ConfigWithOrnode>;
   private _nodeToClient: NodeToClientTransformer;
   private _clientToNode: ClientToNodeTransformer;
   private _cfg: Config;
   private _errDecoder: ErrorDecoder;
 
-  constructor(context: ORContext, cfg: Config = defaultConfig) {
+  constructor(context: ORContext<ConfigWithOrnode>, cfg: Config = defaultConfig) {
     this._ctx = context;
     this._nodeToClient = new NodeToClientTransformer(this._ctx);
     this._clientToNode = new ClientToNodeTransformer(this._ctx);
@@ -71,15 +71,11 @@ export class ORClient {
   }
 
   connect(signer: Signer): ORClient {
-    const newOrec = this._ctx.orec.connect(signer);
-    const newCtx = new ORContext({
-      ...this._ctx.config,
-      orec: newOrec
-    });
+    const newCtx = this._ctx.connect(signer);    
     return new ORClient(newCtx);
   }
 
-  get context(): ORContext {
+  get context(): ORContext<ConfigWithOrnode> {
     return this._ctx;
   }
 

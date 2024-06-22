@@ -15,7 +15,7 @@ import {
   zTickRequest,
 } from "../orclient.js";
 import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, TickValid, idOfBurnRespectAttach, idOfCustomCallAttach, idOfCustomSignalAttach, idOfRespectAccountAttach, idOfRespectBreakoutAttach, zBurnRespect, zBurnRespectValid, zCustomCall, zCustomCallValid, zCustomSignal, zCustomSignalValid, zRespectAccount, zRespectAccountValid, zRespectBreakout, zRespectBreakoutValid, zTick, zTickValid } from "../ornode.js";
-import { ORContext } from "../orContext.js";
+import { ORContext as OrigORContext, ConfigWithOrnode } from "../orContext.js";
 import { CustomSignalArgs, OrecFactory, zTickSignalType } from "../orec.js";
 import { BurnRespectArgs, MintRequest, MintRespectArgs, MintRespectGroupArgs, Factory as Respect1155Factory, zBreakoutMintType, zMintRespectArgs, zUnspecifiedMintType } from "../respect1155.js";
 import { propId } from "orec/utils";
@@ -24,14 +24,17 @@ import { zBreakoutMintRequest, zGroupNum, zPropType, zRankNum } from "../fractal
 import { zBigNumberish, zBigNumberishToBigint } from "../eth.js";
 import { packTokenId } from "respect1155-sc/utils/tokenId.js";
 
+const ORContextClass = OrigORContext<ConfigWithOrnode>;
+type ORContextType = OrigORContext<ConfigWithOrnode>;
+
 const respectInterface = Respect1155Factory.createInterface();
 const orecInterface = OrecFactory.createInterface();
 
-export const zCPropContext = z.instanceof(ORContext);
+export const zCPropContext = z.instanceof(ORContextClass);
 export type CPropContext = z.infer<typeof zCPropContext>;
 
 type RequestWithContext<T extends ZodType> = z.ZodObject<{
-  ctx: z.ZodType<ORContext, z.ZodTypeDef, ORContext>,
+  ctx: z.ZodType<ORContextType, z.ZodTypeDef, ORContextType>,
   req: T
 }>;
 function zReqToContext<T extends ZodType>(ztype: T): RequestWithContext<T> {

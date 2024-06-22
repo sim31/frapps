@@ -7,7 +7,7 @@ import { zORNodePropStatus, zProposal, zProposalFull } from "ortypes/ornode.js";
 import { zPropId } from "ortypes";
 import { resultHandler } from "./resultHandler.js";
 
-const ornode = MemOrnode.createORNodeMemImpl({
+const ornode = MemOrnode.create({
   newRespect: config.contracts.newRespect,
   orec: config.contracts.orec,
   providerUrl: config.providerUrl
