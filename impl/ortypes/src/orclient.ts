@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { ZodType, z } from "zod";
 import { PropType, zGroupNum, zPropType, zRankings } from "./fractal.js";
 import { VoteType, zCustomSignalType, zOnchainProp, zPropId, zProposedMsgBase, zVoteType } from "./orec.js";
 import { zMeetingNum, zMintType, zTokenId } from "./respect1155.js";
@@ -25,7 +25,7 @@ export type VoteRequest = z.infer<typeof zVoteRequest>;
 
 export const zVoteWithProp = zVoteRequest
   .omit({ propId: true })
-  .extend({ vote: zVoteType.default(VoteType.Yes) })
+  .extend({ vote: zVoteType })
 export type VoteWithProp = z.infer<typeof zVoteWithProp>;
 
 export const zVoteWithPropRequest = zVoteWithProp.partial({ vote: true });
@@ -40,7 +40,7 @@ export type BreakoutResult = z.infer<typeof zBreakoutResult>;
 export const zRespectBreakoutRequest = zBreakoutResult.extend({
   meetingNum: zMeetingNum.optional(),
   metadata: zProposalMetadata.optional()
-})
+});
 export type RespectBreakoutRequest = z.infer<typeof zRespectBreakoutRequest>;
 
 export const zRespectBreakout = zDecodedPropBase.merge(zBreakoutResult).extend({

@@ -6,6 +6,7 @@ import { config } from "./config.ts";
 import { RemoteOrnode, ORClient } from "orclient";
 import { BrowserProvider } from "ethers";
 import { ORContext } from "ortypes/orContext.js";
+import { z } from "zod";
 
 export async function create(): Promise<ORClient> {
   const ornode: RemoteOrnode = new RemoteOrnode(config.ornodeUrl);
@@ -33,10 +34,16 @@ export async function create(): Promise<ORClient> {
   return orclient;
 }
 
-create().then(orclient => { 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).orclient = orclient
-}).catch(reason => {
-  console.error("Error creating orclient: ", reason);
+const zFunction = z.function().args(z.string(), z.number()).returns(z.boolean());
+export type Function = z.infer<typeof zFunction>;
+
+export const orclient = new Promise<ORClient>((resolve, reject) => {
+  create().then(orcl => {
+    resolve(orcl);
+  }).catch(reason => {
+    const errStr = `Error creating orclient: ${JSON.stringify(reason)}`;
+    console.error(errStr);
+    reject(new Error(errStr))
+  });
 })
 
