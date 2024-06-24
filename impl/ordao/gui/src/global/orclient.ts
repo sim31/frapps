@@ -21,13 +21,15 @@ const ctxCfg: ConfigWithOrnode = {
   ornode,
   contractRunner: bp
 }
-export const ctx = ORContext.create(ctxCfg);
+const ctx = ORContext.create<ConfigWithOrnode>(ctxCfg);
 
 ctx.catch((reason) => {
   console.error(`Failed creating orContext. Reason: ${JSON.stringify(reason)}`);
 })
 
 export const orclient = ctx.then((context) => {
+  console.debug("is a 2: ", context instanceof ORContext)
+  context.callTest();
   const orclient = new ORClient(context);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).cli = orclient;

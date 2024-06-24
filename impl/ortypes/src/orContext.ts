@@ -9,6 +9,7 @@ import { OnchainProp, PropId, zProposalState, zStage, zVoteStatus } from "./orec
 import { InvalidArgumentError, Url, zUrl } from "./common.js";
 import { Required } from "utility-types";
 import { expect } from "chai";
+import { testVersion } from "orec/utils";
 
 export interface State {
   orec: Orec,
@@ -17,7 +18,10 @@ export interface State {
   ornode?: IORNode
 }
 
-export type StateWithOrnode = Required<State, 'ornode'>
+// export type StateWithOrnode = Required<State, 'ornode'>
+export interface StateWithOrnode extends State {
+  ornode: IORNode;
+}
 
 export interface Config {
   orec: EthAddress | Orec,
@@ -26,7 +30,11 @@ export interface Config {
   contractRunner?: ContractRunner | Url
 }
 
-export type ConfigWithOrnode = Required<Config, 'ornode'>;
+export interface ConfigWithOrnode extends Config {
+  ornode: IORNode
+}
+
+// export type ConfigWithOrnode = Required<Config, 'ornode'>;
 
 export type StateForConfig<CT extends Config> =
   CT extends ConfigWithOrnode ? StateWithOrnode : State;
@@ -84,13 +92,13 @@ export class ORContext<CT extends Config> {
       }
     }
     if (!runner) {
-      throw new InvalidArgumentError("Could not determine provider");
+      throw new InvalidArgumentError("Could not determine contract runner");
     }
 
     return runner;
   }
 
-  static async create<CT extends Config>(config: CT): Promise<ORContext<CT>> {
+  static async create<CT_ extends Config>(config: CT_): Promise<ORContext<CT_>> {
     const runner = this._determineRunner(config);
 
     const network = await runner.provider?.getNetwork();
@@ -108,17 +116,23 @@ export class ORContext<CT extends Config> {
     console.debug("oldRespectAddr: ", oldRespAddr);
     const oldRespect = FractalRespectFactory.connect(oldRespAddr, runner);
 
-    const st: State = {
+    const st = {
       orec, newRespect, oldRespect,
-      ornode: config.ornode
+      ornode: config.ornode as CT_['ornode'],
     };
 
-    const ctx = new ORContext(st, false);
+    const ctx = new ORContext<CT_>(st as any, false);
     ctx._oldRespectAddr = oldRespAddr;
 
     await ctx.validate();
 
+    console.debug("This is new 4");
+
     return ctx;
+  }
+
+  callTest() {
+    testVersion();
   }
 
   switchSigner(signer: Signer) {
@@ -184,3 +198,7 @@ export class ORContext<CT extends Config> {
     return r;
   }
 }
+
+export const zORContext = z.instanceof(ORContext);
+
+export const testStr = "aaaa 2!";

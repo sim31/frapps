@@ -27,8 +27,8 @@ export interface Config {
 export const defaultConfig: Config = {
   propConfirms: 3,
   otherConfirms: 3,
-  propSubmitRetries: 3,
-  propResubmitInterval: 2000
+  propSubmitRetries: 4,
+  propResubmitInterval: 3000
 }
 
 export interface PutProposalRes {

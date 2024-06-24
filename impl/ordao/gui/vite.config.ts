@@ -5,9 +5,15 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    esbuildOptions: { preserveSymlinks: true }
+    esbuildOptions: { preserveSymlinks: true },
+    force: true,
   },
   resolve: {
-    preserveSymlinks: true
+    preserveSymlinks: true,
+  },
+  server: {
+    watch: {
+      followSymlinks: true
+    } 
   }
 })

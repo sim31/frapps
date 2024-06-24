@@ -11,7 +11,7 @@ async function main() {
 
     shelljs.exec("npm run test-deployment"); // Synchronous
 
-    const ornode = shelljs.exec("npm run ornode-dev > ./tmp/ornode-test.log", { async: true })
+    const ornode = shelljs.exec("npm run dev-ornode > ./tmp/ornode-test.log", { async: true })
 
     shelljs.exec("npm run hh-test-ordao");
 

@@ -15,7 +15,7 @@ import {
   zTickRequest,
 } from "../orclient.js";
 import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, TickValid, idOfBurnRespectAttach, idOfCustomCallAttach, idOfCustomSignalAttach, idOfRespectAccountAttach, idOfRespectBreakoutAttach, zBurnRespect, zBurnRespectValid, zCustomCall, zCustomCallValid, zCustomSignal, zCustomSignalValid, zRespectAccount, zRespectAccountValid, zRespectBreakout, zRespectBreakoutValid, zTick, zTickValid } from "../ornode.js";
-import { ORContext as OrigORContext, ConfigWithOrnode } from "../orContext.js";
+import { ConfigWithOrnode, ORContext as OrigORContext } from "../orContext.js";
 import { CustomSignalArgs, OrecFactory, zTickSignalType } from "../orec.js";
 import { BurnRespectArgs, MintRequest, MintRespectArgs, MintRespectGroupArgs, Factory as Respect1155Factory, zBreakoutMintType, zMintRespectArgs, zUnspecifiedMintType } from "../respect1155.js";
 import { propId } from "orec/utils";
@@ -24,29 +24,10 @@ import { zBreakoutMintRequest, zGroupNum, zPropType, zRankNum } from "../fractal
 import { zBigNumberish, zBigNumberishToBigint } from "../eth.js";
 import { packTokenId } from "respect1155-sc/utils/tokenId.js";
 
-const ORContextClass = OrigORContext<ConfigWithOrnode>;
-type ORContextType = OrigORContext<ConfigWithOrnode>;
+type ORContext = OrigORContext<ConfigWithOrnode>;
 
 const respectInterface = Respect1155Factory.createInterface();
 const orecInterface = OrecFactory.createInterface();
-
-export const zCPropContext = z.instanceof(ORContextClass);
-export type CPropContext = z.infer<typeof zCPropContext>;
-
-type RequestWithContext<T extends ZodType> = z.ZodObject<{
-  ctx: z.ZodType<ORContextType, z.ZodTypeDef, ORContextType>,
-  req: T
-}>;
-function zReqToContext<T extends ZodType>(ztype: T): RequestWithContext<T> {
-  return z.object({ ctx: zCPropContext, req: ztype });
-}
-
-export const zRespBreakoutReqCtx = zReqToContext(zRespectBreakoutRequest);
-export const zRespAccountReqCtx = zReqToContext(zRespectAccountRequest);
-export const zBurnRespectReqCtx = zReqToContext(zBurnRespectRequest);
-export const zCustomSignalReqCtx = zReqToContext(zCustomSignalRequest);
-export const zTickReqCtx = zReqToContext(zTickRequest);
-export const zCustomCallReqCtx = zReqToContext(zCustomCallRequest);
 
 const _rewards = [
   55n, 34n, 21n, 13n, 8n, 5n
@@ -64,320 +45,348 @@ export const zRankNumToValue = zRankNum.transform((rankNum, ctx) => {
 // TODO: use ipfs cids instead?
 //  * propIds can use solidityPacked for efficiency but it makes sense to adapt attachments more for off-chain?
 
-export const zCRespectBreakoutToMintArgs = zRespBreakoutReqCtx.transform(async (val, ctx) => {
-  try {
-    const periodNumber = val.req.meetingNum === undefined
-      ? await val.ctx.ornode.getPeriodNum()
-      : val.req.meetingNum - 1;
+function mkzCRespectBreakoutToMintArgs(orctx: ORContext) {
+  return zRespectBreakoutRequest.transform(async (val, ctx) => {
+    try {
+      const periodNumber = val.meetingNum === undefined
+        ? await orctx.ornode.getPeriodNum()
+        : val.meetingNum - 1;
 
-    const mintReqs: MintRequest[] = [];
+      const mintReqs: MintRequest[] = [];
 
-    for (const [i, addr] of val.req.rankings.entries()) {
-      const value = zRankNumToValue.parse(i + 1);
-      const id = packTokenId({
-        owner: addr,
-        mintType: zBreakoutMintType.value,
-        periodNumber
-      })
-      mintReqs.push({
-        value, id: zBigNumberishToBigint.parse(id)
+      for (const [i, addr] of val.rankings.entries()) {
+        const value = zRankNumToValue.parse(i + 1);
+        const id = packTokenId({
+          owner: addr,
+          mintType: zBreakoutMintType.value,
+          periodNumber
+        })
+        mintReqs.push({
+          value, id: zBigNumberishToBigint.parse(id)
+        });
+      }
+
+      const r: MintRespectGroupArgs = {
+        mintRequests: mintReqs,
+        data: "0x"
+      }
+      return r;
+    } catch (err) {
+      // TODO: pass the parent err in some way, instead of passing it through message...
+      addCustomIssue(val, ctx, err, "exception in zCRespectBreakoutToMintArgs");
+    }
+  }).pipe(zBreakoutMintRequest);
+}
+
+function mkzCRespectBreakoutToProposal(orctx: ORContext) {
+  const _zCRespectBreakoutToMintArgs = mkzCRespectBreakoutToMintArgs(orctx);
+
+  return zRespectBreakoutRequest.transform(async (val, ctx) => {
+    try {
+      const mintArgs = await _zCRespectBreakoutToMintArgs.parseAsync(val);
+      const cdata = respectInterface.encodeFunctionData(
+        "mintRespectGroup",
+        [mintArgs.mintRequests, mintArgs.data]
+      );
+      const addr = await orctx.getNewRespectAddr();
+
+      const attachment: RespectBreakoutAttachment = {
+        propType: zPropType.Enum.respectBreakout,
+        groupNum: zGroupNum.parse(val.groupNum),
+        propTitle: val.metadata?.propTitle,
+        propDescription: val.metadata?.propDescription
+      };
+
+      const memo = idOfRespectBreakoutAttach(attachment);
+
+      const content: PropContent = { addr, cdata, memo };
+      const id = propId(content);
+
+      const r: RespectBreakout = {
+        id,
+        content,
+        attachment
+      }
+      return r;
+    } catch (err) {
+      addCustomIssue(val, ctx, {
+        message: "exception in zCRespectBreakoutReqToProposal",
+        cause: err
       });
     }
+  }).pipe(zRespectBreakoutValid);
+}
 
-    const r: MintRespectGroupArgs = {
-      mintRequests: mintReqs,
-      data: "0x"
+function mkzCRespectAccountReqToMintArgs(orctx: ORContext) {
+  return zRespectAccountRequest.transform(async (val, ctx) => {
+    try {
+      const periodNumber = val.meetingNum === undefined
+        ? await orctx.ornode.getPeriodNum()
+        : val.meetingNum - 1;
+      const mintType = val.mintType === undefined
+        ? zUnspecifiedMintType.value
+        : val.mintType;
+
+      const id = packTokenId({
+        owner: val.account,
+        mintType,
+        periodNumber
+      });
+
+      const mintReq: MintRequest = {
+        id: zBigNumberishToBigint.parse(id),
+        value: val.value
+      };
+
+      const r: MintRespectArgs = {
+        request: mintReq,
+        data: "0x"
+      };
+
+      return r;
+    } catch (err) {
+      addCustomIssue(val, ctx, {
+        message: "exception in zCRespectAccountReqToMintArgs",
+        cause: err
+      });
     }
-    return r;
-  } catch (err) {
-    // TODO: pass the parent err in some way, instead of passing it through message...
-    addCustomIssue(val, ctx, err, "exception in zCRespectBreakoutToMintArgs");
-  }
-}).pipe(zBreakoutMintRequest);
+  }).pipe(zMintRespectArgs);
+}
 
-export const zCRespBreakoutReqToProposal = zRespBreakoutReqCtx.transform(async (val, ctx) => {
-  try {
-    const mintArgs = await zCRespectBreakoutToMintArgs.parseAsync(val);
-    const cdata = respectInterface.encodeFunctionData(
-      "mintRespectGroup",
-      [mintArgs.mintRequests, mintArgs.data]
-    );
-    const addr = await val.ctx.getNewRespectAddr();
+function mkzCRespAccountReqToProposal(orctx: ORContext) {
+  const _zCRespectAccountReqToMintArgs = mkzCRespectAccountReqToMintArgs(orctx);
 
-    const attachment: RespectBreakoutAttachment = {
-      propType: zPropType.Enum.respectBreakout,
-      groupNum: zGroupNum.parse(val.req.groupNum),
-      propTitle: val.req.metadata?.propTitle,
-      propDescription: val.req.metadata?.propDescription
-    };
+  return zRespectAccountRequest.transform(async (val, ctx) => {
+    try {
+      const mintArgs = await _zCRespectAccountReqToMintArgs.parseAsync(val);
+      const cdata = respectInterface.encodeFunctionData(
+        "mintRespect",
+        [mintArgs.request, mintArgs.data]
+      );
+      const addr = await orctx.getNewRespectAddr();
 
-    const memo = idOfRespectBreakoutAttach(attachment);
+      const attachment: RespectAccountAttachment = {
+        propType: zPropType.Enum.respectAccount,
+        mintReason: val.reason,
+        mintTitle: val.title,
+        propTitle: val.metadata?.propTitle,
+        propDescription: val.metadata?.propDescription
+      };
 
-    const content: PropContent = { addr, cdata, memo };
-    const id = propId(content);
+      const memo = idOfRespectAccountAttach(attachment);
 
-    const r: RespectBreakout = {
-      id,
-      content,
-      attachment
+      const content: PropContent = { addr, cdata, memo };
+      const id = propId(content);
+
+      const r: RespectAccount = {
+        id,
+        content,
+        attachment
+      }
+      return r;
+    } catch (err) {
+      addCustomIssue(val, ctx, {
+        message: "exception in zCRespectAccountReqToProposal",
+        cause: err
+      });
     }
-    return r;
-  } catch (err) {
-    addCustomIssue(val, ctx, {
-      message: "exception in zCRespectBreakoutReqToProposal",
-      cause: err
-    });
-  }
-}).pipe(zRespectBreakoutValid);
+  }).pipe(zRespectAccountValid);
+}
 
-export const zCRespectAccountReqToMintArgs = zRespAccountReqCtx.transform(async (val, ctx) => {
-  try {
-    const periodNumber = val.req.meetingNum === undefined
-      ? await val.ctx.ornode.getPeriodNum()
-      : val.req.meetingNum - 1;
-    const mintType = val.req.mintType === undefined
-      ? zUnspecifiedMintType.value
-      : val.req.mintType;
+function mkzCBurnRespReqToProposal(orctx: ORContext) {
+  return zBurnRespectRequest.transform(async (val, ctx) => {
+    try {
+      const args: BurnRespectArgs = {
+        tokenId: val.tokenId,
+        data: ""
+      };
+      const cdata = respectInterface.encodeFunctionData(
+        "burnRespect",
+        [args.tokenId, args.data]
+      );
+      const addr = await orctx.getNewRespectAddr();
 
-    const id = packTokenId({
-      owner: val.req.account,
-      mintType,
-      periodNumber
-    });
+      const attachment: BurnRespectAttachment = {
+        propType: zPropType.Enum.burnRespect,
+        burnReason: val.reason, 
+        propTitle: val.metadata?.propTitle,
+        propDescription: val.metadata?.propDescription
+      };
 
-    const mintReq: MintRequest = {
-      id: zBigNumberishToBigint.parse(id),
-      value: val.req.value
-    };
+      const memo = idOfBurnRespectAttach(attachment);
 
-    const r: MintRespectArgs = {
-      request: mintReq,
-      data: "0x"
-    };
+      const content: PropContent = { addr, cdata, memo };
+      const id = propId(content);
 
-    return r;
-  } catch (err) {
-    addCustomIssue(val, ctx, {
-      message: "exception in zCRespectAccountReqToMintArgs",
-      cause: err
-    });
-  }
-}).pipe(zMintRespectArgs);
-
-export const zCRespAccountReqToProposal = zRespAccountReqCtx.transform(async (val, ctx) => {
-  try {
-    const mintArgs = await zCRespectAccountReqToMintArgs.parseAsync(val);
-    const cdata = respectInterface.encodeFunctionData(
-      "mintRespect",
-      [mintArgs.request, mintArgs.data]
-    );
-    const addr = await val.ctx.getNewRespectAddr();
-
-    const attachment: RespectAccountAttachment = {
-      propType: zPropType.Enum.respectAccount,
-      mintReason: val.req.reason,
-      mintTitle: val.req.title,
-      propTitle: val.req.metadata?.propTitle,
-      propDescription: val.req.metadata?.propDescription
-    };
-
-    const memo = idOfRespectAccountAttach(attachment);
-
-    const content: PropContent = { addr, cdata, memo };
-    const id = propId(content);
-
-    const r: RespectAccount = {
-      id,
-      content,
-      attachment
+      const r: BurnRespect = {
+        id,
+        content,
+        attachment
+      }
+      return r;
+    } catch (err) {
+      addCustomIssue(val, ctx, {
+        message: "exception in zCBurnRespReqToProposal",
+        cause: err
+      });
     }
-    return r;
-  } catch (err) {
-    addCustomIssue(val, ctx, {
-      message: "exception in zCRespectAccountReqToProposal",
-      cause: err
-    });
-  }
-}).pipe(zRespectAccountValid);
+  }).pipe(zBurnRespectValid);
+}
 
-export const zCBurnRespReqToProposal = zBurnRespectReqCtx.transform(async (val, ctx) => {
-  try {
-    const args: BurnRespectArgs = {
-      tokenId: val.req.tokenId,
-      data: ""
-    };
-    const cdata = respectInterface.encodeFunctionData(
-      "burnRespect",
-      [args.tokenId, args.data]
-    );
-    const addr = await val.ctx.getNewRespectAddr();
+function mkzCCustomSignalReqToProposal(orctx: ORContext) {
+  return zCustomSignalRequest.transform(async (val, ctx) => {
+    try {
+      const args: CustomSignalArgs = {
+        signalType: val.signalType,
+        data: val.data
+      };
+      const cdata = orecInterface.encodeFunctionData(
+        "signal",
+        [args.signalType, args.data]
+      );
+      const addr = await orctx.getOrecAddr();
 
-    const attachment: BurnRespectAttachment = {
-      propType: zPropType.Enum.burnRespect,
-      burnReason: val.req.reason, 
-      propTitle: val.req.metadata?.propTitle,
-      propDescription: val.req.metadata?.propDescription
-    };
+      const attachment: CustomSignalAttachment = {
+        propType: zPropType.Enum.customSignal,
+        link: val.link,
+        propTitle: val.metadata?.propTitle,
+        propDescription: val.metadata?.propDescription
+      };
 
-    const memo = idOfBurnRespectAttach(attachment);
+      const memo = idOfCustomSignalAttach(attachment);
 
-    const content: PropContent = { addr, cdata, memo };
-    const id = propId(content);
+      const content: PropContent = { addr, cdata, memo };
+      const id = propId(content);
 
-    const r: BurnRespect = {
-      id,
-      content,
-      attachment
+      const r: CustomSignal = {
+        id,
+        content,
+        attachment
+      }
+      return r;
+    } catch (err) {
+      addCustomIssue(val, ctx, {
+        message: "exception in zCCustomSignalReqToProposal",
+        cause: err
+      });
     }
-    return r;
-  } catch (err) {
-    addCustomIssue(val, ctx, {
-      message: "exception in zCBurnRespReqToProposal",
-      cause: err
-    });
-  }
-}).pipe(zBurnRespectValid);
+  }).pipe(zCustomSignalValid);
+}
 
-export const zCCustomSignalReqToProposal = zCustomSignalReqCtx.transform(async (val, ctx) => {
-  try {
-    const args: CustomSignalArgs = {
-      signalType: val.req.signalType,
-      data: val.req.data
-    };
-    const cdata = orecInterface.encodeFunctionData(
-      "signal",
-      [args.signalType, args.data]
-    );
-    const addr = await val.ctx.getOrecAddr();
+function mkzTickReqToProposal(orctx: ORContext) {
+  return zTickRequest.transform(async (val, ctx) => {
+    try {
+      const args: CustomSignalArgs = {
+        signalType: zTickSignalType.value,
+        data: val.data === undefined ? "0x" : val.data
+      };
+      const cdata = orecInterface.encodeFunctionData(
+        "signal",
+        [args.signalType, args.data]
+      );
+      const addr = await orctx.getOrecAddr();
 
-    const attachment: CustomSignalAttachment = {
-      propType: zPropType.Enum.customSignal,
-      link: val.req.link,
-      propTitle: val.req.metadata?.propTitle,
-      propDescription: val.req.metadata?.propDescription
-    };
+      const attachment: TickAttachment = {
+        propType: zPropType.Enum.tick,
+        link: val.link,
+        propTitle: val.metadata?.propTitle,
+        propDescription: val.metadata?.propDescription
+      };
 
-    const memo = idOfCustomSignalAttach(attachment);
+      const memo = idOfCustomSignalAttach(attachment);
 
-    const content: PropContent = { addr, cdata, memo };
-    const id = propId(content);
+      const content: PropContent = { addr, cdata, memo };
+      const id = propId(content);
 
-    const r: CustomSignal = {
-      id,
-      content,
-      attachment
+      const r: Tick = {
+        id,
+        content,
+        attachment
+      }
+      return r;
+    } catch (err) {
+      addCustomIssue(val, ctx, {
+        message: "exception in zCTickReqToProposal",
+        cause: err
+      });
     }
-    return r;
-  } catch (err) {
-    addCustomIssue(val, ctx, {
-      message: "exception in zCCustomSignalReqToProposal",
-      cause: err
-    });
-  }
-}).pipe(zCustomSignalValid);
+  }).pipe(zTickValid);
+}
 
-export const zCTickReqToProposal = zTickReqCtx.transform(async (val, ctx) => {
-  try {
-    const args: CustomSignalArgs = {
-      signalType: zTickSignalType.value,
-      data: val.req.data === undefined ? "0x" : val.req.data
-    };
-    const cdata = orecInterface.encodeFunctionData(
-      "signal",
-      [args.signalType, args.data]
-    );
-    const addr = await val.ctx.getOrecAddr();
+function mkzCCustomCallReqToProposal(orctx: ORContext) {
+  return zCustomCallRequest.transform(async (val, ctx) => {
+    try {
+      const attachment: CustomCallAttachment = {
+        propType: zPropType.Enum.customCall
+      };
 
-    const attachment: TickAttachment = {
-      propType: zPropType.Enum.tick,
-      link: val.req.link,
-      propTitle: val.req.metadata?.propTitle,
-      propDescription: val.req.metadata?.propDescription
-    };
+      const memo = idOfCustomCallAttach(attachment);
 
-    const memo = idOfCustomSignalAttach(attachment);
+      const content: PropContent = { 
+        addr: val.address,
+        cdata: val.cdata,
+        memo
+      };
+      const id = propId(content);
 
-    const content: PropContent = { addr, cdata, memo };
-    const id = propId(content);
-
-    const r: Tick = {
-      id,
-      content,
-      attachment
+      const r: CustomCall = {
+        id,
+        content,
+        attachment
+      }
+      return r;
+    } catch (err) {
+      addCustomIssue(val, ctx, {
+        message: "exception in zCCustomCallReqToProposal",
+        cause: err
+      });
     }
-    return r;
-  } catch (err) {
-    addCustomIssue(val, ctx, {
-      message: "exception in zCTickReqToProposal",
-      cause: err
-    });
-  }
-}).pipe(zTickValid);
+  }).pipe(zCustomCallValid);
+}
 
-export const zCCustomCallReqToProposal = zCustomCallReqCtx.transform(async (val, ctx) => {
-  try {
-    const attachment: CustomCallAttachment = {
-      propType: zPropType.Enum.customCall
-    };
-
-    const memo = idOfCustomCallAttach(attachment);
-
-    const content: PropContent = { 
-      addr: val.req.address,
-      cdata: val.req.cdata,
-      memo
-    };
-    const id = propId(content);
-
-    const r: CustomCall = {
-      id,
-      content,
-      attachment
-    }
-    return r;
-  } catch (err) {
-    addCustomIssue(val, ctx, {
-      message: "exception in zCCustomCallReqToProposal",
-      cause: err
-    });
-  }
-}).pipe(zCustomCallValid);
 
 export class ClientToNodeTransformer {
-  private _cctx: CPropContext
+  private _ctx: ORContext
+  private _zCRespBreakoutReqToProposal: ReturnType<typeof mkzCRespectBreakoutToProposal>;
+  private _zCRespAccountReqToProposal: ReturnType<typeof mkzCRespAccountReqToProposal>
+  private _zCBurnRespReqToProposal: ReturnType<typeof mkzCBurnRespReqToProposal>;
+  private _zCCustomSignalReqToProposal: ReturnType<typeof mkzCCustomSignalReqToProposal>;
+  private _zCTickReqToProposal: ReturnType<typeof mkzTickReqToProposal>;
+  private _zCCustomCallReqToProposal: ReturnType<typeof mkzCCustomCallReqToProposal>;
 
-  constructor(context: CPropContext) {
-    this._cctx = context;
+  constructor(context: ORContext) {
+    this._ctx = context;
+
+    this._zCRespBreakoutReqToProposal = mkzCRespectBreakoutToProposal(this._ctx);
+    this._zCRespAccountReqToProposal = mkzCRespAccountReqToProposal(this._ctx);
+    this._zCBurnRespReqToProposal = mkzCBurnRespReqToProposal(this._ctx);
+    this._zCCustomSignalReqToProposal = mkzCCustomSignalReqToProposal(this._ctx);
+    this._zCTickReqToProposal = mkzTickReqToProposal(this._ctx);
+    this._zCCustomCallReqToProposal = mkzCCustomCallReqToProposal(this._ctx);
   }
 
   async transformRespectBreakout(req: RespectBreakoutRequest): Promise<RespectBreakout> {
-    const c = { ctx: this._cctx, req };
-    return await zCRespBreakoutReqToProposal.parseAsync(c);
+    return await this._zCRespBreakoutReqToProposal.parseAsync(req);
   }
 
   async transformRespectAccount(req: RespectAccountRequest): Promise<RespectAccount> {
-    const c = { ctx: this._cctx, req };
-    return await zCRespAccountReqToProposal.parseAsync(c);
+    return await this._zCRespAccountReqToProposal.parseAsync(req);
   }
 
   async transformBurnRespect(req: BurnRespectRequest): Promise<BurnRespect> {
-    const c = { ctx: this._cctx, req };
-    return await zCBurnRespReqToProposal.parseAsync(c);
+    return await this._zCBurnRespReqToProposal.parseAsync(req);
   }
 
   async transformCustomSignal(req: CustomSignalRequest): Promise<CustomSignal> {
-    const c = { ctx: this._cctx, req };
-    return await zCCustomSignalReqToProposal.parseAsync(c);
+    return await this._zCCustomSignalReqToProposal.parseAsync(req);
   }
 
   async transformTick(req: TickRequest): Promise<TickValid> {
-    const c = { ctx: this._cctx, req };
-    return await zCTickReqToProposal.parseAsync(c);
+    return await this._zCTickReqToProposal.parseAsync(req);
   }
 
   async transformCustomCall(req: CustomCallRequest): Promise<CustomCall> {
-    const c = { ctx: this._cctx, req };
-    return await zCCustomCallReqToProposal.parseAsync(c);
+    return await this._zCCustomCallReqToProposal.parseAsync(req);
   }
 
 }

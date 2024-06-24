@@ -32,3 +32,7 @@ export function propId(msg: Orec.MessageStruct) {
     [msg.addr, msg.cdata, msg.memo]
   );
 }
+
+export function testVersion() {
+  console.debug("orec: 10");
+}

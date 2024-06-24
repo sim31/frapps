@@ -51,7 +51,7 @@
     "dev-gui": "node src/devGui.js",
     "dev-ornode": "node src/devOrnode.js",
     "dev-ornode-swagger-ui": "cd $npm_package_config_ornode && ORNODE_CFG_PATH=../ordao/sys/tmp/ornode-dev-cfg.json npm run swagger-ui",
-    "dev-servers": "npm run build-clean && concurrently --kill-others \"npm:dev-ornode\" \"npm:watch-*\" \"npm:dev-ornode-swagger-ui\" \"npm:dev-gui\"",
+    "dev-servers": "npm run build-clean && concurrently --kill-others \"npm:dev-ornode\" \"npm:dev-gui\" \"npm:watch-*\" \"npm:dev-ornode-swagger-ui\"",
     "dev": "node src/dev.js"
   },
   "keywords": [],

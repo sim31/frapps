@@ -6,6 +6,7 @@ import { config } from "./config.js";
 import { zORNodePropStatus, zProposal, zProposalFull } from "ortypes/ornode.js";
 import { zPropId } from "ortypes";
 import { resultHandler } from "./resultHandler.js";
+import { testStr } from "ortypes/orContext.js";
 
 const ornode = MemOrnode.create({
   newRespect: config.contracts.newRespect,
@@ -40,6 +41,7 @@ const getPeriodNum = factory.build({
   output: z.object({ periodNum: z.number() }),
   handler: async ({ input, options, logger }) => {
     logger.debug(`getPeriodNumber ${JSON.stringify(input)}. options: ${JSON.stringify(options)}`);
+    logger.debug("Test str: ", testStr);
     const n = await getOrnode();
     const periodNum = await n.getPeriodNum();
     return { periodNum };

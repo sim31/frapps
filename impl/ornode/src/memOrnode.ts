@@ -170,8 +170,8 @@ export class MemOrnode implements IORNode {
 
   // TODO:
   async getPeriodNum(): Promise<number> {
+    this._ctx.callTest();
     return this._periodNum;
-
   }
 
 }
