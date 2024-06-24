@@ -37,7 +37,7 @@ import {
   zBytesLikeToBytes,
 } from "../eth.js";
 import { z } from "zod";
-import { ORContext } from "../orContext.js";
+import { ConfigWithOrnode, ORContext as OrigORContext } from "../orContext.js";
 import { addCustomIssue } from "../zErrorHandling.js";
 import { Optional } from "utility-types";
 import { MeetingNum, Factory as Respect1155Factory, zBurnRespectArgs, zMeetingNum, zMintRespectArgs, zTokenIdData } from "../respect1155.js";
@@ -47,18 +47,7 @@ import { expect } from "chai";
 import { unpackTokenId } from "respect1155-sc/utils/tokenId.js";
 import { zCustomSignalType, zSignalArgs, zTickSignalType } from "../orec.js";
 
-export const zNPropContext = z.instanceof(ORContext);
-export type NPropContext = z.infer<typeof zNPropContext>;
-
-export const zNProposalInContext = z.object({
-  ctx: zNPropContext,
-  prop: zNProposal
-});
-export type NProposalInContext = z.infer<typeof zNProposalInContext>;
-
-export const zNProposalFullInContext = zNProposalInContext.extend({
-  prop: zNProposalFull
-});
+type ORContext = OrigORContext<ConfigWithOrnode>;
 
 export const zNAttachmentToMetadata = zPropAttachmentBase.transform((val, ctx) => {
   const r: ProposalMetadata = {
@@ -104,245 +93,254 @@ export const zMintArgsToRespectBreakout = zBreakoutMintRequest.transform((val, c
   }
 }).pipe(zRespectBreakout.partial({ groupNum: true }));
 
-export const zNProposalToRespectBreakout = zNProposalFullInContext.transform(async (val, ctx) => {
-  try {
-    const attachment = zRespectBreakoutAttachment.parse(val.prop.attachment);
+function mkzNProposalToRespectBreakout(orctx: ORContext) {
+  return zNProposalFull.transform(async (val, ctx) => {
+    try {
+      const attachment = zRespectBreakoutAttachment.parse(val.attachment);
 
-    expect(val.prop.content.addr).to.be.equal(
-      await val.ctx.getNewRespectAddr(),
-      "respect breakout message expected to be addressed to newRespectAddr"
-    );
+      expect(val.content.addr).to.be.equal(
+        await orctx.getNewRespectAddr(),
+        "respect breakout message expected to be addressed to newRespectAddr"
+      );
 
-    const data = zBytesLikeToBytes.parse(val.prop.content.cdata);
-    const tx = respectInterface.parseTransaction({ data });
-    expect(tx?.name).to.be.equal(
-      respectInterface.getFunction('mintRespectGroup').name,
-      "expected mintRespectGroup function to be called"
-    );
-    const respectBreakout = zMintArgsToRespectBreakout.parse(tx?.args);
-    respectBreakout.groupNum = attachment.groupNum;
-    respectBreakout.metadata = zNAttachmentToMetadata.parse(attachment)
+      const data = zBytesLikeToBytes.parse(val.content.cdata);
+      const tx = respectInterface.parseTransaction({ data });
+      expect(tx?.name).to.be.equal(
+        respectInterface.getFunction('mintRespectGroup').name,
+        "expected mintRespectGroup function to be called"
+      );
+      const respectBreakout = zMintArgsToRespectBreakout.parse(tx?.args);
+      respectBreakout.groupNum = attachment.groupNum;
+      respectBreakout.metadata = zNAttachmentToMetadata.parse(attachment)
 
-    return respectBreakout;
-  } catch(err) {
-    addCustomIssue(val, ctx, err, "Exception in zNProposalToRespectBreakout");
-  }
-}).pipe(zRespectBreakout);
-
-export const zNProposalToRespectAccount = zNProposalFullInContext.transform(async (val, ctx) => {
-  try {
-    const attachment = zRespectAccountAttachment.parse(val.prop.attachment);
-
-    expect(val.prop.content.addr).to.be.equal(
-      await val.ctx.getNewRespectAddr(),
-      "respect breakout message expected to be addressed to newRespectAddr"
-    );
-
-    const data = zBytesLikeToBytes.parse(val.prop.content.cdata);
-    const tx = respectInterface.parseTransaction({ data });
-    expect(tx?.name).to.be.equal(
-      respectInterface.getFunction('mintRespect').name,
-      "expected mintRespect function to be called"
-    );
-
-    const args = zMintRespectArgs.parse(tx?.args);
-
-    const tdata = zTokenIdData.parse(unpackTokenId(args.request.id));
-
-    const r: RespectAccount = {
-      propType: zPropType.Enum.respectAccount,
-      meetingNum: tdata.periodNumber + 1,
-      mintType: tdata.mintType,
-      account: tdata.owner,
-      value: args.request.value,
-      title: attachment.mintTitle,
-      reason: attachment.mintReason,
-      metadata: zNAttachmentToMetadata.parse(attachment)
+      return respectBreakout;
+    } catch(err) {
+      addCustomIssue(val, ctx, err, "Exception in zNProposalToRespectBreakout");
     }
+  }).pipe(zRespectBreakout);
+}
 
-    return r;
-  } catch(err) {
-    addCustomIssue(val, ctx, err, "Exception in zNProposalToRespectAccount");
-  }
-}).pipe(zRespectAccount);
+function mkzNProposalToRespectAccount(orctx: ORContext) {
+  return zNProposalFull.transform(async (val, ctx) => {
+    try {
+      const attachment = zRespectAccountAttachment.parse(val.attachment);
 
+      expect(val.content.addr).to.be.equal(
+        await orctx.getNewRespectAddr(),
+        "respect breakout message expected to be addressed to newRespectAddr"
+      );
 
-export const zNProposalToBurnRespect = zNProposalFullInContext.transform(async (val, ctx) => {
-  try {
-    const attachment = zBurnRespectAttachment.parse(val.prop.attachment);
+      const data = zBytesLikeToBytes.parse(val.content.cdata);
+      const tx = respectInterface.parseTransaction({ data });
+      expect(tx?.name).to.be.equal(
+        respectInterface.getFunction('mintRespect').name,
+        "expected mintRespect function to be called"
+      );
 
-    expect(val.prop.content.addr).to.be.equal(
-      await val.ctx.getNewRespectAddr(),
-      "respect account message expected to be addressed to newRespectAddr"
-    );
+      const args = zMintRespectArgs.parse(tx?.args);
 
-    const data = zBytesLikeToBytes.parse(val.prop.content.cdata);
-    const tx = respectInterface.parseTransaction({ data });
-    expect(tx?.name).to.be.equal(
-      respectInterface.getFunction('burnRespect').name,
-      "expected burnRespect function to be called"
-    );
+      const tdata = zTokenIdData.parse(unpackTokenId(args.request.id));
 
-    const args = zBurnRespectArgs.parse(tx?.args);
+      const r: RespectAccount = {
+        propType: zPropType.Enum.respectAccount,
+        meetingNum: tdata.periodNumber + 1,
+        mintType: tdata.mintType,
+        account: tdata.owner,
+        value: args.request.value,
+        title: attachment.mintTitle,
+        reason: attachment.mintReason,
+        metadata: zNAttachmentToMetadata.parse(attachment)
+      }
 
-    const tdata = zTokenIdData.parse(unpackTokenId(args.tokenId));
-
-    const r: BurnRespect = {
-      propType: zPropType.Enum.burnRespect,
-      tokenId: args.tokenId,
-      reason: attachment.burnReason,
-      metadata: zNAttachmentToMetadata.parse(attachment)
+      return r;
+    } catch(err) {
+      addCustomIssue(val, ctx, err, "Exception in zNProposalToRespectAccount");
     }
+  }).pipe(zRespectAccount);
+}
 
-    return r;
-  } catch(err) {
-    addCustomIssue(val, ctx, err, "Exception in zProposalToBurnRespect");
-  }
-}).pipe(zBurnRespect);
+function mkzNProposalToBurnRespect(orctx: ORContext) {
+  return zNProposalFull.transform(async (val, ctx) => {
+    try {
+      const attachment = zBurnRespectAttachment.parse(val.attachment);
 
-export const zNProposalToCustomSignal = zNProposalFullInContext.transform(async (val, ctx) => {
-  try {
-    const attachment = zCustomSignalAttachment.parse(val.prop.attachment);
+      expect(val.content.addr).to.be.equal(
+        await orctx.getNewRespectAddr(),
+        "respect account message expected to be addressed to newRespectAddr"
+      );
 
-    expect(val.prop.content.addr).to.be.equal(
-      await val.ctx.getOrecAddr(),
-      "custom signal supposed to be addressed to orec"
-    );
+      const data = zBytesLikeToBytes.parse(val.content.cdata);
+      const tx = respectInterface.parseTransaction({ data });
+      expect(tx?.name).to.be.equal(
+        respectInterface.getFunction('burnRespect').name,
+        "expected burnRespect function to be called"
+      );
 
-    const data = zBytesLikeToBytes.parse(val.prop.content.cdata);
-    const tx = orecInterface.parseTransaction({ data });
-    expect(tx?.name).to.be.equal(
-      orecInterface.getFunction('signal').name,
-      "expected signal function to be called"
-    );
+      const args = zBurnRespectArgs.parse(tx?.args);
 
-    const args = zSignalArgs.parse(tx?.args);
-    // Throws if it is a tick signal
-    const signalType = zCustomSignalType.parse(args.signalType);
+      const tdata = zTokenIdData.parse(unpackTokenId(args.tokenId));
 
-    const r: CustomSignal = {
-      propType: zPropType.Enum.customSignal,
-      data: zBytesLikeToBytes.parse(args.data),
-      link: attachment.link,
-      signalType,
-      metadata: zNAttachmentToMetadata.parse(attachment)
+      const r: BurnRespect = {
+        propType: zPropType.Enum.burnRespect,
+        tokenId: args.tokenId,
+        reason: attachment.burnReason,
+        metadata: zNAttachmentToMetadata.parse(attachment)
+      }
+
+      return r;
+    } catch(err) {
+      addCustomIssue(val, ctx, err, "Exception in zProposalToBurnRespect");
     }
+  }).pipe(zBurnRespect);
 
-    return r;
-  } catch(err) {
-    addCustomIssue(val, ctx, err, "Exception in zNProposalToCustomSignal");
-  }
-}).pipe(zCustomSignal);
+}
 
-export const zNProposalToTick = zNProposalFullInContext.transform(async (val, ctx) => {
-  try {
-    const attachment = zTickAttachment.parse(val.prop.attachment);
+function mkzNProposalToCustomSignal(orctx: ORContext) {
+  return zNProposalFull.transform(async (val, ctx) => {
+    try {
+      const attachment = zCustomSignalAttachment.parse(val.attachment);
 
-    expect(val.prop.content.addr).to.be.equal(
-      await val.ctx.getOrecAddr(),
-      "custom signal supposed to be addressed to orec"
-    );
+      expect(val.content.addr).to.be.equal(
+        await orctx.getOrecAddr(),
+        "custom signal supposed to be addressed to orec"
+      );
 
-    const data = zBytesLikeToBytes.parse(val.prop.content.cdata);
-    const tx = orecInterface.parseTransaction({ data });
-    expect(tx?.name).to.be.equal(
-      orecInterface.getFunction('signal').name,
-      "expected signal function to be called"
-    );
+      const data = zBytesLikeToBytes.parse(val.content.cdata);
+      const tx = orecInterface.parseTransaction({ data });
+      expect(tx?.name).to.be.equal(
+        orecInterface.getFunction('signal').name,
+        "expected signal function to be called"
+      );
 
-    const args = zSignalArgs.parse(tx?.args);
-    // Throws if it is not a tick signal
-    zTickSignalType.parse(args.signalType);
+      const args = zSignalArgs.parse(tx?.args);
+      // Throws if it is a tick signal
+      const signalType = zCustomSignalType.parse(args.signalType);
 
-    const r: Tick = {
-      propType: zPropType.Enum.tick,
-      data: zBytesLikeToBytes.parse(args.data),
-      link: attachment.link,
-      metadata: zNAttachmentToMetadata.parse(attachment)
-    };
+      const r: CustomSignal = {
+        propType: zPropType.Enum.customSignal,
+        data: zBytesLikeToBytes.parse(args.data),
+        link: attachment.link,
+        signalType,
+        metadata: zNAttachmentToMetadata.parse(attachment)
+      }
 
-    return r;
-  } catch(err) {
-    addCustomIssue(val, ctx, err, "Exception in zNProposalToTick")
-  }
-}).pipe(zTick);
-
-export const zNProposalToCustomCall = zNProposalFullInContext.transform(async (val, ctx) => {
-  try{
-    const attachment = zCustomCallAttachment.parse(val.prop.attachment);
-
-    const r: CustomCall = {
-      cdata: zBytesLikeToBytes.parse(val.prop.content.cdata),
-      address: val.prop.content.addr,
-      propType: zPropType.Enum.customCall,
-      metadata: zNAttachmentToMetadata.parse(attachment)
+      return r;
+    } catch(err) {
+      addCustomIssue(val, ctx, err, "Exception in zNProposalToCustomSignal");
     }
+  }).pipe(zCustomSignal);
+}
 
-    return r;
-  } catch(err) {
-    addCustomIssue(val, ctx, err, "Exception in zNProposalToCustomCall")
-  }
-});
+function mkzNProposalToTick(orctx: ORContext) {
+  return zNProposalFull.transform(async (val, ctx) => {
+    try {
+      const attachment = zTickAttachment.parse(val.attachment);
 
+      expect(val.content.addr).to.be.equal(
+        await orctx.getOrecAddr(),
+        "custom signal supposed to be addressed to orec"
+      );
 
-export const zProposalToDecodedProp = zNProposalFullInContext.transform(async (val, ctx) => {
-  if (val.prop.attachment !== undefined && val)
-  switch (val.prop.attachment.propType) {
-    case 'respectBreakout':
-      return await zNProposalToRespectBreakout.parseAsync(val);
-    case 'respectAccount':
-      return await zNProposalToRespectAccount.parseAsync(val);
-    case 'burnRespect':
-      return await zNProposalToBurnRespect.parseAsync(val);
-    case 'customSignal':
-      return await zNProposalToCustomSignal.parseAsync(val);
-    case 'customCall':
-      return await zNProposalToCustomCall.parseAsync(val);
-    case 'tick':
-      return await zNProposalToTick.parseAsync(val);
-    default:
-      const exhaustiveCheck: never = val.prop.attachment;
-      addCustomIssue(val, ctx, "Exhaustiveness check failed in zProposalToDecodedProp");
-  }
-}).pipe(zDecodedProposal);
+      const data = zBytesLikeToBytes.parse(val.content.cdata);
+      const tx = orecInterface.parseTransaction({ data });
+      expect(tx?.name).to.be.equal(
+        orecInterface.getFunction('signal').name,
+        "expected signal function to be called"
+      );
 
-export const zNPropToProp = zNProposalInContext.transform(async (nodeProp, ctx) => {
-  try {
-    const propId = nodeProp.prop.id;
-    const onchainProp = await nodeProp.ctx.getProposalFromChain(propId);
-    const rProp: Proposal = onchainProp;
+      const args = zSignalArgs.parse(tx?.args);
+      // Throws if it is not a tick signal
+      zTickSignalType.parse(args.signalType);
 
-    if (nodeProp.prop.content !== undefined) {
-      rProp.addr = nodeProp.prop.content.addr;
-      rProp.cdata = nodeProp.prop.content.cdata;
-      rProp.memo = nodeProp.prop.content.memo;
-      if (nodeProp.prop.attachment !== undefined) {
-        rProp.decoded = await zProposalToDecodedProp.parseAsync(nodeProp);
+      const r: Tick = {
+        propType: zPropType.Enum.tick,
+        data: zBytesLikeToBytes.parse(args.data),
+        link: attachment.link,
+        metadata: zNAttachmentToMetadata.parse(attachment)
+      };
+
+      return r;
+    } catch(err) {
+      addCustomIssue(val, ctx, err, "Exception in zNProposalToTick")
+    }
+  }).pipe(zTick);
+}
+
+function mkzNProposalToCustomCall(orctx: ORContext) {
+  return zNProposalFull.transform(async (val, ctx) => {
+    try{
+      const attachment = zCustomCallAttachment.parse(val.attachment);
+
+      const r: CustomCall = {
+        cdata: zBytesLikeToBytes.parse(val.content.cdata),
+        address: val.content.addr,
+        propType: zPropType.Enum.customCall,
+        metadata: zNAttachmentToMetadata.parse(attachment)
+      }
+
+      return r;
+    } catch(err) {
+      addCustomIssue(val, ctx, err, "Exception in zNProposalToCustomCall")
+    }
+  }).pipe(zCustomSignal)
+}
+
+function mkzNProposalToDecodedProp(orctx: ORContext) {
+  const zNProposalToRespectBreakout = mkzNProposalToRespectBreakout(orctx);
+  const zNProposalToRespectAccount = mkzNProposalToRespectAccount(orctx);
+  const zNProposalToBurnRespect = mkzNProposalToBurnRespect(orctx);
+  const zNProposalToCustomSignal = mkzNProposalToCustomSignal(orctx);
+  const zNProposalToCustomCall = mkzNProposalToCustomCall(orctx);
+  const zNProposalToTick = mkzNProposalToTick(orctx);
+
+  return zNProposalFull.transform(async (val, ctx) => {
+    if (val.attachment !== undefined && val) {
+      switch (val.attachment.propType) {
+        case 'respectBreakout':
+          return await zNProposalToRespectBreakout.parseAsync(val);
+        case 'respectAccount':
+          return await zNProposalToRespectAccount.parseAsync(val);
+        case 'burnRespect':
+          return await zNProposalToBurnRespect.parseAsync(val);
+        case 'customSignal':
+          return await zNProposalToCustomSignal.parseAsync(val);
+        case 'customCall':
+          return await zNProposalToCustomCall.parseAsync(val);
+        case 'tick':
+          return await zNProposalToTick.parseAsync(val);
+        default: {
+          const exhaustiveCheck: never = val.attachment;
+          addCustomIssue(val, ctx, "Exhaustiveness check failed in zProposalToDecodedProp");
+          return;
+        }
       }
     }
-
-    return rProp;
-  } catch (err) {
-    addCustomIssue(nodeProp, ctx, err, "Error in zProposalToClientProp");
-  }
-}).pipe(zProposal);
-
+  }).pipe(zDecodedProposal);
+}
 
 export class NodeToClientTransformer {
-  private _pctx: NPropContext;
+  private _ctx: ORContext;
+  private _zNProposalToDecodedProp: ReturnType<typeof mkzNProposalToDecodedProp>;
 
-  constructor(context: NPropContext) {
-    this._pctx = context;
+  constructor(context: ORContext) {
+    this._ctx = context;
+
+    this._zNProposalToDecodedProp = mkzNProposalToDecodedProp(context);
   }
 
-  toContext(prop: NProposal): NProposalInContext {
-    return {
-      ctx: this._pctx,
-      prop
-    };
-  }
+  async transformProp(nodeProp: NProposal): Promise<Proposal> {
+    const propId = nodeProp.id;
+    const onchainProp = await this._ctx.getProposalFromChain(propId);
+    const rProp: Proposal = onchainProp;
 
-  async transformProp(prop: NProposal): Promise<Proposal> {
-    return await zNPropToProp.parseAsync(this.toContext(prop));
+    if (nodeProp.content !== undefined) {
+      rProp.addr = nodeProp.content.addr;
+      rProp.cdata = nodeProp.content.cdata;
+      rProp.memo = nodeProp.content.memo;
+      if (nodeProp.attachment !== undefined) {
+        rProp.decoded = await this._zNProposalToDecodedProp.parseAsync(nodeProp);
+      }
+    }
+    return rProp;
   }
 }

@@ -7,33 +7,36 @@ import { RemoteOrnode, ORClient } from "orclient";
 import { BrowserProvider } from "ethers";
 import { ORContext } from "ortypes/orContext.js";
 
-const ornode: RemoteOrnode = new RemoteOrnode(config.ornodeUrl);
+export async function create(): Promise<ORClient> {
+  const ornode: RemoteOrnode = new RemoteOrnode(config.ornodeUrl);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ethereum: any = (window as any).ethereum;
-ethereum.request({ method: "eth_requestAccounts", params: [] });
-
-const bp = new BrowserProvider(ethereum)
-
-const ctxCfg: ConfigWithOrnode = {
-  orec: config.contracts.orec,
-  newRespect: config.contracts.newRespect,
-  ornode,
-  contractRunner: bp
-}
-const ctx = ORContext.create<ConfigWithOrnode>(ctxCfg);
-
-ctx.catch((reason) => {
-  console.error(`Failed creating orContext. Reason: ${JSON.stringify(reason)}`);
-})
-
-export const orclient = ctx.then((context) => {
-  console.debug("is a 2: ", context instanceof ORContext)
-  context.callTest();
-  const orclient = new ORClient(context);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).cli = orclient;
+  const ethereum: any = (window as any).ethereum;
+
+  const bp = new BrowserProvider(ethereum)
+
+  const signer = await bp.getSigner();
+
+  const ctxCfg: ConfigWithOrnode = {
+    orec: config.contracts.orec,
+    newRespect: config.contracts.newRespect,
+    ornode,
+    contractRunner: signer
+  }
+  const ctx = await ORContext.create<ConfigWithOrnode>(ctxCfg);
+
+  const orclient = new ORClient(ctx);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).orclient = orclient;
 
   return orclient;
+}
+
+create().then(orclient => { 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).orclient = orclient
+}).catch(reason => {
+  console.error("Error creating orclient: ", reason);
 })
 

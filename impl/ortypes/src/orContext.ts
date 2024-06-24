@@ -198,7 +198,3 @@ export class ORContext<CT extends Config> {
     return r;
   }
 }
-
-export const zORContext = z.instanceof(ORContext);
-
-export const testStr = "aaaa 2!";

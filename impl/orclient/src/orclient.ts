@@ -194,14 +194,8 @@ export class ORClient {
       req.data = toBeHex(await this.getNextMeetingNum());
     }
 
-    try {
-      const proposal = await this._clientToNode.transformTick(req);
-      return await this._submitProposal(proposal, v);
-    } catch (err) {
-      console.error("Error submitting tick proposal: ", JSON.stringify(err));
-      throw err;
-
-    }
+    const proposal = await this._clientToNode.transformTick(req);
+    return await this._submitProposal(proposal, v);
   }
 
   async proposeCustomCall(
