@@ -53,7 +53,8 @@
 1. Onchain Respect distribution of Optimism Fractal is managed by [Optimistic Respect-based executive contract](../../OREC.md), configured with the following parameters:
    1. `voting_period` = 1 day;
    2. `veto_period` = 3 days;
-   3. `prop_weight_threshold` = 256
+   3. `prop_weight_threshold` = 256;
    4. `respect_contract` = [Parent Respect contract](#5-parent-respect-token);
+   5. `max_live_votes` = 6;
 
 
