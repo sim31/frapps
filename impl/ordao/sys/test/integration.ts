@@ -631,7 +631,7 @@ describe("orclient", function() {
       await expect(voter.vote(resultProps[1].id, VoteType.No, ""))
         .to.eventually.be.rejectedWith(TxFailed)
           .that.has.property('decodedError')
-            .that.has.property('name', 'ProposalInactive');
+            .that.has.property('name', 'ProposalVoteInactive');
     });
   });
   // TODO: describe creating new proposals

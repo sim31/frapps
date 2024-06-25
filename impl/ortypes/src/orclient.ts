@@ -25,7 +25,7 @@ export type VoteRequest = z.infer<typeof zVoteRequest>;
 
 export const zVoteWithProp = zVoteRequest
   .omit({ propId: true })
-  .extend({ vote: zVoteType })
+  .extend({ vote: zVoteType.default(VoteType.Yes) })
 export type VoteWithProp = z.infer<typeof zVoteWithProp>;
 
 export const zVoteWithPropRequest = zVoteWithProp.partial({ vote: true });

@@ -23,6 +23,7 @@ export interface DevConfig {
   votePeriod: bigint;
   vetoPeriod: bigint;
   voteThreshold: number;
+  maxLiveVotes: number;
   redirectOutTo?: string;
 }
 
@@ -31,6 +32,7 @@ export const defaultDevConfig: DevConfig = {
   votePeriod: DAY_1,
   vetoPeriod: DAY_6,
   voteThreshold: 21,
+  maxLiveVotes: 6
 }
 
 export const zSerializableState = z.object({
@@ -206,7 +208,7 @@ export class Deployment {
 
     let orec = await orecFactory.deploy(
       oldRespectAddr,
-      cfg.votePeriod, cfg.vetoPeriod, cfg.voteThreshold
+      cfg.votePeriod, cfg.vetoPeriod, cfg.voteThreshold, cfg.maxLiveVotes
     );
     orec = await orec.waitForDeployment();
     const orecAddr = await orec.getAddress();
