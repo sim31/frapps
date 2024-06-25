@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 // Uncomment this line to use console.log
 import "hardhat/console.sol";
@@ -12,7 +13,7 @@ import "hardhat/console.sol";
  * @notice `respectContract` is expected to be a token contract which has
  * relatively stable distribution (it does not change at all (historical
  * distribution) or it at least does not change when voting on proposals is
- * happening)). Otherwise, if for example, new respect is distributed 
+ * happening). Otherwise, if for example, new respect is distributed 
  * while the vote on OREC proposal is happening, then some accounts
  * might end up voting with weights determined by the old distribution while
  * some might have weights determined by the new distribution (depending on
@@ -20,6 +21,10 @@ import "hardhat/console.sol";
  */
 
 contract Orec is Ownable {
+    /// PropId = keccak256(Message)
+    type PropId is bytes32;
+    using EnumerableSet for EnumerableSet.Bytes32Set;
+
     enum VoteType { None, Yes, No }
     enum ExecStatus { NotExecuted, Executed, ExecutionFailed }
     enum Stage { Voting, Veto, Execution, Expired }
@@ -57,8 +62,6 @@ contract Orec is Ownable {
         Message message;
     }
 
-    /// PropId = keccak256(Message)
-    type PropId is bytes32;
 
     event EmptyVoteIn(PropId indexed propId, address indexed voter);
     event WeightedVoteIn(PropId indexed propId, address indexed voter);
@@ -75,11 +78,11 @@ contract Orec is Ownable {
     error VotePeriodOver();
     error AlreadyVoted(VoteType prevVote, VoteType newVote);
     /// @notice Means that either both vote and veto periods are over or proposal is already rejected (see _isActive())
-    error ProposalInactive();
+    error ProposalVoteInactive();
     error ProposalDoesNotExist();
     error InvalidVote();
+    error MaxLiveYesVotesExceeded();
 
-    // TODO: make configurable
     uint64 public voteLen = 1 days;
     uint64 public vetoLen = 6 days;
     uint256 public minWeight = 256;
@@ -88,22 +91,29 @@ contract Orec is Ownable {
     // TODO: document info about how it might work with tokens whose balances might change during proposal passing time
     //      - I think this is best used with parent Respect distribution creating child distribution (so respect created by previous version of a fractal would be issuing new respect through this)
     IERC20 public respectContract;
+    /// It's actually max live *yes* votes
+    uint8 public maxLiveVotes;
 
     mapping (PropId => ProposalState) public proposals;
 
-    // Negative weight means "no" vote;
-    mapping(PropId => mapping (address => Vote)) public votes; 
+    mapping (PropId => mapping (address => Vote)) public votes; 
+
+    mapping (address => PropId[]) public liveVotes;
+
+    mapping (address => EnumerableSet.Bytes32Set) private _liveVotes;
 
     constructor(
         IERC20 respectContract_,
         uint64 voteLenSeconds_,
         uint64 vetoLenSeconds_,
-        uint256 minWeight_
+        uint256 minWeight_,
+        uint8 maxLiveYesVotes_
     ) Ownable(address(this)) {
         respectContract = respectContract_;
         voteLen = voteLenSeconds_;
         vetoLen = vetoLenSeconds_;
         minWeight = minWeight_;
+        maxLiveVotes = maxLiveYesVotes_;
     }
 
     /// Vote for proposal. Creates it if it doesn't exist
@@ -202,7 +212,7 @@ contract Orec is Ownable {
 
     function isActive(PropId propId) public view returns (bool) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return _isActive(p);
+        return _isVoteActive(p);
     }
 
     function isExpired(PropId propId) public view returns (bool) {
@@ -225,6 +235,10 @@ contract Orec is Ownable {
 
     function setVetoLen(uint64 newVetoLen) public onlyOwner {
         vetoLen = newVetoLen;
+    }
+
+    function setMaxLiveVotes(uint8 newMaxLiveVotes) public onlyOwner {
+        maxLiveVotes = newMaxLiveVotes;
     }
 
     function proposalId(Message calldata message) public pure returns (PropId) {
@@ -274,9 +288,13 @@ contract Orec is Ownable {
         }
     }
 
-    function _isActive(ProposalState storage prop) internal view returns (bool) {
+    function _isVoteActive(ProposalState storage prop) internal view returns (bool) {
         VoteStatus status = _getVoteStatus(prop);
         return status == VoteStatus.Passing || status == VoteStatus.Failing;
+    }
+
+    function _isLive(ProposalState storage prop) internal view returns (bool) {
+        return !_isExpired(prop);
     }
 
     function _isExpired(ProposalState storage prop) internal view returns (bool) {
@@ -290,8 +308,6 @@ contract Orec is Ownable {
         PropId propId,
         VoteType voteType
     ) internal {
-        // TODO: check what stage proposal is in
-
         Vote storage currentVote = votes[propId][msg.sender];
         Vote memory newVote;
 
@@ -307,6 +323,11 @@ contract Orec is Ownable {
             if (currentVote.weight != 0) {
                 revert AlreadyVoted(currentVote.vtype, voteType);
             }
+            EnumerableSet.Bytes32Set storage voteSet = _liveVotes[msg.sender];
+            _updateLiveVotes(voteSet);
+            if (voteSet.length() >= maxLiveVotes) {
+                revert MaxLiveYesVotesExceeded();
+            }
 
             uint256 w = respectContract.balanceOf(msg.sender);
             newVote = Vote(VoteType.Yes, w);
@@ -316,8 +337,8 @@ contract Orec is Ownable {
             p.yesWeight += w;
             votes[propId][msg.sender] = newVote;
         } else if (voteType == VoteType.No) {
-            if (!_isActive(p)) {
-                revert ProposalInactive();
+            if (!_isVoteActive(p)) {
+                revert ProposalVoteInactive();
             }
             // console.log("Voting no. Account: ", msg.sender);
             if (currentVote.vtype == VoteType.Yes) {
@@ -338,6 +359,29 @@ contract Orec is Ownable {
             emit EmptyVoteIn(propId, msg.sender);
         } else {
             emit WeightedVoteIn(propId, msg.sender);
+        }
+    }
+
+    function updateLiveVotes(address account) public {
+        EnumerableSet.Bytes32Set storage voteSet = _liveVotes[account];
+        _updateLiveVotes(voteSet);
+    }
+
+    function _updateLiveVotes(EnumerableSet.Bytes32Set storage voteSet) internal {
+        uint len = voteSet.length();
+        PropId[] memory toRemove = new PropId[](len);
+        uint removeCount = 0;
+        for (uint i = 0; i < len; i++) {
+            PropId propId = PropId.wrap(voteSet.at(i));
+            ProposalState storage prop = proposals[propId];
+            if (_isExpired(prop)) {
+                toRemove[removeCount] = propId;
+                removeCount += 1;
+            }
+        }
+
+        for (uint i = 0; i < removeCount; i++) {
+            voteSet.remove(PropId.unwrap(toRemove[i]));
         }
     }
 

@@ -18,6 +18,8 @@ import {
   ExecStatus, VoteType
 } from "../utils";
 
+const MAX_LIVE_VOTES = 4;
+
 async function deployToken() {
   // Contracts are deployed using the first signer/account by default
   const [tokenOwner, otherAccount] = await hre.ethers.getSigners();
@@ -62,7 +64,7 @@ async function deployOrec() {
   const Orec = await hre.ethers.getContractFactory("Orec");
   const orec = await Orec.deploy(
     tokenAddress,
-    DAY_1, DAY_6, 5
+    DAY_1, DAY_6, 5, MAX_LIVE_VOTES,
   );
 
   return { orec, token, tokenOwner, tokenAddress, buildMintProp, buildBurnProp };
@@ -212,7 +214,7 @@ describe("Orec", function () {
       expect(storedProp.createTime).to.equal(bl?.timestamp);
     });
 
-    it("should not proposing what already exist", async function() {
+    it("should not allow proposing what already exist", async function() {
       const { orec, token, tokenAddress, buildMintProp } = await loadFixture(deployOrec);
       const accounts = await hre.ethers.getSigners();
 
@@ -779,6 +781,68 @@ describe("Orec", function () {
 
       await expect(orec.signal(3, toUtf8Bytes("some data"))).to.be.reverted;
     });
+  })
+
+  describe("Spam prevention", function() {
+    it("should not allow having more than max_live_votes of yes votes on live proposals", async function () {
+      const { token, accounts, orec, buildMintProp } = await loadFixture(deployOrecWithProposals);
+
+      for (let i = 0; i < MAX_LIVE_VOTES; i++) {
+        const prop = buildMintProp(accounts[16].address, 100);
+        expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      }
+
+      const prop = buildMintProp(accounts[16].address, 100);
+      expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+    });
+
+    it("should allow voting yes again after max_live_votes limit was reached once proposals voted on have expired", async function() {
+      const { token, accounts, orec, buildMintProp } = await loadFixture(deployOrecWithProposals);
+
+      for (let i = 0; i < MAX_LIVE_VOTES; i++) {
+        const prop = buildMintProp(accounts[16].address, 100);
+        expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      }
+
+      const prop = buildMintProp(accounts[16].address, 100);
+      expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+
+      time.increase(DAY_1 + MIN_1);
+
+      for (let i = 0; i < MAX_LIVE_VOTES; i++) {
+        const prop = buildMintProp(accounts[16].address, 100);
+        expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      }
+
+      const prop2 = buildMintProp(accounts[16].address, 100);
+      expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+
+      time.increase(DAY_1 + MIN_1);
+
+      for (let i = 0; i < MAX_LIVE_VOTES - 1; i++) {
+        const prop = buildMintProp(accounts[16].address, 100);
+        expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      }
+
+      time.increase(HOUR_1);
+
+      const prop3 = buildMintProp(accounts[15].address, 200);
+      expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.Yes);
+
+      const prop4 = buildMintProp(accounts[15].address, 100);
+      expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+
+      time.increase(DAY_1 + MIN_1);
+
+      for (let i = 0; i < MAX_LIVE_VOTES - 1; i++) {
+        const prop = buildMintProp(accounts[10].address, 100);
+        expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      }
+
+      const prop5 = buildMintProp(accounts[9].address, 100);
+      expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+
+    })
   })
 
   describe("Settings", function() {
