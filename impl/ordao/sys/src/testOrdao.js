@@ -16,7 +16,7 @@ async function main() {
     shelljs.exec(`rm -rf ${dbpath}/*`)
     const mongod = shelljs.exec(`mongod --dbpath=${dbpath} > ./tmp/mongod-testing.log`, { async: true });
 
-    // shelljs.exec("npm run setup-mongodb");
+    // shelljs.exec("npm run init-db");
 
     console.debug("ok 3");
 
