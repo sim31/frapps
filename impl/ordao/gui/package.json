@@ -21,6 +21,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "respect1155-tc": "file:../../respect1155/sc/typechain-types",
+    "ts-utils": "file:../../ts-utils",
     "zod": "^3.23.8"
   },
   "devDependencies": {

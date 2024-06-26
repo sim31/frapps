@@ -50,9 +50,15 @@ export class ORContext<CT extends Config> {
   private _oldRespectAddr?: EthAddress;
   private _newRespectAddr?: EthAddress;
   private _orecAddr?: EthAddress;
+  private _runner: ContractRunner;
 
-  constructor(state: StateForConfig<CT>, validate: boolean = true) {
+  constructor(
+    state: StateForConfig<CT>,
+    runner: ContractRunner,
+    validate: boolean = true
+  ) {
     this._st = state;
+    this._runner = runner;
     if (validate) {
       this.validate();
     }
@@ -121,7 +127,7 @@ export class ORContext<CT extends Config> {
       ornode: config.ornode as CT_['ornode'],
     };
 
-    const ctx = new ORContext<CT_>(st as any, false);
+    const ctx = new ORContext<CT_>(st as any, runner);
     ctx._oldRespectAddr = oldRespAddr;
 
     await ctx.validate();
@@ -140,7 +146,7 @@ export class ORContext<CT extends Config> {
   }
 
   connect(signer: Signer): ORContext<CT> {
-    return new ORContext<CT>({ ...this._st, orec: this._st.orec.connect(signer) }, false);
+    return new ORContext<CT>({ ...this._st, orec: this._st.orec.connect(signer) }, this._runner, false);
   }
 
   get orec(): Orec {
@@ -157,6 +163,10 @@ export class ORContext<CT extends Config> {
 
   get oldRespect(): FractalRespect {
     return this._st.oldRespect;
+  }
+
+  get runner(): ContractRunner {
+    return this._runner;
   }
 
   async getOrecAddr(): Promise<EthAddress> {

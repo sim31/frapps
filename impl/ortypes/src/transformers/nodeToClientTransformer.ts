@@ -14,7 +14,17 @@ import {
   zCustomSignal,
   CustomCall,
   Tick,
-  zTick
+  zTick,
+  zVote,
+  Vote,
+  VoteType,
+  zVoteType,
+  Stage,
+  zStage,
+  ExecStatus,
+  zExecStatus,
+  VoteStatus,
+  zVoteStatus
 } from "../orclient.js";
 import {
   zProposal as zNProposal,
@@ -45,9 +55,40 @@ import { Orec__factory as OrecFactory } from "orec/typechain-types";
 import { zBreakoutMintRequest, zPropType } from "../fractal.js";
 import { expect } from "chai";
 import { unpackTokenId } from "respect1155-sc/utils/tokenId.js";
-import { zCustomSignalType, zSignalArgs, zTickSignalType } from "../orec.js";
+import {
+  zCustomSignalType,
+  zSignalArgs,
+  zTickSignalType,
+  Vote as NVote,
+  VoteType as NVoteType,
+  zVoteType as zNVoteType,
+  zVote as zNVote,
+  Stage as NStage,
+  VoteStatus as NVoteStatus,
+  ExecStatus as NExecStatus
+} from "../orec.js";
 
 type ORContext = OrigORContext<ConfigWithOrnode>;
+
+export const stageMap: Record<NStage, Stage> = {
+  [NStage.Execution]: "Execution",
+  [NStage.Expired]: "Expired",
+  [NStage.Veto]: "Veto",
+  [NStage.Voting]: "Voting"
+};
+
+export const voteStatusMap: Record<NVoteStatus, VoteStatus> = {
+  [NVoteStatus.Failed]: "Failed",
+  [NVoteStatus.Failing]: "Failing",
+  [NVoteStatus.Passed]: "Passed",
+  [NVoteStatus.Passing]: "Passing"
+}
+
+export const execStatusMap: Record<NExecStatus, ExecStatus> = {
+  [NExecStatus.Executed]: "Executed",
+  [NExecStatus.ExecutionFailed]: "ExecutionFailed",
+  [NExecStatus.NotExecuted]: "NotExecuted"
+}
 
 export const zNAttachmentToMetadata = zPropAttachmentBase.transform((val, ctx) => {
   const r: ProposalMetadata = {
@@ -318,6 +359,24 @@ function mkzNProposalToDecodedProp(orctx: ORContext) {
   }).pipe(zDecodedProposal);
 }
 
+export const orecToClientVTMap: Record<NVoteType, VoteType> = {
+  [NVoteType.Yes]: "Yes",
+  [NVoteType.No]: "No",
+  [NVoteType.None]: "None"
+}
+
+export const zNVoteTypeToClient = zNVoteType.transform((vt) => {
+  return orecToClientVTMap[vt];
+}).pipe(zVoteType);
+
+export const zNVoteToClient = zNVote.transform(val => {
+  const v: Vote = {
+    voteType: zNVoteTypeToClient.parse(val.vtype),
+    weight: Number(val.weight)
+  }
+  return v;
+}).pipe(zVote)
+
 export class NodeToClientTransformer {
   private _ctx: ORContext;
   private _zNProposalToDecodedProp: ReturnType<typeof mkzNProposalToDecodedProp>;
@@ -331,7 +390,12 @@ export class NodeToClientTransformer {
   async transformProp(nodeProp: NProposal): Promise<Proposal> {
     const propId = nodeProp.id;
     const onchainProp = await this._ctx.getProposalFromChain(propId);
-    const rProp: Proposal = onchainProp;
+    const rProp: Proposal = {
+      ...onchainProp,
+      status: execStatusMap[onchainProp.status],
+      stage: stageMap[onchainProp.stage],
+      voteStatus: voteStatusMap[onchainProp.voteStatus]
+    };
 
     if (nodeProp.content !== undefined) {
       rProp.addr = nodeProp.content.addr;
@@ -342,5 +406,9 @@ export class NodeToClientTransformer {
       }
     }
     return rProp;
+  }
+
+  transformVote(vote: NVote): Vote {
+    return zNVoteToClient.parse(vote);
   }
 }

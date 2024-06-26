@@ -2,6 +2,9 @@ import { getAddress, getBigInt, hexlify, isBytesLike, isHexString, ZeroAddress }
 import { z } from "zod";
 import { addCustomIssue } from './zErrorHandling.js';
 
+export const zTxHash = z.string();
+export type TxHash = z.infer<typeof zTxHash>;
+
 export const zBytes = z.string().refine((val) => {
   return isHexString(val);
 });

@@ -1,23 +1,20 @@
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { Signer, hexlify, toUtf8Bytes, toBeHex, zeroPadBytes } from "ethers";
-import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithPropRequest, zBurnRespectRequest, zRespectAccountRequest, zRespectBreakoutRequest, zTickRequest, zVoteWithPropRequest } from "ortypes/orclient.js";
+import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithPropRequest, zBurnRespectRequest, zRespectAccountRequest, zRespectBreakoutRequest, zTickRequest, zVoteRequest, zVoteWithPropRequest } from "ortypes/orclient.js";
 // import { zProposal as zNProposal, zORNodePropStatus } from "./ornode.js";
 import { ZodType, z } from "zod";
 import { ORClient, PutProposalRes } from "./orclient.js";
 import { ORContext } from "ortypes/orContext.js";
 import { ConfigWithOrnode } from "ortypes/orContext.js";
-import { Bytes, PropId, VoteType } from "ortypes";
+import { Bytes, EthAddress, PropId, Vote, zPropId } from "ortypes";
+import { VoteType } from "ortypes/orclient.js";
 import { packTokenId } from "ortypes/respect1155.js";
+import { stringify } from "ts-utils";
 
 function createSchemaDescription<ZT extends ZodType>(
   zType: ZT,
   exampleObj?: z.infer<ZT>,
 ) {
-  const stringify = (obj: any) => JSON.stringify(
-    obj,
-    (_, v) => typeof v === 'bigint' ? v.toString() : v, 
-    2
-  );
 
   const jsonSchema = zodToJsonSchema(zType);
   const schemaText = stringify(jsonSchema);
@@ -45,6 +42,11 @@ function createSchemaDescription<ZT extends ZodType>(
   }
 }
 
+const propIdDoc = createSchemaDescription(
+  zPropId,
+  zeroPadBytes("0x1133", 32)
+);
+
 const respectBreakoutReqDoc = createSchemaDescription(
   zRespectBreakoutRequest,
   {
@@ -63,7 +65,7 @@ const voteWithPropReqDoc = createSchemaDescription(
   zVoteWithPropRequest,
   {
     memo: "Some memo",
-    vote: VoteType.Yes
+    vote: "Yes"
   }
 );
 
@@ -87,16 +89,25 @@ const burnRespectReqDoc = createSchemaDescription(
       periodNumber: 2,
       mintType: 1
     }), 32),
-    reason: "some reason"
+    reason: "some optional reason"
   }
 );
 
-const tiReqDoc = createSchemaDescription(
+const tickReqDoc = createSchemaDescription(
   zTickRequest,
   {
-    link: "http://someaddress.com/page"
+    link: "http://someoptionallink.com/page"
   }
 );
+
+const voteRequestDoc = createSchemaDescription(
+  zVoteRequest,
+  {
+    propId: zeroPadBytes("0x05", 32),
+    vote: "Yes",
+    memo: "Optional memo"
+  }
+)
 
 export class ORCli {
   orclient: ORClient;
@@ -113,12 +124,21 @@ export class ORCli {
     return this.orclient.context;
   }
 
+  private _formatResult(obj: any): string {
+    return stringify(obj);
+  }
+
   /**
    * Returns proposal by id
    * @param id - proposal id
    */
-  async getProposal(id: PropId): Promise<Proposal> {
-    return this.orclient.getProposal(id);
+  async getProposal(id: PropId): Promise<string> {
+    return this._formatResult(await this.orclient.getProposal(id));
+  }
+
+  async getOnChainProp(id: PropId): Promise<string> {
+    const prop = await this.orclient.context.orec.proposals(id);
+    return stringify(prop);
   }
 
   // UC8
@@ -127,20 +147,21 @@ export class ORCli {
    * @param from - Start of proposal range. 0 - last proposal, 1 - second to  last proposal and so on
    * @param count - Number of proposals to return
    */
-  async lsProposals(from: number = 0, limit: number = 50): Promise<Proposal[]> {
-    return this.orclient.lsProposals(from, limit);
+  async lsProposals(from: number = 0, limit: number = 50): Promise<string> {
+    return this._formatResult(await this.orclient.lsProposals(from, limit));
   }
 
   // UC2
   // TODO: Allow specifying text string instead of hexstring and convert it
-  async vote(propId: PropId, vote: VoteType, memo?: string): Promise<void>;
-  async vote(request: VoteRequest): Promise<void>;
-  async vote(pidOrReq: VoteRequest | PropId, vote?: VoteType, memo?: string): Promise<void> {
+  async vote(propId: PropId, vote: VoteType, memo?: string): Promise<string>;
+  async vote(request: VoteRequest): Promise<string>;
+  async vote(pidOrReq: VoteRequest | PropId, vote?: VoteType, memo?: string): Promise<string> {
     if (typeof pidOrReq === 'string') {
-      return this.orclient.vote(pidOrReq, vote!, memo);
+      await this.orclient.vote(pidOrReq, vote!, memo);
     } else {
-      return this.orclient.vote(pidOrReq);
+      await this.orclient.vote(pidOrReq);
     }
+    return 'success';
   }
 
   encodeMemo(memo?: string): Bytes {
@@ -149,52 +170,78 @@ export class ORCli {
 
   // UC3
   async execute(propId: PropId) {
-    this.orclient.execute(propId);
+    await this.orclient.execute(propId);
   }
 
   // UC{1,4}
   async submitBreakoutResult(
     request: RespectBreakoutRequest,
-    vote: VoteWithPropRequest = { vote: VoteType.Yes }
-  ): Promise<PutProposalRes> {
-    return this.orclient.submitBreakoutResult(request, vote);
+    vote: VoteWithPropRequest = { vote: "Yes" }
+  ): Promise<string> {
+    return this._formatResult(
+      await this.orclient.submitBreakoutResult(request, vote)
+    );
   }
   // UC5
   async proposeRespectTo(
     req: RespectAccountRequest,
-    vote: VoteWithPropRequest = { vote: VoteType.Yes }
-  ): Promise<PutProposalRes> {
-    return this.orclient.proposeRespectTo(req, vote);
+    vote: VoteWithPropRequest = { vote: "Yes" }
+  ): Promise<string> {
+    return this._formatResult(
+      await this.orclient.proposeRespectTo(req, vote)
+    );
   }
 
   // UC6
   async burnRespect(
     req: BurnRespectRequest,
-    vote: VoteWithPropRequest = { vote: VoteType.Yes }
-  ): Promise<PutProposalRes> {
-    return this.orclient.burnRespect(req, vote);
+    vote: VoteWithPropRequest = { vote: "Yes" }
+  ): Promise<string> {
+    return this._formatResult(
+      await this.orclient.burnRespect(req, vote)
+    );
   }
 
   async proposeCustomSignal(
     req: CustomSignalRequest,
-    vote: VoteWithPropRequest = { vote: VoteType.Yes }
-  ): Promise<PutProposalRes> {
-    return this.orclient.proposeCustomSignal(req, vote);
+    vote: VoteWithPropRequest = { vote: "Yes" }
+  ): Promise<string> {
+    return this._formatResult(
+      await this.orclient.proposeCustomSignal(req, vote)
+    );
   }
 
   // UC7
   async proposeTick(
     req: TickRequest = {},
-    vote: VoteWithPropRequest = { vote: VoteType.Yes }
-  ): Promise<PutProposalRes> {
-    return this.orclient.proposeTick(req, vote);
+    vote: VoteWithPropRequest = { vote: "Yes" }
+  ): Promise<string> {
+    return this._formatResult(
+      await this.orclient.proposeTick(req, vote)
+    );
   }
 
   async proposeCustomCall(
     req: CustomCallRequest,
-    vote: VoteWithPropRequest = { vote: VoteType.Yes }
-  ): Promise<PutProposalRes> {
-    return this.orclient.proposeCustomCall(req, vote);
+    vote: VoteWithPropRequest = { vote: "Yes" }
+  ): Promise<string> {
+    return this._formatResult(
+      await this.orclient.proposeCustomCall(req, vote)
+    );
+  }
+
+  async getVote(propId: PropId, voter: EthAddress): Promise<string> {
+    return this._formatResult(
+      await this.orclient.getVote(propId, voter)
+    );
+  }
+
+  async oldRespectOf(account: EthAddress): Promise<bigint> {
+    return await this.orclient.oldRespectOf(account);
+  }
+
+  async respectOf(account: EthAddress): Promise<bigint> {
+    return await this.orclient.respectOf(account);
   }
 
   async getPeriodNum(): Promise<number> {
@@ -277,11 +324,42 @@ async proposeTick(
 ): Promise<PutProposalRes> {
 
 === req ===
-${tiReqDoc.text}
+${tickReqDoc.text}
 
 === vote ===
 ${voteWithPropReqDoc.text}
 
 === Example ===
 await cli.proposeTick()
+`;
+
+(ORCli.prototype['vote'] as any)['help'] =
+`
+async vote(request: VoteRequest): Promise<void>;
+
+=== request ===
+${voteRequestDoc.text}
+
+=== Example ===
+await cli.vote(${voteRequestDoc.exampleText})
+`;
+
+// TODO: Make lsProposals accept range... Probably in terms of dates...
+(ORCli.prototype['lsProposals'] as any)['help'] =
+`
+async lsProposals(): Promise<Proposal[]> {
+
+=== Example ===
+await cli.lsProposals()
+`;
+
+(ORCli.prototype['getProposal'] as any)['help'] =
+`
+async getProposal(id: PropId): Promise<Proposal> {
+
+=== id ===
+${propIdDoc.schemaText}
+
+=== Example ===
+await cli.getProposal(${propIdDoc.exampleText})
 `;

@@ -28,9 +28,10 @@ export const resultHandler = createResultHandler({
       });
       return;
     }
+
     const statusCode = getStatusCodeFromError(error);
     const message = getMessageFromError(error);
-    console.debug("Result handler received output: ", output);
+    console.debug("Returning error: ", error);
     response.status(statusCode).json({
       status: "error",
       error: {

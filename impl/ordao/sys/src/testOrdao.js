@@ -11,6 +11,15 @@ async function main() {
 
     shelljs.exec("npm run test-deployment"); // Synchronous
 
+    const dbpath = './tmp/mongodb/testing'
+    shelljs.exec(`mkdir -p ${dbpath}`);
+    shelljs.exec(`rm -rf ${dbpath}/*`)
+    const mongod = shelljs.exec(`mongod --dbpath=${dbpath} > ./tmp/mongod-testing.log`, { async: true });
+
+    // shelljs.exec("npm run setup-mongodb");
+
+    console.debug("ok 3");
+
     const ornode = shelljs.exec("npm run dev-ornode > ./tmp/ornode-test.log", { async: true })
 
     shelljs.exec("npm run hh-test-ordao");
@@ -23,6 +32,11 @@ async function main() {
       console.log("ornode process exiting with code: ", code, ", signal: ", signal);
     });
 
+    mongod.on("exit", (code, signal) => {
+      console.log("mongod process exiting with code: ", code, ", signal: ", signal);
+    });
+
+    shelljs.exec(`mongod --shutdown --dbpath=${dbpath}`)
     treeKill(hhNode.pid);
     treeKill(ornode.pid);
   } catch (err) {

@@ -61,7 +61,7 @@ export class MemOrnode implements IORNode {
     this._ctx = orcontext;
     this._cfg = config;
 
-    this._ctx.orec.on(this._ctx.orec.getEvent("ProposalCreated"), (propId) => {
+    this._ctx.orec.on(this._ctx.orec.getEvent("ProposalCreated"), (propId, event) => {
       this._storeNewProposal(propId);
     });
 
@@ -75,7 +75,7 @@ export class MemOrnode implements IORNode {
     });
   }
 
-  static async create(config: Config): Promise<IORNode> {
+  static async create(config: Config): Promise<MemOrnode> {
     const contextCfg: ORNodeContextConfig = {
       orec: config.orec,
       newRespect: config.newRespect,

@@ -70,6 +70,28 @@ export type CProposalState = Omit<
   keyof [bigint, bigint, bigint, bigint]
 >
 
+export const zVoteWeight = z.coerce.bigint().gte(0n);
+export type VoteWeight = z.infer<typeof zVoteWeight>;
+
+export type CVote = Omit<
+  Awaited<ReturnType<Orec["votes"]>>,
+  keyof [bigint, bigint]
+>
+export const zVoteBase = z.object({
+  vtype: zVoteType,
+  weight: zVoteWeight
+})
+
+export const zVote = preprocessResultOrObj(zVoteBase);
+export type Vote = z.infer<typeof zVote>;
+const voteVerify = zVote.refine((val) => {
+  const cvote: CVote = {
+    vtype: BigInt(val.vtype),
+    weight: val.weight
+  };
+  return true;
+})
+
 export const zSignalArgsBase = z.object({
   signalType: zUint8, 
   data: zBytesLike

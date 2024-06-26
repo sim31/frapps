@@ -2,6 +2,7 @@ import { IORNode, PropId, ProposalInvalid, ProposalNotCreated, ProposalNotFound 
 import { ORNodePropStatus, Proposal, ProposalFull, zErrorType } from "ortypes/ornode.js";
 import { OrnodeClient, createOrnodeClient } from "./ornodeClient/index.js";
 import { Input, Method, Path, Response } from "./ornodeClient/ornodeClient.js";
+import { stringify } from "ts-utils";
 
 export class OrnodeUnknownErrResponse extends Error {
   fullErr: any;
@@ -84,7 +85,7 @@ export class RemoteOrnode implements IORNode {
         data = response.data;
       }
     } catch (err) {
-      throw new OrnodeRequestFailed(`Request ${method} ${path} with params: ${JSON.stringify(params)} failed. Cause: ${JSON.stringify(err)}`, err);
+      throw new OrnodeRequestFailed(`Request ${method} ${path} with params: ${stringify(params)} failed. Cause: ${stringify(err)}`, err);
     }
 
     if (error !== undefined) {

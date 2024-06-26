@@ -1,3 +1,4 @@
+import { stringify } from "ts-utils";
 import { Implementation } from "./ornodeClient.js";
 import { jsonEndpoints } from "./ornodeClient.js";
 
@@ -9,7 +10,7 @@ export function createImplementation(ornodeUrl: string): Implementation {
       `${ornodeUrl}${path}${searchParams}`,
       {
         method: method.toUpperCase(),
-        headers: hasBody ? { "Content-Type": "application/json" } : undefined, body: hasBody ? JSON.stringify(params) : undefined
+        headers: hasBody ? { "Content-Type": "application/json" } : undefined, body: hasBody ? stringify(params) : undefined
       }
     );
     if (`${method} ${path}` in jsonEndpoints) {

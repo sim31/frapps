@@ -1,15 +1,16 @@
 import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt, toBeHex } from "ethers";
-import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp } from "ortypes/orclient.js";
+import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp, VoteType, Vote } from "ortypes/orclient.js";
 import { TxFailed } from "./errors.js";
 import { ORContext, ConfigWithOrnode } from "ortypes/orContext.js";
-import { NodeToClientTransformer } from "ortypes/transformers/nodeToClientTransformer.js";
+import { NodeToClientTransformer, zNVoteToClient } from "ortypes/transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "ortypes/transformers/clientToNodeTransformer.js";
 import { ProposalFull as NProp, ORNodePropStatus } from "ortypes/ornode.js";
 import { ErrorDecoder } from 'ethers-decode-error'
 import type { DecodedError } from 'ethers-decode-error'
-import { Bytes, PropId, ProposalNotCreated, ProposalState, VoteType } from "ortypes";
+import { Bytes, EthAddress, PropId, ProposalNotCreated, ProposalState, zVote as zNVote } from "ortypes";
 import { Method, Path, Input, Response } from "./ornodeClient/ornodeClient.js";
-import { sleep } from "ts-utils";
+import { sleep, stringify } from "ts-utils";
+import { resultArrayToObj } from "ortypes/utils.js";
 
 export function isPropCreated(propState: ProposalState) {
   return propState.createTime > 0n;
@@ -122,9 +123,11 @@ export class ORClient {
       req = pidOrReq as VoteRequest;
     }
     const m = this.encodeMemo(req.memo);
+    const v = this._clientToNode.transformVoteType(req.vote);
     const orec = this._ctx.orec;
-    const errMsg = `orec.vote(${req.propId}, ${req.vote}, ${m})`
-    const promise = orec.vote(req.propId, req.vote, m);
+    const errMsg = `orec.vote(${req.propId}, ${v}, ${m})`
+    console.debug(errMsg);
+    const promise = orec.vote(req.propId, v, m);
     await this._handleTxPromise(promise, this._cfg.otherConfirms, errMsg);
   }
 
@@ -146,7 +149,7 @@ export class ORClient {
   // UC{1,4}
   async submitBreakoutResult(
     request: RespectBreakoutRequest,
-    vote: VoteWithPropRequest = { vote: VoteType.Yes }
+    vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<PutProposalRes> {
     console.debug("submitting breakout result");
     const v = zVoteWithProp.parse(vote); 
@@ -157,7 +160,7 @@ export class ORClient {
   // UC5
   async proposeRespectTo(
     req: RespectAccountRequest,
-    vote: VoteWithPropRequest = { vote: VoteType.Yes }
+    vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<PutProposalRes> {
     const v = zVoteWithProp.parse(vote); 
     const proposal = await this._clientToNode.transformRespectAccount(req);
@@ -167,7 +170,7 @@ export class ORClient {
   // UC6
   async burnRespect(
     req: BurnRespectRequest,
-    vote: VoteWithPropRequest = { vote: VoteType.Yes }
+    vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<PutProposalRes> {
     const v = zVoteWithProp.parse(vote); 
     const proposal = await this._clientToNode.transformBurnRespect(req);
@@ -176,7 +179,7 @@ export class ORClient {
 
   async proposeCustomSignal(
     req: CustomSignalRequest,
-    vote: VoteWithPropRequest = { vote: VoteType.Yes }
+    vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<PutProposalRes> {
     const v = zVoteWithProp.parse(vote); 
     const proposal = await this._clientToNode.transformCustomSignal(req);
@@ -186,7 +189,7 @@ export class ORClient {
   // UC7
   async proposeTick(
     req: TickRequest = {},
-    vote: VoteWithPropRequest = { vote: VoteType.Yes }
+    vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<PutProposalRes> {
     const v = zVoteWithProp.parse(vote); 
 
@@ -200,11 +203,25 @@ export class ORClient {
 
   async proposeCustomCall(
     req: CustomCallRequest,
-    vote: VoteWithPropRequest = { vote: VoteType.Yes }
+    vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<PutProposalRes> {
     const v = zVoteWithProp.parse(vote); 
     const proposal = await this._clientToNode.transformCustomCall(req);
     return await this._submitProposal(proposal, v);
+  }
+
+  async getVote(propId: PropId, voter: EthAddress): Promise<Vote> {
+    const vote = zNVote.parse(await this._ctx.orec.votes(propId, voter));
+    console.debug("vote: ", vote);
+    return this._nodeToClient.transformVote(vote);
+  }
+
+  async oldRespectOf(account: EthAddress): Promise<bigint> {
+    return await this._ctx.oldRespect.balanceOf(account);
+  }
+
+  async respectOf(account: EthAddress): Promise<bigint> {
+    return await this._ctx.newRespect.respectOf(account);
   }
 
   async getPeriodNum(): Promise<number> {
@@ -244,7 +261,7 @@ export class ORClient {
         _err = error;
         if (error instanceof ProposalNotCreated) {
           attempts += 1;
-          console.log("Submitting proposal to ornode failed with error ProposalNotCreated. Attempt count: ", attempts, ". Proposal: ", JSON.stringify(proposal));
+          console.log("Submitting proposal to ornode failed with error ProposalNotCreated. Attempt count: ", attempts, ". Proposal: ", stringify(proposal));
         } else {
           throw error;
         }
@@ -255,15 +272,16 @@ export class ORClient {
   }
 
   private async _submitPropToChain(proposal: NProp, vote?: VoteWithProp) {
-    const errMsg = `Submitting proposal: ${JSON.stringify(proposal)}`;
+    const errMsg = `Submitting proposal: ${stringify(proposal)}`;
     const resp = this._submitPropTx(proposal, vote);
     await this._handleTxPromise(resp, this._cfg.propConfirms, errMsg);
   }
   private async _submitPropTx(proposal: NProp, vote?: VoteWithProp) {
-    if (vote !== undefined && vote.vote !== VoteType.None) {
+    if (vote !== undefined && vote.vote !== "None") {
+      const v = this._clientToNode.transformVoteType(vote.vote);
       return this._ctx.orec.vote(
           proposal.id,
-          vote.vote,
+          v,
           this.encodeMemo(vote.memo)
       );
     } else {
@@ -280,7 +298,9 @@ export class ORClient {
     let receipt: Awaited<ReturnType<typeof resp.wait>>;
     try {
       resp = await promise;
+      console.debug("Tx response: ", resp);
       receipt = await resp.wait(confirms);
+      console.debug("Tx receipt: ", receipt);
     } catch(err) {
       let decoded: DecodedError;
       try {
@@ -290,7 +310,7 @@ export class ORClient {
       }
       throw new TxFailed(err, decoded, errMsg);
     }
-    if (receipt?.status !== 1) {
+    if (receipt === null || receipt.status !== 1) {
       throw new TxFailed(resp, receipt, errMsg);
     }
   }

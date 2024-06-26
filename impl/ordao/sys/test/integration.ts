@@ -1,6 +1,7 @@
 import chai, { expect } from "chai";
 import { time, mine } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
 import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest, RespectBreakoutRequest, VoteRequest, VoteWithProp } from "ortypes/orclient.js";
+import { execStatusMap } from "ortypes/transformers/nodeToClientTransformer.js";
 import { TxFailed, ORClient, RemoteOrnode, defaultConfig } from "orclient";
 import { EthAddress, ExecStatus, PropType, Stage, VoteStatus, VoteType, zProposedMsg } from "ortypes";
 import hre from "hardhat";
@@ -82,7 +83,11 @@ describe("orclient", function() {
   });
 
   before("create ORClient", async function() {
-    const ctx = new ORContext<ConfigWithOrnode>({ orec, newRespect, oldRespect, ornode });
+    expect(orec.runner).to.not.be.null;
+    const ctx = new ORContext<ConfigWithOrnode>(
+      { orec, newRespect, oldRespect, ornode },
+      orec.runner!
+    );
     cl = new ORClient(ctx, { ...defaultConfig, propResubmitInterval: 1000 });
   })
 
@@ -128,9 +133,9 @@ describe("orclient", function() {
     expectAproxNow(prop.createTime);
     expect(prop.yesWeight).to.be.equal(prop.noWeight).to.be.equal(0)
     expect(prop.yesWeight).to.be.equal(prop.noWeight).to.be.equal(0)
-    expect(prop.status).to.be.equal(ExecStatus.NotExecuted);
-    expect(prop.stage).to.be.equal(Stage.Voting);
-    expect(prop.voteStatus).to.be.equal(VoteStatus.Failing); // Because there are no votes yet
+    expect(prop.status).to.be.equal("NotExecuted");
+    expect(prop.stage).to.be.equal("Voting");
+    expect(prop.voteStatus).to.be.equal("Failing"); // Because there are no votes yet
   }
 
   async function expectInitOnChainProp(prop: ProposalMsgFull | Proposal) {
@@ -147,7 +152,7 @@ describe("orclient", function() {
     expect(onchainProp.createTime).to.be.equal(prop.createTime);
     expect(onchainProp.yesWeight).to.be.equal(prop.yesWeight);
     expect(onchainProp.noWeight).to.be.equal(prop.noWeight);
-    expect(onchainProp.status).to.be.equal(ExecStatus.NotExecuted);
+    expect(onchainProp.status).to.be.equal("NotExecuted");
   }
 
   async function expectAproxNow(date: Date, maxDiffSec = 60) {
@@ -249,7 +254,8 @@ describe("orclient", function() {
         await expectAproxNow(prop.createTime);
         expect(onChainProp.yesWeight).to.be.equal(prop.yesWeight).to.be.equal(0);
         expect(onChainProp.noWeight).to.be.equal(prop.noWeight).to.be.equal(0);
-        expect(onChainProp.status).to.be.equal(prop.status).to.be.equal(ExecStatus.NotExecuted);
+        expect(onChainProp.status).to.be.equal(ExecStatus.NotExecuted);
+        expect(prop.status).to.be.equal("NotExecuted");
       }
     });
 
@@ -390,7 +396,7 @@ describe("orclient", function() {
       const signer = signers[10];
       expect(nonRespectedAccs).to.not.include(signer.address);
       const voter = cl.connect(signer);
-      await expect(voter.vote(resultProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
+      await expect(voter.vote(resultProps[0].id, "Yes", "")).to.not.be.rejected;
 
       await time.increase(HOUR_1);
 
@@ -398,36 +404,36 @@ describe("orclient", function() {
       const signer2 = signers[11];
       expect(nonRespectedAccs).to.not.include(signer2.address);
       const voter2 = cl.connect(signer2);
-      await expect(voter2.vote(resultProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
+      await expect(voter2.vote(resultProps[0].id, "Yes", "")).to.not.be.rejected;
 
       await time.increase(HOUR_1);
 
       const signer3 = signers[6];
       expect(nonRespectedAccs).to.not.include(signer3.address);
       const voter3 = cl.connect(signer3);
-      await expect(voter3.vote(resultProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
+      await expect(voter3.vote(resultProps[0].id, "Yes", "")).to.not.be.rejected;
 
       const signer4 = signers[12];
       expect(nonRespectedAccs).to.not.include(signer4.address);
       const voter4 = cl.connect(signer4);
-      await expect(voter4.vote(resultProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
+      await expect(voter4.vote(resultProps[0].id, "Yes", "")).to.not.be.rejected;
 
       //// Proposal 2 ///
       // vote 2
-      await expect(voter2.vote(mintProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
+      await expect(voter2.vote(mintProps[0].id, "Yes", "")).to.not.be.rejected;
 
       await time.increase(HOUR_1);
 
       //// Proposal 3 ///
-      await expect(voter.vote(tickProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
+      await expect(voter.vote(tickProps[0].id, "Yes", "")).to.not.be.rejected;
     });
     it("should vote YES successfully with account which does not have any respect", async function() {
       const signer = signers[9];
       expect(nonRespectedAccs).to.include(signer.address);
       const voter = cl.connect(signer);
-      await expect(voter.vote(resultProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
-      await expect(voter.vote(mintProps[0].id, VoteType.Yes, "some memo")).to.not.be.rejected;
-      await expect(voter.vote(tickProps[0].id, VoteType.Yes, "some memo")).to.not.be.rejected;
+      await expect(voter.vote(resultProps[0].id, "Yes", "")).to.not.be.rejected;
+      await expect(voter.vote(mintProps[0].id, "Yes", "some memo")).to.not.be.rejected;
+      await expect(voter.vote(tickProps[0].id, "Yes", "some memo")).to.not.be.rejected;
     });
     it("should update yesWeight", async function() {
       const rWeight1 = await oldRespect.balanceOf(addrs[10]);
@@ -474,7 +480,7 @@ describe("orclient", function() {
       const signer = signers[7];
       expect(nonRespectedAccs).to.not.include(signer.address);
       const voter = cl.connect(signers[7]);
-      await expect(voter.vote(resultProps[0].id, VoteType.No, "")).to.not.be.rejected;
+      await expect(voter.vote(resultProps[0].id, "No", "")).to.not.be.rejected;
 
       await time.increase(HOUR_1);
 
@@ -482,27 +488,27 @@ describe("orclient", function() {
       const signer2 = signers[5];
       expect(nonRespectedAccs).to.not.include(signer2.address);
       const voter2 = cl.connect(signers[5]);
-      await expect(voter2.vote(resultProps[0].id, VoteType.No)).to.not.be.rejected;
+      await expect(voter2.vote(resultProps[0].id, "No")).to.not.be.rejected;
 
       await time.increase(HOUR_1);
 
       //// Proposal 2 ///
       // vote 2
-      await expect(voter2.vote(mintProps[0].id, VoteType.No)).to.not.be.rejected;
+      await expect(voter2.vote(mintProps[0].id, "No")).to.not.be.rejected;
 
       await time.increase(HOUR_1);
 
       //// Proposal 3 ///
-      await expect(voter.vote(tickProps[0].id, VoteType.No)).to.not.be.rejected;
+      await expect(voter.vote(tickProps[0].id, "No")).to.not.be.rejected;
 
     });
     it("should vote NO successfully with account which does not have any respect", async function() {
       const signer = signers[9];
       expect(nonRespectedAccs).to.include(signer.address);
       const voter = cl.connect(signers[9]);
-      await expect(voter.vote(resultProps[0].id, VoteType.No, "")).to.not.be.rejected;
-      await expect(voter.vote(mintProps[0].id, VoteType.No, "some memo")).to.not.be.rejected;
-      await expect(voter.vote(tickProps[0].id, VoteType.No, "some memo")).to.not.be.rejected;
+      await expect(voter.vote(resultProps[0].id, "No", "")).to.not.be.rejected;
+      await expect(voter.vote(mintProps[0].id, "No", "some memo")).to.not.be.rejected;
+      await expect(voter.vote(tickProps[0].id, "No", "some memo")).to.not.be.rejected;
 
       await time.increase(HOUR_1);
     });
@@ -556,7 +562,7 @@ describe("orclient", function() {
     it("should allow switching vote to no", async function() {
       // Let's switch vote for first result submission with signer[10]
       const voter = cl.connect(signers[10]);
-      await expect(voter.vote(resultProps[0].id, VoteType.No, "")).to.not.be.rejected;
+      await expect(voter.vote(resultProps[0].id, "No", "")).to.not.be.rejected;
 
       // Check if vote weights were updated...
       const rWeight1 = await oldRespect.balanceOf(addrs[7]);
@@ -588,7 +594,7 @@ describe("orclient", function() {
       const voter = cl.connect(signers[14]);
 
       console.log(`voting for: ${resultProps[0].id}`);
-      await expect(voter.vote(resultProps[0].id, VoteType.Yes, ""))
+      await expect(voter.vote(resultProps[0].id, "Yes", ""))
         .to.eventually.be.rejectedWith(TxFailed)
           .that.has.property('decodedError')
             .that.has.property('name', 'VotePeriodOver');
@@ -608,7 +614,7 @@ describe("orclient", function() {
       expect(nonRespectedAccs).to.not.include(signers[14].address);
       const voter = cl.connect(signers[14]);
 
-      await expect(voter.vote(resultProps[0].id, VoteType.No)).to.not.be.rejected;
+      await expect(voter.vote(resultProps[0].id, "No")).to.not.be.rejected;
 
       const newNoWeight = resProp.noWeight + await oldRespect.balanceOf(signers[14].address);
 
@@ -624,11 +630,11 @@ describe("orclient", function() {
 
       const voter = cl.connect(signers[6]);
 
-      await expect(voter.vote(resultProps[1].id, VoteType.Yes, ""))
+      await expect(voter.vote(resultProps[1].id, "Yes", ""))
         .to.eventually.be.rejectedWith(TxFailed)
           .that.has.property('decodedError')
             .that.has.property('name', "VotePeriodOver");
-      await expect(voter.vote(resultProps[1].id, VoteType.No, ""))
+      await expect(voter.vote(resultProps[1].id, "No", ""))
         .to.eventually.be.rejectedWith(TxFailed)
           .that.has.property('decodedError')
             .that.has.property('name', 'ProposalVoteInactive');
@@ -676,39 +682,39 @@ describe("orclient", function() {
     before("vote on proposals", async function() {
       const voter = cl.connect(signers[10]);
 
-      await expect(voter.vote(resultProps[0].id, VoteType.Yes, "voting yes")).to.not.be.rejected;
-      await expect(voter.vote(tickProps[0].id, VoteType.Yes, "y1")).to.not.be.rejected;
+      await expect(voter.vote(resultProps[0].id, "Yes", "voting yes")).to.not.be.rejected;
+      await expect(voter.vote(tickProps[0].id, "Yes", "y1")).to.not.be.rejected;
       
       const noVoter = cl.connect(signers[2]);
       expect(await oldRespect.balanceOf(addrs[2])).to.be.not.lessThan(await oldRespect.balanceOf(addrs[10]));
-      await expect(noVoter.vote(resultProps[0].id, VoteType.No, "voting no"));
+      await expect(noVoter.vote(resultProps[0].id, "No", "voting no"));
     })
 
     it('should return status "failing" for proposal, which does not have enough yesWeight', async function() {
       const mintProp = await cl.getProposal(mintProps[0].id);
-      expect(mintProp.voteStatus).to.be.equal(VoteStatus.Failing);
+      expect(mintProp.voteStatus).to.be.equal("Failing");
 
       const resProp = await cl.getProposal(resultProps[0].id);
-      expect(resProp.voteStatus).to.be.equal(VoteStatus.Failing);
+      expect(resProp.voteStatus).to.be.equal("Failing");
     })
 
     it('should return status "failed" for proposal which does not have enough yesWeight after vote time ended', async function() {
       await time.increase(DAY_1 * 2n);
 
       const mintProp = await cl.getProposal(mintProps[0].id);
-      expect(mintProp.voteStatus).to.be.equal(VoteStatus.Failed);
+      expect(mintProp.voteStatus).to.be.equal("Failed");
 
       const resProp = await cl.getProposal(resultProps[0].id);
-      expect(resProp.voteStatus).to.be.equal(VoteStatus.Failed);
+      expect(resProp.voteStatus).to.be.equal("Failed");
     })
     it('should return status "failed" for proposal which does not have enough yesWeight after veto time ended', async function() {
       await time.increase(DAY_6);
 
       const mintProp = await cl.getProposal(mintProps[0].id);
-      expect(mintProp.voteStatus).to.be.equal(VoteStatus.Failed);
+      expect(mintProp.voteStatus).to.be.equal("Failed");
 
       const resProp = await cl.getProposal(resultProps[0].id);
-      expect(resProp.voteStatus).to.be.equal(VoteStatus.Failed);
+      expect(resProp.voteStatus).to.be.equal("Failed");
     });
 
     it("should throw if trying to execute a failed proposal", async function() {
@@ -763,16 +769,16 @@ describe("orclient", function() {
       const voter = cl.connect(signers[10]);
       const voter2 = cl.connect(signers[14]);
 
-      await expect(voter.vote(resultProps[0].id, VoteType.Yes, "voting yes")).to.not.be.rejected;
-      await expect(voter.vote(tickProps[0].id, VoteType.Yes, "y1")).to.not.be.rejected;
-      await expect(voter.vote(mintProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
-      await expect(voter2.vote(tickProps[0].id, VoteType.Yes)).to.not.be.rejected;
-      await expect(voter2.vote(mintProps[0].id, VoteType.Yes)).to.not.be.rejected;
+      await expect(voter.vote(resultProps[0].id, "Yes", "voting yes")).to.not.be.rejected;
+      await expect(voter.vote(tickProps[0].id, "Yes", "y1")).to.not.be.rejected;
+      await expect(voter.vote(mintProps[0].id, "Yes", "")).to.not.be.rejected;
+      await expect(voter2.vote(tickProps[0].id, "Yes")).to.not.be.rejected;
+      await expect(voter2.vote(mintProps[0].id, "Yes")).to.not.be.rejected;
       
       const noVoter = cl.connect(signers[2]);
       const noWeight = await oldRespect.balanceOf(addrs[2]);
       expect(noWeight).to.be.not.lessThan(await oldRespect.balanceOf(addrs[10]));
-      await expect(noVoter.vote(resultProps[0].id, VoteType.No, "voting no"));
+      await expect(noVoter.vote(resultProps[0].id, "No", "voting no"));
 
       const yesVoter2 = cl.connect(signers[14]);
       const yesVoter3 = cl.connect(signers[1]);
@@ -782,8 +788,8 @@ describe("orclient", function() {
         + await oldRespect.balanceOf(addrs[10]);
       expect(totalYesVotes).to.be.greaterThan(noWeight * 2n);
 
-      await expect(yesVoter2.vote(resultProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
-      await expect(yesVoter3.vote(resultProps[0].id, VoteType.Yes, "")).to.not.be.rejected;
+      await expect(yesVoter2.vote(resultProps[0].id, "Yes", "")).to.not.be.rejected;
+      await expect(yesVoter3.vote(resultProps[0].id, "Yes", "")).to.not.be.rejected;
     })
 
     it('should return status "passing" for proposal, which does have enough weight', async function() {
@@ -791,39 +797,39 @@ describe("orclient", function() {
       expect(mintPropSum).to.be.greaterThanOrEqual(threshold);
 
       const mintProp = await cl.getProposal(mintProps[0].id);
-      expect(mintProp.voteStatus).to.be.equal(VoteStatus.Passing);
+      expect(mintProp.voteStatus).to.be.equal("Passing");
 
       const resProp = await cl.getProposal(resultProps[0].id);
-      expect(resProp.voteStatus).to.be.equal(VoteStatus.Passing);
+      expect(resProp.voteStatus).to.be.equal("Passing");
 
       const updatedTickProp = await cl.getProposal(tickProps[0].id)
-      expect(updatedTickProp.voteStatus).to.be.equal(VoteStatus.Passing);
+      expect(updatedTickProp.voteStatus).to.be.equal("Passing");
     })
 
     it('should return status "passing" for proposal which does have enough yesWeight during veto time', async function() {
       await time.increase(DAY_1 * 2n);
 
       const mintProp = await cl.getProposal(mintProps[0].id);
-      expect(mintProp.voteStatus).to.be.equal(VoteStatus.Passing);
+      expect(mintProp.voteStatus).to.be.equal("Passing");
 
       const resProp = await cl.getProposal(resultProps[0].id);
-      expect(resProp.voteStatus).to.be.equal(VoteStatus.Passing);
+      expect(resProp.voteStatus).to.be.equal("Passing");
 
       const updatedTickProp = await cl.getProposal(tickProps[0].id)
-      expect(updatedTickProp.voteStatus).to.be.equal(VoteStatus.Passing);
+      expect(updatedTickProp.voteStatus).to.be.equal("Passing");
     })
 
     it('should return status "passed" for proposal which does have enough yesWeight after veto time ended', async function() {
       await time.increase(DAY_6);
 
       const mintProp = await cl.getProposal(mintProps[0].id);
-      expect(mintProp.voteStatus).to.be.equal(VoteStatus.Passed);
+      expect(mintProp.voteStatus).to.be.equal("Passed");
 
       const resProp = await cl.getProposal(resultProps[0].id);
-      expect(resProp.voteStatus).to.be.equal(VoteStatus.Passed);
+      expect(resProp.voteStatus).to.be.equal("Passed");
 
       const updatedTickProp = await cl.getProposal(tickProps[0].id)
-      expect(updatedTickProp.voteStatus).to.be.equal(VoteStatus.Passed);
+      expect(updatedTickProp.voteStatus).to.be.equal("Passed");
     });
 
   })

@@ -17,6 +17,9 @@ import {
 } from "ortypes";
 import { z } from "zod";
 import jsonfile from "jsonfile";
+import { ContractTransactionResponse } from "ethers";
+import { DecodedError } from "ethers-decode-error";
+import { TxFailed } from "orclient";
 
 export interface DevConfig {
   oldRanksDelay: bigint;
@@ -56,6 +59,26 @@ export interface DeployState extends SerializableState {
   oldRespectExecutor: HardhatEthersSigner;
   orec: Orec;
   newRespect: Respect1155.Contract;
+}
+
+async function _handleTx(
+  promise: Promise<ContractTransactionResponse>,
+  confirms: number = 1,
+  errMsg?: string
+) {
+  let resp: Awaited<typeof promise>;
+  let receipt: Awaited<ReturnType<typeof resp.wait>>;
+  try {
+    resp = await promise;
+    // console.debug("Tx response: ", resp);
+    receipt = await resp.wait(confirms);
+    // console.debug("Tx receipt: ", receipt);
+  } catch(err) {
+    throw new TxFailed(err, undefined, errMsg);
+  }
+  if (receipt === null || receipt.status !== 1) {
+    throw new TxFailed(resp, receipt, errMsg);
+  }
 }
 
 export class Deployment {
@@ -143,7 +166,7 @@ export class Deployment {
         ]
       }
     ]
-    await oldRespect.submitRanks(groupRes1);
+    await _handleTx(oldRespect.submitRanks(groupRes1));
 
     console.log("Submitted ranks: ", groupRes1);
 
@@ -157,7 +180,7 @@ export class Deployment {
         ]
       }
     ]
-    await oldRespect.submitRanks(groupRes2);
+    await _handleTx(oldRespect.submitRanks(groupRes2));
 
     console.log("Submitted ranks: ", groupRes2);
 
@@ -177,7 +200,7 @@ export class Deployment {
         ]
       }
     ]
-    await oldRespect.submitRanks(groupRes3);
+    await _handleTx(oldRespect.submitRanks(groupRes3));
     console.log("Submitted ranks: ", groupRes3);
 
     await time.increase(WEEK_1);
@@ -196,8 +219,27 @@ export class Deployment {
         ]
       }
     ]
-    await oldRespect.submitRanks(groupRes4);
+    await _handleTx(oldRespect.submitRanks(groupRes4));
     console.log("Submitted ranks: ", groupRes4);
+
+    // await time.increase(WEEK_1);
+
+    // const groupRes5: FractalRespect.GroupRanksStruct[] = [
+    //   {
+    //     groupNum: 1,
+    //     ranks: [
+    //       addrs[8], addrs[11], addrs[16], addrs[12], addrs[13], addrs[14]
+    //     ]
+    //   },
+    //   {
+    //     groupNum: 2,
+    //     ranks: [
+    //       addrs[1], addrs[2], addrs[3], addrs[10], addrs[5], addrs[6]
+    //     ]
+    //   }
+    // ]
+    // await _handleTx(oldRespect.submitRanks(groupRes5));
+    // console.log("Submitted ranks: ", groupRes5);
 
     const nonRespectedAccs = [ addrs[0], addrs[9], addrs[17], addrs[18] ];
 

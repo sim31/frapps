@@ -320,7 +320,7 @@ contract Orec is Ownable {
             if (!_isVotePeriod(p)) {
                 revert VotePeriodOver();
             }
-            if (currentVote.weight != 0) {
+            if (currentVote.vtype == VoteType.Yes) {
                 revert AlreadyVoted(currentVote.vtype, voteType);
             }
             EnumerableSet.Bytes32Set storage voteSet = _liveVotes[msg.sender];

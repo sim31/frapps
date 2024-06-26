@@ -13,6 +13,7 @@ async function main() {
   jsonfile.writeFileSync("./tmp/ornode-dev-cfg.json", config);
 
   // shelljs.exec("cd $npm_package_config_ornode && ORNODE_CFG_PATH=../ordao/sys/tmp/ornode-dev-cfg.json npx nodemon --watch node_modules/ortypes node_modules/ts-utils dist/index.js");
+  console.log("we're in devOrnode!");
   shelljs.exec(`cd $npm_package_config_ornode && \
     ORNODE_CFG_PATH=../ordao/sys/tmp/ornode-dev-cfg.json \
     \
@@ -20,8 +21,10 @@ async function main() {
     --watch ../ortypes/dist \
     --watch ../ts-utils/dist \
     --watch ../respect1155/sc/dist \
-    --watch ../orec/dist/
-    --watch ./
+    --watch ../orec/dist/ \
+    --watch ./ \
+    \
+    --delay 5
     \
     dist/index.js`
   );

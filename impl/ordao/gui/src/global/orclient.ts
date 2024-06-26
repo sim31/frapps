@@ -7,6 +7,7 @@ import { RemoteOrnode, ORClient } from "orclient";
 import { BrowserProvider } from "ethers";
 import { ORContext } from "ortypes/orContext.js";
 import { z } from "zod";
+import { stringify } from "ts-utils";
 
 export async function create(): Promise<ORClient> {
   const ornode: RemoteOrnode = new RemoteOrnode(config.ornodeUrl);
@@ -41,7 +42,7 @@ export const orclient = new Promise<ORClient>((resolve, reject) => {
   create().then(orcl => {
     resolve(orcl);
   }).catch(reason => {
-    const errStr = `Error creating orclient: ${JSON.stringify(reason)}`;
+    const errStr = `Error creating orclient: ${stringify(reason)}`;
     console.error(errStr);
     reject(new Error(errStr))
   });

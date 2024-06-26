@@ -13,10 +13,12 @@ import {
   zRespectAccountRequest,
   zRespectBreakoutRequest,
   zTickRequest,
+  zVoteType as zCVoteType,
+  VoteType as CVoteType
 } from "../orclient.js";
 import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, TickValid, idOfBurnRespectAttach, idOfCustomCallAttach, idOfCustomSignalAttach, idOfRespectAccountAttach, idOfRespectBreakoutAttach, zBurnRespect, zBurnRespectValid, zCustomCall, zCustomCallValid, zCustomSignal, zCustomSignalValid, zRespectAccount, zRespectAccountValid, zRespectBreakout, zRespectBreakoutValid, zTick, zTickValid } from "../ornode.js";
 import { ConfigWithOrnode, ORContext as OrigORContext } from "../orContext.js";
-import { CustomSignalArgs, OrecFactory, zTickSignalType } from "../orec.js";
+import { CustomSignalArgs, OrecFactory, zTickSignalType, zVoteType, VoteType } from "../orec.js";
 import { BurnRespectArgs, MintRequest, MintRespectArgs, MintRespectGroupArgs, Factory as Respect1155Factory, zBreakoutMintType, zMintRespectArgs, zUnspecifiedMintType } from "../respect1155.js";
 import { propId } from "orec/utils";
 import { addCustomIssue } from "../zErrorHandling.js";
@@ -42,8 +44,15 @@ export const zRankNumToValue = zRankNum.transform((rankNum, ctx) => {
   }
 }).pipe(zBigNumberish.gt(0n));
 
-// TODO: use ipfs cids instead?
-//  * propIds can use solidityPacked for efficiency but it makes sense to adapt attachments more for off-chain?
+export const clientToOrecVoteMap = {
+  Yes: VoteType.Yes,
+  No: VoteType.No,
+  None: VoteType.None
+}
+
+export const zCVoteTypeToOrec = zCVoteType.transform((voteStr) => {
+  return clientToOrecVoteMap[voteStr];
+}).pipe(zVoteType);
 
 function mkzCRespectBreakoutToMintArgs(orctx: ORContext) {
   return zRespectBreakoutRequest.transform(async (val, ctx) => {
@@ -387,6 +396,10 @@ export class ClientToNodeTransformer {
 
   async transformCustomCall(req: CustomCallRequest): Promise<CustomCall> {
     return await this._zCCustomCallReqToProposal.parseAsync(req);
+  }
+
+  transformVoteType(vt: CVoteType): VoteType {
+    return zCVoteTypeToOrec.parse(vt);
   }
 
 }

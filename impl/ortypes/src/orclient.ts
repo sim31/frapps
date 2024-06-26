@@ -1,6 +1,6 @@
 import { ZodType, z } from "zod";
 import { PropType, zGroupNum, zPropType, zRankings } from "./fractal.js";
-import { VoteType, zCustomSignalType, zOnchainProp, zPropId, zProposedMsgBase, zVoteType } from "./orec.js";
+import { zCustomSignalType, zOnchainProp as zNOnchainProp, zPropId, zProposedMsgBase } from "./orec.js";
 import { zMeetingNum, zMintType, zTokenId } from "./respect1155.js";
 import { zBytes, zEthAddress, zUint } from "./eth.js";
 
@@ -16,6 +16,19 @@ export const zDecodedPropBase = z.object({
 })
 export type DecodedPropBase = z.infer<typeof zDecodedPropBase>;
 
+export const zVoteType = z.enum(["None", "Yes", "No"])
+export type VoteType = z.infer<typeof zVoteType>;
+
+export const zStage = z.enum(["Voting", "Veto", "Execution", "Expired"]);
+export type Stage = z.infer<typeof zStage>;
+
+export const zVoteStatus = z.enum(["Passing", "Failing", "Passed", "Failed"]);
+export type VoteStatus = z.infer<typeof zVoteStatus>;
+
+export const zExecStatus = z.enum(["NotExecuted", "Executed", "ExecutionFailed"]);
+export type ExecStatus = z.infer<typeof zExecStatus>;
+
+
 export const zVoteRequest = z.object({
   propId: zPropId,
   vote: zVoteType,
@@ -23,9 +36,15 @@ export const zVoteRequest = z.object({
 });
 export type VoteRequest = z.infer<typeof zVoteRequest>;
 
+export const zVote = z.object({
+  voteType: zVoteType,
+  weight: z.number().gte(0)
+})
+export type Vote = z.infer<typeof zVote>;
+
 export const zVoteWithProp = zVoteRequest
   .omit({ propId: true })
-  .extend({ vote: zVoteType.default(VoteType.Yes) })
+  .extend({ vote: zVoteType.default("Yes") })
 export type VoteWithProp = z.infer<typeof zVoteWithProp>;
 
 export const zVoteWithPropRequest = zVoteWithProp.partial({ vote: true });
@@ -130,6 +149,12 @@ export const zDecodedProposal = z.union([
   zRespectBreakout
 ]);
 export type DecodedProposal = z.infer<typeof zDecodedProposal>;
+
+export const zOnchainProp = zNOnchainProp.extend({
+  status: zExecStatus,
+  voteStatus: zVoteStatus,
+  stage: zStage
+});
 
 export const zProposal = zOnchainProp.merge(zProposedMsgBase.partial()).extend({
   decoded: zDecodedProposal.optional(),

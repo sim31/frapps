@@ -1,3 +1,4 @@
+import { stringify } from "ts-utils";
 import { PropId } from "./orec.js";
 import { ErrorType, ORNodePropStatus, Proposal, ProposalFull, zErrorType } from "./ornode.js";
 
@@ -31,7 +32,7 @@ export class ProposalNotFound extends Error {
 export class ProposalNotCreated extends Error {
   name: ErrorType = zErrorType.enum.ProposalNotCreated;
   constructor(proposal: Proposal) {
-    const msg = `Proposal with id ${proposal.id} has not been created onchain yet. Proposal: ${JSON.stringify(proposal)}`;
+    const msg = `Proposal with id ${proposal.id} has not been created onchain yet. Proposal: ${stringify(proposal)}`;
     super(msg);
   }
 }
@@ -41,7 +42,7 @@ export class ProposalInvalid extends Error {
   cause: string;
 
   constructor(proposal: Proposal, cause: any) {
-    const msg = `Proposal invalid. Proposal: ${JSON.stringify(proposal)}`;
+    const msg = `Proposal invalid. Proposal: ${stringify(proposal)}`;
     super(msg);
     this.cause = cause;
   } 

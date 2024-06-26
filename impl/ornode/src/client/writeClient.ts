@@ -1,6 +1,6 @@
 import { Integration } from "express-zod-api";
 import { routing } from "../routing.js";
-import { ErrorWithCause } from "ts-utils";
+import { ErrorWithCause, stringify } from "ts-utils";
 import fs from "fs/promises";
 
 export async function writeClient(path: string): Promise<void> {
@@ -17,7 +17,7 @@ export async function writeClient(path: string): Promise<void> {
     fs.writeFile(path, tsClientCode);
     console.log("Generated ornodeClient.ts as ", path);
   } catch (err) {
-    const newErr = new ErrorWithCause(`Failed writing tmp/ornodeClient.ts. Error message: ${JSON.stringify(err)}`, err);
+    const newErr = new ErrorWithCause(`Failed writing tmp/ornodeClient.ts. Error message: ${stringify(err)}`, err);
     throw newErr;
   }
 }
