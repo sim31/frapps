@@ -54,7 +54,7 @@
     "build-watch": "concurrently --kill-others \"npm:watch-respect1155\" \"npm:watch-orec\" \"npm:watch-ts-utils\" \"npm:watch-ortypes\" \"npm:watch-orclient\" \"npm:watch-ornode\"",
     "init-db": "node src/setupMongodb.js",
     "dev-mongod": "node src/runDevMongod.js",
-    "clean-dev-mongod": "rm -r ./tmp/mongodb/dev/*",
+    "clean-dev-mongod": "rm -rf ./tmp/mongodb/dev/*",
     "dev-mongod-clean": "npm run clean-dev-mongod && npm run dev-mongod",
     "build": "npm run build-respect1155 && npm run build-orec && npm run build-ts-utils && npm run build-ortypes && npm run build-orclient && npm run build-ornode",
     "build-clean": "npm run build-respect1155-clean && npm run build-orec-clean && npm run build-ts-utils-clean && npm run build-ortypes-clean && npm run build-orclient-clean && npm run build-ornode-clean",
