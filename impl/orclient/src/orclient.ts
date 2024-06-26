@@ -163,7 +163,9 @@ export class ORClient {
     vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<PutProposalRes> {
     const v = zVoteWithProp.parse(vote); 
+    console.debug("parsed vote")
     const proposal = await this._clientToNode.transformRespectAccount(req);
+    console.debug("transformed proposal")
     return await this._submitProposal(proposal, v);
   }
 

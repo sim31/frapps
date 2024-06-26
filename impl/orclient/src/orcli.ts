@@ -124,8 +124,12 @@ export class ORCli {
     return this.orclient.context;
   }
 
-  private _formatResult(obj: any): string {
-    return stringify(obj);
+  private async _formatResult(obj: Promise<any>): Promise<string> {
+    try {
+      return stringify(await obj);
+    } catch (err) {
+      return `Error: ${stringify(err)}`;
+    }
   }
 
   /**
@@ -133,7 +137,7 @@ export class ORCli {
    * @param id - proposal id
    */
   async getProposal(id: PropId): Promise<string> {
-    return this._formatResult(await this.orclient.getProposal(id));
+    return this._formatResult(this.orclient.getProposal(id));
   }
 
   async getOnChainProp(id: PropId): Promise<string> {
@@ -148,7 +152,7 @@ export class ORCli {
    * @param count - Number of proposals to return
    */
   async lsProposals(from: number = 0, limit: number = 50): Promise<string> {
-    return this._formatResult(await this.orclient.lsProposals(from, limit));
+    return await this._formatResult(this.orclient.lsProposals(from, limit));
   }
 
   // UC2
@@ -178,8 +182,8 @@ export class ORCli {
     request: RespectBreakoutRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<string> {
-    return this._formatResult(
-      await this.orclient.submitBreakoutResult(request, vote)
+    return await this._formatResult(
+      this.orclient.submitBreakoutResult(request, vote)
     );
   }
   // UC5
@@ -187,8 +191,11 @@ export class ORCli {
     req: RespectAccountRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<string> {
-    return this._formatResult(
-      await this.orclient.proposeRespectTo(req, vote)
+    if (typeof req.value === 'string') {
+      req.value = BigInt(req.value);
+    }
+    return await this._formatResult(
+      this.orclient.proposeRespectTo(req, vote)
     );
   }
 
@@ -197,8 +204,8 @@ export class ORCli {
     req: BurnRespectRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<string> {
-    return this._formatResult(
-      await this.orclient.burnRespect(req, vote)
+    return await this._formatResult(
+      this.orclient.burnRespect(req, vote)
     );
   }
 
@@ -206,8 +213,8 @@ export class ORCli {
     req: CustomSignalRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<string> {
-    return this._formatResult(
-      await this.orclient.proposeCustomSignal(req, vote)
+    return await this._formatResult(
+      this.orclient.proposeCustomSignal(req, vote)
     );
   }
 
@@ -217,7 +224,7 @@ export class ORCli {
     vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<string> {
     return this._formatResult(
-      await this.orclient.proposeTick(req, vote)
+      this.orclient.proposeTick(req, vote)
     );
   }
 
@@ -226,13 +233,13 @@ export class ORCli {
     vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<string> {
     return this._formatResult(
-      await this.orclient.proposeCustomCall(req, vote)
+      this.orclient.proposeCustomCall(req, vote)
     );
   }
 
   async getVote(propId: PropId, voter: EthAddress): Promise<string> {
     return this._formatResult(
-      await this.orclient.getVote(propId, voter)
+      this.orclient.getVote(propId, voter)
     );
   }
 
