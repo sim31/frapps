@@ -124,11 +124,11 @@ export class ORCli {
     return this.orclient.context;
   }
 
-  private async _formatResult(obj: Promise<any>): Promise<string> {
+  private async _printResult(obj: Promise<any>): Promise<void> {
     try {
-      return stringify(await obj);
+      console.log(stringify(await obj));
     } catch (err) {
-      return `Error: ${stringify(err)}`;
+      console.error(`Error: ${stringify(err)}`);
     }
   }
 
@@ -136,13 +136,13 @@ export class ORCli {
    * Returns proposal by id
    * @param id - proposal id
    */
-  async getProposal(id: PropId): Promise<string> {
-    return this._formatResult(this.orclient.getProposal(id));
+  async getProposal(id: PropId): Promise<void> {
+    this._printResult(this.orclient.getProposal(id));
   }
 
-  async getOnChainProp(id: PropId): Promise<string> {
-    const prop = await this.orclient.context.orec.proposals(id);
-    return stringify(prop);
+  async getOnChainProp(id: PropId): Promise<void> {
+    const prop = this.orclient.context.orec.proposals(id);
+    await this._printResult(prop);
   }
 
   // UC8
@@ -151,8 +151,8 @@ export class ORCli {
    * @param from - Start of proposal range. 0 - last proposal, 1 - second to  last proposal and so on
    * @param count - Number of proposals to return
    */
-  async lsProposals(from: number = 0, limit: number = 50): Promise<string> {
-    return await this._formatResult(this.orclient.lsProposals(from, limit));
+  async lsProposals(from: number = 0, limit: number = 50): Promise<void> {
+    await this._printResult(this.orclient.lsProposals(from, limit));
   }
 
   // UC2
@@ -181,8 +181,8 @@ export class ORCli {
   async submitBreakoutResult(
     request: RespectBreakoutRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
-  ): Promise<string> {
-    return await this._formatResult(
+  ): Promise<void> {
+    await this._printResult(
       this.orclient.submitBreakoutResult(request, vote)
     );
   }
@@ -190,11 +190,11 @@ export class ORCli {
   async proposeRespectTo(
     req: RespectAccountRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
-  ): Promise<string> {
+  ): Promise<void> {
     if (typeof req.value === 'string') {
       req.value = BigInt(req.value);
     }
-    return await this._formatResult(
+    await this._printResult(
       this.orclient.proposeRespectTo(req, vote)
     );
   }
@@ -203,8 +203,8 @@ export class ORCli {
   async burnRespect(
     req: BurnRespectRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
-  ): Promise<string> {
-    return await this._formatResult(
+  ): Promise<void> {
+    await this._printResult(
       this.orclient.burnRespect(req, vote)
     );
   }
@@ -212,8 +212,8 @@ export class ORCli {
   async proposeCustomSignal(
     req: CustomSignalRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
-  ): Promise<string> {
-    return await this._formatResult(
+  ): Promise<void> {
+    return await this._printResult(
       this.orclient.proposeCustomSignal(req, vote)
     );
   }
@@ -222,8 +222,8 @@ export class ORCli {
   async proposeTick(
     req: TickRequest = {},
     vote: VoteWithPropRequest = { vote: "Yes" }
-  ): Promise<string> {
-    return this._formatResult(
+  ): Promise<void> {
+    await this._printResult(
       this.orclient.proposeTick(req, vote)
     );
   }
@@ -231,14 +231,14 @@ export class ORCli {
   async proposeCustomCall(
     req: CustomCallRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
-  ): Promise<string> {
-    return this._formatResult(
+  ): Promise<void> {
+    await this._printResult(
       this.orclient.proposeCustomCall(req, vote)
     );
   }
 
-  async getVote(propId: PropId, voter: EthAddress): Promise<string> {
-    return this._formatResult(
+  async getVote(propId: PropId, voter: EthAddress): Promise<void> {
+    await this._printResult(
       this.orclient.getVote(propId, voter)
     );
   }
@@ -262,8 +262,11 @@ export class ORCli {
   }
 }
 
+function strToLog(str: string) {
+  return () => console.log(str);
+}
 
-(ORCli.prototype['submitBreakoutResult'] as any)['help'] = 
+const submitStr = 
 `
 async submitBreakoutResult(
   request: RespectBreakoutRequest,
@@ -282,8 +285,9 @@ await cli.submitBreakoutResult(
   ${voteWithPropReqDoc.exampleText}
 )
 `;
+(ORCli.prototype['submitBreakoutResult'] as any)['help'] = strToLog(submitStr);
 
-(ORCli.prototype['proposeRespectTo'] as any)['help'] = 
+const proposeRespectToStr = 
 `
 async proposeRespectTo(
   req: RespectAccountRequest,
@@ -302,8 +306,9 @@ await cli.proposeRespectTo(
   ${voteWithPropReqDoc.exampleText}
 )
 `;
+(ORCli.prototype['proposeRespectTo'] as any)['help'] = strToLog(proposeRespectToStr);
 
-(ORCli.prototype['burnRespect'] as any)['help'] = 
+const burnRespectStr = 
 `
 async burnRespect(
   req: BurnRespectRequest,
@@ -323,12 +328,16 @@ await cli.burnRespect(
 )
 `;
 
-(ORCli.prototype['proposeTick'] as any)['help'] =
+(ORCli.prototype['burnRespect'] as any)['help'] = strToLog(burnRespectStr);
+
+const proposeTickStr =
 `
 async proposeTick(
   req: TickRequest = {},
   vote: VoteWithPropRequest = { vote: VoteType.Yes }
 ): Promise<PutProposalRes> {
+
+Proposal to increment period number, which is used to determine meeting number automatically.
 
 === req ===
 ${tickReqDoc.text}
@@ -340,7 +349,9 @@ ${voteWithPropReqDoc.text}
 await cli.proposeTick()
 `;
 
-(ORCli.prototype['vote'] as any)['help'] =
+(ORCli.prototype['proposeTick'] as any)['help'] = strToLog(proposeTickStr);
+
+const voteStr =
 `
 async vote(request: VoteRequest): Promise<void>;
 
@@ -350,17 +361,19 @@ ${voteRequestDoc.text}
 === Example ===
 await cli.vote(${voteRequestDoc.exampleText})
 `;
+(ORCli.prototype['vote'] as any)['help'] = strToLog(voteStr);
 
 // TODO: Make lsProposals accept range... Probably in terms of dates...
-(ORCli.prototype['lsProposals'] as any)['help'] =
+const lsProposalsStr =
 `
 async lsProposals(): Promise<Proposal[]> {
 
 === Example ===
 await cli.lsProposals()
 `;
+(ORCli.prototype['lsProposals'] as any)['help'] = strToLog(lsProposalsStr);
 
-(ORCli.prototype['getProposal'] as any)['help'] =
+const getProposalStr =
 `
 async getProposal(id: PropId): Promise<Proposal> {
 
@@ -370,3 +383,14 @@ ${propIdDoc.schemaText}
 === Example ===
 await cli.getProposal(${propIdDoc.exampleText})
 `;
+(ORCli.prototype['getProposal'] as any)['help'] = strToLog(getProposalStr);
+
+const executeStr =
+`
+async execute(propId: PropId)
+
+Executes a proposal identified by propId.
+
+=== Example ===
+await cli.execute()
+`
