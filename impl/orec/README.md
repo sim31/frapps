@@ -1,8 +1,7 @@
-# Sample Hardhat Project
+# Optimistic Respect-based Executive Contract (OREC)
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+[Concept](../../concepts/OREC.md).
 
-Try running some of the following tasks:
 
 ```shell
 npx hardhat help
