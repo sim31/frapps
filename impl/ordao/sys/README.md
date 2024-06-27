@@ -1,6 +1,6 @@
 # Ordao System
 
-Configuration and scripts to develop / test / deploy whole [Ordao](./ordao/) system.
+Configuration and scripts to develop / test / deploy whole [Ordao](../ordao/) system.
 
 ## Dependencies
 * NodeJS;

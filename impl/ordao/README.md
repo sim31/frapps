@@ -1,5 +1,5 @@
 # Optimistic Respsect-based DAO
-An app for a fractal that uses [Optimistic Respect-based executive contract](../concepts/OREC.md) and non-fungible Respect token ([Respect1155](../respect1155/sc/) to be specific).
+A prototype app for a fractal that uses [Optimistic Respect-based executive contract](../concepts/OREC.md) and non-fungible Respect token ([Respect1155](../respect1155/sc/) to be specific).
 
 Subdirectories:
 * [sys](./sys) - configuration and scripts to develop / test / deploy the whole Ordao system.
