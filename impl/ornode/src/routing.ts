@@ -1,4 +1,4 @@
-import { EndpointsFactory } from "express-zod-api";
+import { EndpointsFactory, ServeStatic } from "express-zod-api";
 import { z } from "zod";
 import { Routing } from "express-zod-api";
 import { zORNodePropStatus, zProposal, zProposalFull } from "ortypes/ornode.js";
@@ -6,6 +6,7 @@ import { zPropId } from "ortypes";
 import { resultHandler } from "./resultHandler.js";
 import { getOrnode } from "./ornode.js";
 import { stringify } from "ts-utils";
+import { join } from "path";
 
 const factory = new EndpointsFactory(resultHandler);
 
@@ -71,4 +72,9 @@ export const routing: Routing = {
     getProposals,
     getPeriodNum
   },
+  public: new ServeStatic("./public", {
+    dotfiles: "deny",
+    index: false,
+    redirect: false,
+  })
 };

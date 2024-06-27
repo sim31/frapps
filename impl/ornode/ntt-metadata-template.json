@@ -1,0 +1,13 @@
+{
+	"name": "Optimism Fractal Respect Award",
+	"description": "Award for a contribution to Optimsim Fractal",
+	"image": "http://localhost:8090/public/of.png",
+	"properties": {
+    "tokenId": "...",
+    "meetingNumber": "...",
+    "groupNumber": "",
+    "issueDate": "",
+    "level": "",
+    "value": ""
+	}
+}
