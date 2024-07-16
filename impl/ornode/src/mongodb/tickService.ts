@@ -1,6 +1,8 @@
 import { MongoClient, Db, ObjectId } from "mongodb";
-import { ProposalDTO, ProposalEntity, TickDTO, TickEntity, zPropDTOToEntity, zProposalEntity, zProposalEntityToDTO, zProposalEntityToProposal, zTickDTOToEntity, zTickEntityToDTO } from "./types.js";
 import { PropId } from "ortypes";
+import { TickEntity, TickEvent, zTickEntity } from "./entities.js";
+import { zTickToEntity } from "./transformers/nodeToEntity.js";
+import { Optional } from "utility-types";
 
 export class TickService {
   private readonly db: Db;
@@ -22,10 +24,10 @@ export class TickService {
   //   return entity !== null ? zTickEntityToDTO.parse(entity) : null;
   // }
 
-  async createTick(dto: TickDTO): Promise<TickDTO> {
-    const entity = zTickDTOToEntity.parse(dto);
-    const { insertedId } = await this.ticks.insertOne(entity);
-    return zTickEntityToDTO.parse({ ...dto, _id: insertedId });
+  async createTick(tick: TickEvent): Promise<TickEvent> {
+    const entity = zTickToEntity.parse(tick);
+    await this.ticks.insertOne(entity);
+    return tick;
   }
 
 }

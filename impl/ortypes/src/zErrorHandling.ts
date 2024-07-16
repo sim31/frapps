@@ -23,7 +23,7 @@ export function addCustomIssue(
   parsedVal: unknown,
   ctx: RefinementCtx,
   causeOrCustomOrMsg: unknown,
-  message?: string
+  message?: string,
 ) {
   let parsedValue;
   if (typeof parsedVal === 'object'

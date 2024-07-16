@@ -3,7 +3,8 @@ import { solidityPackedKeccak256 } from "ethers";
 import { PropId, zPropId, zProposedMsg } from "./orec.js";
 import { zGroupNum, zPropType } from "./fractal.js";
 import { propId } from "orec/utils";
-import { zBytesLikeToBytes } from "./eth.js";
+import { zBytesLikeToBytes, zTxHash } from "./eth.js";
+import { zTimestamp } from "./common.js";
 
 export const zPropContent = zProposedMsg;
 export type PropContent = z.infer<typeof zPropContent>;
@@ -97,13 +98,20 @@ function attachPropRefinements<T extends ZProposalType>(zType: T) {
 export const zProposalBase = z.object({
   id: zPropId,
   content: zPropContent.optional(),
-  attachment: zPropAttachment.optional()
+  attachment: zPropAttachment.optional(),
+  createTs: zTimestamp.optional().describe("Unix timestamp. Should match onchain createTime of proposal"),
+  createTxHash: zTxHash.optional().describe("Hash of transaction which created this proposal"),
+  executeTxHash: zTxHash.optional().describe("Hash of transaction which executed this proposal")
 })
 export type ProposalBase = z.infer<typeof zProposalBase>;
 
-export const zProposalBaseFull = zProposalBase.required();
+export const zProposalBaseFull = zProposalBase.required({
+  content: true,
+  attachment: true
+});
 export type ProposalBaseFull = z.infer<typeof zProposalBaseFull>;
 
+// NOTE: this currently does not check validity of createTs, createTxHash, executeTxHash
 export const zProposalBaseFullValid = attachPropRefinements(zProposalBaseFull);
 
 export const zRespectBreakout = zProposalBaseFull.extend({

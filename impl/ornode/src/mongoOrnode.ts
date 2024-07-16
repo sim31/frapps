@@ -21,7 +21,7 @@ import { JsonRpcProvider, Provider } from "ethers";
 import { MongoClient } from "mongodb";
 import { ProposalService } from "./mongodb/proposalService.js";
 import { TickService } from "./mongodb/tickService.js";
-import { ProposalDTO, TickDTO } from "./mongodb/types.js";
+import { ProposalEntity, TickEvent } from "./mongodb/entities.js";
 
 
 export interface ConstructorConfig {
@@ -52,10 +52,8 @@ type ORContext = ORContext.ORContext<ORNodeContextConfig>;
 /**
  * TODO: Currently this class only saves proposals which are created onchain after
  * it starts running. This means that it will miss any proposals that happened before ORNode was launched.
- * TODO: Should save proposals to storage so that ORNode could be restarted
  * TODO: Would be good to have a method to delete proposals which dot get any
  * weighted votes during voteTime, to save resources against spam.
- * TODO: Function to get signal data
  */
 export class MongoOrnode implements IORNode {
   // value might be null if proposal has been submitted onchain but not to us
@@ -102,12 +100,12 @@ export class MongoOrnode implements IORNode {
         const { txHash } = this._parseEventObject(event);
         const { createTime } = await this._ctx.orec.proposals(propId);
 
-        const propDTO: ProposalDTO = {
+        const prop: Proposal = {
           id: propId,
           createTs: Number(createTime),
           createTxHash: txHash
         };
-        await this._propService.createProposal(propDTO);
+        await this._propService.createProposal(prop);
         console.debug(`stored proposal id: ${propId}`);
       } catch (error) {
         console.error("Erorr while handling ProposalCreated event for prop ", propId, "Error: ", error);
@@ -145,10 +143,8 @@ export class MongoOrnode implements IORNode {
 
         const st = zSignalType.parse(signalType);
         if (st === zTickSignalType.value) {
-          const tickDTO: TickDTO = {
-            txHash
-          }
-          await this._tickService.createTick(tickDTO);
+          const tick: TickEvent = { txHash };
+          await this._tickService.createTick(tick);
         } else {
           this._onSignal(st, data);
         }
@@ -217,12 +213,13 @@ export class MongoOrnode implements IORNode {
       // Return status saying that proposal already exists.
       return zORNodePropStatus.Enum.ProposalExists;
     } else {
-      const updatedDTO: ProposalDTO = {
+      // IMPORTANT: Ignoring createTs, createTxHash, executeTxHash on purpose - this we are tracking here ourselves and zProposalValid currently does not check if those values are valid.
+      const updated: Proposal = {
         ...exProp,
         content: proposal.content,
         attachment: proposal.attachment
       };
-      await this._propService.updateProposal(exProp.id, updatedDTO)
+      await this._propService.updateProposal(exProp.id, updated)
       return zORNodePropStatus.Enum.ProposalStored;
     }
   } 

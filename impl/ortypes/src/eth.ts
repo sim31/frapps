@@ -13,6 +13,7 @@ export type Bytes = z.infer<typeof zBytes>;
 export const zBytes32 = z.string().refine((val) => {
   return isHexString(val, 32);
 })
+export type Bytes32 = z.infer<typeof zBytes32>;
 
 export const zBytesLike = z.string().or(z.instanceof(Uint8Array))
   .superRefine((val, ctx) => {

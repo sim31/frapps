@@ -2,7 +2,8 @@ import { ZodType, z } from "zod";
 import { PropType, zGroupNum, zPropType, zRankings } from "./fractal.js";
 import { zCustomSignalType, zOnchainProp as zNOnchainProp, zPropId, zProposedMsgBase } from "./orec.js";
 import { zMeetingNum, zMintType, zTokenId } from "./respect1155.js";
-import { zBytes, zEthAddress, zUint } from "./eth.js";
+import { zBytes, zEthAddress, zTxHash, zUint } from "./eth.js";
+import { zTimestamp } from "./common.js";
 
 export const zProposalMetadata = z.object({
   propTitle: z.string().optional(),
@@ -158,6 +159,8 @@ export const zOnchainProp = zNOnchainProp.extend({
 
 export const zProposal = zOnchainProp.merge(zProposedMsgBase.partial()).extend({
   decoded: zDecodedProposal.optional(),
+  createTxHash: zTxHash.optional().describe("Hash of transaction which created this proposal"),
+  executeTxHash: zTxHash.optional().describe("Hash of transaction which executed this proposal")
 });
 export type Proposal = z.infer<typeof zProposal>;
 

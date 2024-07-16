@@ -7,7 +7,7 @@ import { ClientToNodeTransformer } from "ortypes/transformers/clientToNodeTransf
 import { ProposalFull as NProp, ORNodePropStatus } from "ortypes/ornode.js";
 import { ErrorDecoder } from 'ethers-decode-error'
 import type { DecodedError } from 'ethers-decode-error'
-import { Bytes, EthAddress, PropId, ProposalNotCreated, ProposalState, zVote as zNVote } from "ortypes";
+import { Bytes, EthAddress, PropId, ProposalNotCreated, ProposalState, TxHash, zVote as zNVote } from "ortypes";
 import { Method, Path, Input, Response } from "./ornodeClient/ornodeClient.js";
 import { sleep, stringify } from "ts-utils";
 import { resultArrayToObj } from "ortypes/utils.js";
@@ -113,9 +113,9 @@ export class ORClient {
 
   // UC2
   // TODO: Allow specifying text string instead of hexstring and convert it
-  async vote(propId: PropId, vote: VoteType, memo?: string): Promise<void>;
-  async vote(request: VoteRequest): Promise<void>;
-  async vote(pidOrReq: VoteRequest | PropId, vote?: VoteType, memo?: string): Promise<void> {
+  async vote(propId: PropId, vote: VoteType, memo?: string): Promise<TxHash>;
+  async vote(request: VoteRequest): Promise<TxHash>;
+  async vote(pidOrReq: VoteRequest | PropId, vote?: VoteType, memo?: string): Promise<TxHash> {
     let req: VoteRequest;
     if (vote !== undefined && typeof pidOrReq === 'string') {
       req = { propId: pidOrReq, vote, memo }      
@@ -128,7 +128,7 @@ export class ORClient {
     const errMsg = `orec.vote(${req.propId}, ${v}, ${m})`
     console.debug(errMsg);
     const promise = orec.vote(req.propId, v, m);
-    await this._handleTxPromise(promise, this._cfg.otherConfirms, errMsg);
+    return await this._handleTxPromise(promise, this._cfg.otherConfirms, errMsg);
   }
 
   encodeMemo(memo?: string): Bytes {
@@ -238,7 +238,8 @@ export class ORClient {
 
   private async _submitProposal(proposal: NProp, vote?: VoteWithProp): Promise<PutProposalRes> {
     console.debug("submitting to chain: ", proposal);
-    await this._submitPropToChain(proposal, vote);
+    const txId = await this._submitPropToChain(proposal, vote);
+    proposal.createTxHash = txId;
     console.debug("submitting to ornode");
     const status = await this._submitPropToOrnode(proposal);
     console.debug("Submitted proposal id: ", proposal.id, "status: ", status);
@@ -276,7 +277,7 @@ export class ORClient {
   private async _submitPropToChain(proposal: NProp, vote?: VoteWithProp) {
     const errMsg = `Submitting proposal: ${stringify(proposal)}`;
     const resp = this._submitPropTx(proposal, vote);
-    await this._handleTxPromise(resp, this._cfg.propConfirms, errMsg);
+    return await this._handleTxPromise(resp, this._cfg.propConfirms, errMsg);
   }
   private async _submitPropTx(proposal: NProp, vote?: VoteWithProp) {
     if (vote !== undefined && vote.vote !== "None") {
@@ -295,7 +296,7 @@ export class ORClient {
     promise: Promise<ContractTransactionResponse>,
     confirms: number,
     errMsg?: string
-  ) {
+  ): Promise<TxHash> {
     let resp: Awaited<typeof promise>;
     let receipt: Awaited<ReturnType<typeof resp.wait>>;
     try {
@@ -315,6 +316,7 @@ export class ORClient {
     if (receipt === null || receipt.status !== 1) {
       throw new TxFailed(resp, receipt, errMsg);
     }
+    return resp.hash;
   }
 
   // TODO: function to list respect NTTs

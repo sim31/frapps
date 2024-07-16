@@ -1,6 +1,10 @@
 import { MongoClient, Db, ObjectId } from "mongodb";
-import { ProposalDTO, ProposalEntity, zPropDTOToEntity, zProposalEntity, zProposalEntityToDTO, zProposalEntityToProposal } from "./types.js";
+import { ProposalEntity, zProposalEntity } from "./entities.js";
+import { zPropEntityToProp } from "./transformers/entityToNode.js";
 import { PropId } from "ortypes";
+import { Proposal } from "ortypes/ornode.js";
+import { Optional } from "utility-types";
+import { zProposalToEntity } from "./transformers/nodeToEntity.js";
 
 export class ProposalService {
   private readonly db: Db;
@@ -13,28 +17,28 @@ export class ProposalService {
     return this.db.collection<ProposalEntity>("proposals");
   }
 
-  async findProposal(id: PropId): Promise<ProposalDTO | null> {
+  async findProposal(id: PropId): Promise<Proposal | null> {
     const entity = await this.proposals.findOne({ id: id });
-    return entity !== null ? zProposalEntityToDTO.parse(entity) : null;
+    return entity !== null ? zPropEntityToProp.parse(entity) : null;
   }
 
-  async lastProposals(limit: number = 50): Promise<ProposalDTO[]> {
+  async lastProposals(limit: number = 50): Promise<Proposal[]> {
     const entities = await this.proposals.find().sort({ createTs: -1 }).limit(limit);
     // TODO: more efficient way to do this?
     const dtos = entities.map(ent => {
-      return zProposalEntityToDTO.parse(ent);
+      return zPropEntityToProp.parse(ent);
     });
     return await dtos.toArray();
   }
 
-  async createProposal(dto: ProposalDTO): Promise<ProposalDTO> {
-    const entity = zPropDTOToEntity.parse(dto);
-    const { insertedId } = await this.proposals.insertOne(entity);
-    return zProposalEntityToDTO.parse({ ...dto, _id: insertedId });
+  async createProposal(prop: Proposal): Promise<Proposal> {
+    const entity = zProposalToEntity.parse(prop);
+    await this.proposals.insertOne(entity);
+    return zPropEntityToProp.parse(entity);
   }
 
-  async updateProposal(id: PropId, dto: Partial<ProposalDTO>): Promise<ProposalDTO | null> {
-    const candidate = zProposalEntity.partial().parse(dto);
+  async updateProposal(id: PropId, prop: Partial<Proposal>): Promise<Proposal | null> {
+    const candidate = zProposalEntity.partial().parse(prop);
     delete candidate["_id"];
     console.debug("Updating proposal with: ", candidate);
 
@@ -43,10 +47,10 @@ export class ProposalService {
       { $set: candidate },
       { returnDocument: "after" }
     );
-    return newEntity ? zProposalEntityToDTO.parse(newEntity) : null;
+    return newEntity ? zPropEntityToProp.parse(newEntity) : null;
   }
 
-  async deleteUser(id: PropId): Promise<void> {
+  async deleteProp(id: PropId): Promise<void> {
     await this.proposals.deleteOne({ id });
   }
 }

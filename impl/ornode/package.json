@@ -47,6 +47,7 @@
     "swagger-ui-express": "^5.0.1",
     "ts-utils": "file:../ts-utils",
     "tsx": "^4.10.2",
+    "utility-types": "^3.11.0",
     "zod": "^3.23.8"
   }
 }

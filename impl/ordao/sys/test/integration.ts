@@ -877,10 +877,7 @@ describe("orclient", function() {
       it("should execute successfully", async function() {
         await expect(cl.execute(tickProps[0].id)).to.not.be.rejected;
         // Some time for ornode to catch up
-        await time.increase(1);
-        await time.increase(1);
-        await time.increase(1);
-        await sleep(1000);
+        await sleep(3000);
       });
       it("should increment nextMeetingNumber", async function() {
         expect(await cl.getNextMeetingNum()).to.be.equal(2);

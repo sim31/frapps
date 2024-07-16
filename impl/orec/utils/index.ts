@@ -23,14 +23,17 @@ export enum ExecStatus {
 
 export type PropId = BytesLike;
 export function isPropId(value: any): value is PropId {
+  // TODO: check length
   return isBytesLike(value);
 }
+// Bytes as hex string
+export type PropIdStr = `0x${string}`
 
-export function propId(msg: Orec.MessageStruct) {
+export function propId(msg: Orec.MessageStruct): PropIdStr {
   return ethers.solidityPackedKeccak256(
     [ "address", "bytes", "bytes" ],
     [msg.addr, msg.cdata, msg.memo]
-  );
+  ) as PropIdStr;
 }
 
 export function testVersion() {

@@ -394,13 +394,15 @@ export class NodeToClientTransformer {
       ...onchainProp,
       status: execStatusMap[onchainProp.status],
       stage: stageMap[onchainProp.stage],
-      voteStatus: voteStatusMap[onchainProp.voteStatus]
+      voteStatus: voteStatusMap[onchainProp.voteStatus],
     };
 
     if (nodeProp.content !== undefined) {
       rProp.addr = nodeProp.content.addr;
       rProp.cdata = nodeProp.content.cdata;
       rProp.memo = nodeProp.content.memo;
+      rProp.createTxHash = nodeProp.createTxHash;
+      rProp.executeTxHash = nodeProp.executeTxHash;
       if (nodeProp.attachment !== undefined) {
         rProp.decoded = await this._zNProposalToDecodedProp.parseAsync(nodeProp);
       }
