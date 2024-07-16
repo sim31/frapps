@@ -1,6 +1,6 @@
 # Optimism Fractal Concept
 
-**Optimism Fractal is a community dedicated to fostering collaboration and awarding public good creators on Optimism.**
+**Optimism Fractal is a community dedicated to fostering collaboration, awarding public good creators, and optimizing governance on the Optimism Superchain**
 
 ### 1. Respect Game meetings
 

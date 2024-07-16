@@ -9,7 +9,7 @@ export default defineConfig({
     force: true,
   },
   resolve: {
-    preserveSymlinks: true,
+    preserveSymlinks: true
   },
   server: {
     watch: {
