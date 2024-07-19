@@ -3,6 +3,8 @@ import { addCustomIssue } from "./zErrorHandling.js";
 import { zMintRespectGroupArgs } from "./respect1155.js";
 import { zEthAddress } from "./eth.js";
 
+export { zGroupNum, GroupNum, zRankNum } from "./respect1155.js";
+
 export const PropTypeValues = [
   "respectBreakout", "respectAccount", "burnRespect", "tick",
   "customSignal", "customCall"
@@ -10,13 +12,8 @@ export const PropTypeValues = [
 export const zPropType = z.enum(PropTypeValues);
 export type PropType = z.infer<typeof zPropType>;
 
-export const zGroupNum = z.coerce.number().gt(0)
-export type GroupNum = z.infer<typeof zGroupNum>;
-
 export const zRankings = z.array(zEthAddress).min(3).max(6);
 export type Rankings = z.infer<typeof zRankings>;
-
-export const zRankNum = z.number().lte(6).gt(0);
 
 export const zValueToRanking = z.bigint().transform((val, ctx) => {
   switch (val) {

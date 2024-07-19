@@ -4,6 +4,7 @@ import { zEthAddress } from "ortypes";
 import { z } from "zod"
 import "dotenv/config";
 import jsonfile from "jsonfile";
+import { zRespectFungibleMt } from "ortypes/respect1155.js";
 
 export const zContractsAddrs = z.object({
   oldRespect: zEthAddress.optional(),
@@ -12,9 +13,20 @@ export const zContractsAddrs = z.object({
 });
 export type ContractsAddrs = z.infer<typeof zContractsAddrs>;
 
+export const zTokenMtCfg = z.object({
+  award: z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    image: z.string().url().optional(),
+  }),
+  fungible: zRespectFungibleMt
+});
+export type TokenMtCfg = z.infer<typeof zTokenMtCfg>;
+
 export const zConfig = z.object({
   contracts: zContractsAddrs,
   providerUrl: z.string().url(),
+  tokenMetadataCfg: zTokenMtCfg
 });
 export type Config = z.infer<typeof zConfig>;
 

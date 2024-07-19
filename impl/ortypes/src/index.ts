@@ -2,6 +2,7 @@
 export * from "./eth.js";
 export * from "./fractal.js";
 export * from "./iornode.js";
+export * from "./errors.js"
 export * as ORContext from "./orContext.js";
 export * as ORClient from "./orclient.js";
 export * as ORNode from "./ornode.js";;

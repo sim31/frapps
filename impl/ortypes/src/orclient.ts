@@ -4,6 +4,7 @@ import { zCustomSignalType, zOnchainProp as zNOnchainProp, zPropId, zProposedMsg
 import { zMeetingNum, zMintType, zTokenId } from "./respect1155.js";
 import { zBytes, zEthAddress, zTxHash, zUint } from "./eth.js";
 import { zTimestamp } from "./common.js";
+import { ErrorType } from "ethers-decode-error";
 
 export const zProposalMetadata = z.object({
   propTitle: z.string().optional(),
@@ -151,10 +152,29 @@ export const zDecodedProposal = z.union([
 ]);
 export type DecodedProposal = z.infer<typeof zDecodedProposal>;
 
+export const zExecErrorType = z.nativeEnum(ErrorType);
+export type ExecErrorType = z.infer<typeof zExecErrorType>;
+
+export const zExecError = z.object({
+  type: zExecErrorType,
+  data: z.string().nullable(),
+  name: z.string().nullable(),
+  reason: z.string().nullable(),
+  args: z.array(z.any()),
+  signature: z.string().nullable(),  
+  selector: z.string().nullable(),
+})
+export type ExecError = z.infer<typeof zExecError>;
+
+export const zUnknownExecError = z.object({
+  retVal: zBytes
+});
+
 export const zOnchainProp = zNOnchainProp.extend({
   status: zExecStatus,
   voteStatus: zVoteStatus,
-  stage: zStage
+  stage: zStage,
+  execError: zExecError.optional()
 });
 
 export const zProposal = zOnchainProp.merge(zProposedMsgBase.partial()).extend({

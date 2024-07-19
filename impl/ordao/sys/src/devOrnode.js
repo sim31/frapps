@@ -3,12 +3,14 @@ import shelljs from "shelljs";
 
 async function main() {
   const d = jsonfile.readFileSync("./tmp/dev-deployment.json");
+  const tokenCfg = jsonfile.readFileSync("./dev-token-cfg.json");
   const config = {
     providerUrl: d.providerUrl,
     contracts: {
       newRespect: d.newRespectAddr,
       orec: d.orecAddr
-    }
+    },
+    tokenMetadataCfg: tokenCfg
   };
   jsonfile.writeFileSync("./tmp/ornode-dev-cfg.json", config);
 

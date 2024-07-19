@@ -31,7 +31,11 @@
 		{
 			"name": "ordao-gui",
 			"path": "./ordao/gui/"
-		}
+		},
+    {
+      "name": "ethers-decode-error",
+      "path": "./ethers-decode-error/"
+    }
 	],
 	"settings": {
 		"solidity.compileUsingRemoteVersion": "v0.8.24+commit.e11b9ed9"

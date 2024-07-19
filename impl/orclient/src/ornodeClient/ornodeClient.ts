@@ -43,6 +43,12 @@ type PostV1PutProposalInput = {
             propDescription?: string | undefined;
             salt?: string | undefined;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     } | {
         id: string;
         content: {
@@ -57,6 +63,12 @@ type PostV1PutProposalInput = {
             salt?: string | undefined;
             groupNum: number;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     } | {
         id: string;
         content: {
@@ -72,6 +84,12 @@ type PostV1PutProposalInput = {
             mintReason: string;
             mintTitle: string;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     } | {
         id: string;
         content: {
@@ -86,6 +104,12 @@ type PostV1PutProposalInput = {
             salt?: string | undefined;
             burnReason: string;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     } | {
         id: string;
         content: {
@@ -100,6 +124,12 @@ type PostV1PutProposalInput = {
             salt?: string | undefined;
             link?: string | undefined;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     } | {
         id: string;
         content: {
@@ -114,6 +144,12 @@ type PostV1PutProposalInput = {
             salt?: string | undefined;
             link?: string | undefined;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     } | {
         id: string;
         content: {
@@ -127,6 +163,12 @@ type PostV1PutProposalInput = {
             propDescription?: string | undefined;
             salt?: string | undefined;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     };
 };
 
@@ -139,6 +181,7 @@ type PostV1PutProposalResponse = {
     status: "error";
     error: {
         message: string;
+        name?: string;
     };
 };
 
@@ -192,6 +235,12 @@ type PostV1GetProposalResponse = {
             propDescription?: string | undefined;
             salt?: string | undefined;
         }) | undefined;
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     } | {
         id: string;
         content: {
@@ -236,6 +285,12 @@ type PostV1GetProposalResponse = {
             propDescription?: string | undefined;
             salt?: string | undefined;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     } | {
         id: string;
         content: {
@@ -250,6 +305,12 @@ type PostV1GetProposalResponse = {
             salt?: string | undefined;
             groupNum: number;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     } | {
         id: string;
         content: {
@@ -265,6 +326,12 @@ type PostV1GetProposalResponse = {
             mintReason: string;
             mintTitle: string;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     } | {
         id: string;
         content: {
@@ -279,6 +346,12 @@ type PostV1GetProposalResponse = {
             salt?: string | undefined;
             burnReason: string;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     } | {
         id: string;
         content: {
@@ -293,6 +366,12 @@ type PostV1GetProposalResponse = {
             salt?: string | undefined;
             link?: string | undefined;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     } | {
         id: string;
         content: {
@@ -307,6 +386,12 @@ type PostV1GetProposalResponse = {
             salt?: string | undefined;
             link?: string | undefined;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     } | {
         id: string;
         content: {
@@ -320,11 +405,18 @@ type PostV1GetProposalResponse = {
             propDescription?: string | undefined;
             salt?: string | undefined;
         };
+        /** Unix timestamp. Should match onchain createTime of proposal */
+        createTs?: number | undefined;
+        /** Hash of transaction which created this proposal */
+        createTxHash?: string | undefined;
+        /** Hash of transaction which executed this proposal */
+        executeTxHash?: string | undefined;
     };
 } | {
     status: "error";
     error: {
         message: string;
+        name?: string;
     };
 };
 
@@ -380,6 +472,12 @@ type PostV1GetProposalsResponse = {
                 propDescription?: string | undefined;
                 salt?: string | undefined;
             }) | undefined;
+            /** Unix timestamp. Should match onchain createTime of proposal */
+            createTs?: number | undefined;
+            /** Hash of transaction which created this proposal */
+            createTxHash?: string | undefined;
+            /** Hash of transaction which executed this proposal */
+            executeTxHash?: string | undefined;
         } | {
             id: string;
             content: {
@@ -424,6 +522,12 @@ type PostV1GetProposalsResponse = {
                 propDescription?: string | undefined;
                 salt?: string | undefined;
             };
+            /** Unix timestamp. Should match onchain createTime of proposal */
+            createTs?: number | undefined;
+            /** Hash of transaction which created this proposal */
+            createTxHash?: string | undefined;
+            /** Hash of transaction which executed this proposal */
+            executeTxHash?: string | undefined;
         } | {
             id: string;
             content: {
@@ -438,6 +542,12 @@ type PostV1GetProposalsResponse = {
                 salt?: string | undefined;
                 groupNum: number;
             };
+            /** Unix timestamp. Should match onchain createTime of proposal */
+            createTs?: number | undefined;
+            /** Hash of transaction which created this proposal */
+            createTxHash?: string | undefined;
+            /** Hash of transaction which executed this proposal */
+            executeTxHash?: string | undefined;
         } | {
             id: string;
             content: {
@@ -453,6 +563,12 @@ type PostV1GetProposalsResponse = {
                 mintReason: string;
                 mintTitle: string;
             };
+            /** Unix timestamp. Should match onchain createTime of proposal */
+            createTs?: number | undefined;
+            /** Hash of transaction which created this proposal */
+            createTxHash?: string | undefined;
+            /** Hash of transaction which executed this proposal */
+            executeTxHash?: string | undefined;
         } | {
             id: string;
             content: {
@@ -467,6 +583,12 @@ type PostV1GetProposalsResponse = {
                 salt?: string | undefined;
                 burnReason: string;
             };
+            /** Unix timestamp. Should match onchain createTime of proposal */
+            createTs?: number | undefined;
+            /** Hash of transaction which created this proposal */
+            createTxHash?: string | undefined;
+            /** Hash of transaction which executed this proposal */
+            executeTxHash?: string | undefined;
         } | {
             id: string;
             content: {
@@ -481,6 +603,12 @@ type PostV1GetProposalsResponse = {
                 salt?: string | undefined;
                 link?: string | undefined;
             };
+            /** Unix timestamp. Should match onchain createTime of proposal */
+            createTs?: number | undefined;
+            /** Hash of transaction which created this proposal */
+            createTxHash?: string | undefined;
+            /** Hash of transaction which executed this proposal */
+            executeTxHash?: string | undefined;
         } | {
             id: string;
             content: {
@@ -495,6 +623,12 @@ type PostV1GetProposalsResponse = {
                 salt?: string | undefined;
                 link?: string | undefined;
             };
+            /** Unix timestamp. Should match onchain createTime of proposal */
+            createTs?: number | undefined;
+            /** Hash of transaction which created this proposal */
+            createTxHash?: string | undefined;
+            /** Hash of transaction which executed this proposal */
+            executeTxHash?: string | undefined;
         } | {
             id: string;
             content: {
@@ -508,12 +642,19 @@ type PostV1GetProposalsResponse = {
                 propDescription?: string | undefined;
                 salt?: string | undefined;
             };
+            /** Unix timestamp. Should match onchain createTime of proposal */
+            createTs?: number | undefined;
+            /** Hash of transaction which created this proposal */
+            createTxHash?: string | undefined;
+            /** Hash of transaction which executed this proposal */
+            executeTxHash?: string | undefined;
         })[];
     };
 } | {
     status: "error";
     error: {
         message: string;
+        name?: string;
     };
 };
 
@@ -528,10 +669,138 @@ type GetV1GetPeriodNumResponse = {
     status: "error";
     error: {
         message: string;
+        name?: string;
     };
 };
 
-export type Path = "/v1/putProposal" | "/v1/getProposal" | "/v1/getProposals" | "/v1/getPeriodNum";
+type PostV1GetTokenInput = {
+    tokenId: string;
+};
+
+type PostV1GetTokenResponse = {
+    status: "success";
+    data: {
+        name?: string | undefined;
+        decimals?: number | undefined;
+        description?: string | undefined;
+        image?: string | undefined;
+        properties?: {} | undefined;
+    };
+} | {
+    status: "error";
+    error: {
+        message: string;
+        name?: string;
+    };
+};
+
+type PostV1GetAwardInput = {
+    tokenId: string;
+};
+
+type PostV1GetAwardResponse = {
+    status: "success";
+    data: {
+        name: string;
+        description?: string | undefined;
+        image?: string | undefined;
+        properties: {
+            tokenId: string;
+            recipient: any;
+            mintType: number;
+            mintDateTime?: string | undefined;
+            mintTxHash?: string | undefined;
+            denomination: number;
+            periodNumber: number;
+            groupNum?: number | undefined;
+            level?: number | undefined;
+            reason?: string | undefined;
+            title?: string | undefined;
+        };
+    };
+} | {
+    status: "error";
+    error: {
+        message: string;
+        name?: string;
+    };
+};
+
+type PostV1GetRespectMetadataInput = {};
+
+type PostV1GetRespectMetadataResponse = {
+    status: "success";
+    data: {
+        name?: string | undefined;
+        decimals: 0;
+        description?: string | undefined;
+        image?: string | undefined;
+        properties?: {} | undefined;
+    };
+} | {
+    status: "error";
+    error: {
+        message: string;
+        name?: string;
+    };
+};
+
+type GetV1TokenTokenIdInput = {
+    tokenId: string;
+};
+
+type GetV1TokenTokenIdResponse = {
+    status: "success";
+    data: {
+        name?: string | undefined;
+        decimals?: number | undefined;
+        description?: string | undefined;
+        image?: string | undefined;
+        properties?: {} | undefined;
+    };
+} | {
+    status: "error";
+    error: {
+        message: string;
+        name?: string;
+    };
+};
+
+type PostV1GetAwardsOfInput = {
+    account: string;
+};
+
+type PostV1GetAwardsOfResponse = {
+    status: "success";
+    data: {
+        awards: {
+            name: string;
+            description?: string | undefined;
+            image?: string | undefined;
+            properties: {
+                tokenId: string;
+                recipient: any;
+                mintType: number;
+                mintDateTime?: string | undefined;
+                mintTxHash?: string | undefined;
+                denomination: number;
+                periodNumber: number;
+                groupNum?: number | undefined;
+                level?: number | undefined;
+                reason?: string | undefined;
+                title?: string | undefined;
+            };
+        }[];
+    };
+} | {
+    status: "error";
+    error: {
+        message: string;
+        name?: string;
+    };
+};
+
+export type Path = "/v1/putProposal" | "/v1/getProposal" | "/v1/getProposals" | "/v1/getPeriodNum" | "/v1/getToken" | "/v1/getAward" | "/v1/getRespectMetadata" | "/v1/token/:tokenId" | "/v1/getAwardsOf";
 
 export type Method = "get" | "post" | "put" | "delete" | "patch";
 
@@ -542,6 +811,11 @@ export interface Input extends Record<MethodPath, any> {
     "post /v1/getProposal": PostV1GetProposalInput;
     "post /v1/getProposals": PostV1GetProposalsInput;
     "get /v1/getPeriodNum": GetV1GetPeriodNumInput;
+    "post /v1/getToken": PostV1GetTokenInput;
+    "post /v1/getAward": PostV1GetAwardInput;
+    "post /v1/getRespectMetadata": PostV1GetRespectMetadataInput;
+    "get /v1/token/:tokenId": GetV1TokenTokenIdInput;
+    "post /v1/getAwardsOf": PostV1GetAwardsOfInput;
 }
 
 export interface Response extends Record<MethodPath, any> {
@@ -549,11 +823,16 @@ export interface Response extends Record<MethodPath, any> {
     "post /v1/getProposal": PostV1GetProposalResponse;
     "post /v1/getProposals": PostV1GetProposalsResponse;
     "get /v1/getPeriodNum": GetV1GetPeriodNumResponse;
+    "post /v1/getToken": PostV1GetTokenResponse;
+    "post /v1/getAward": PostV1GetAwardResponse;
+    "post /v1/getRespectMetadata": PostV1GetRespectMetadataResponse;
+    "get /v1/token/:tokenId": GetV1TokenTokenIdResponse;
+    "post /v1/getAwardsOf": PostV1GetAwardsOfResponse;
 }
 
-export const jsonEndpoints = { "post /v1/putProposal": true, "post /v1/getProposal": true, "post /v1/getProposals": true, "get /v1/getPeriodNum": true };
+export const jsonEndpoints = { "post /v1/putProposal": true, "post /v1/getProposal": true, "post /v1/getProposals": true, "get /v1/getPeriodNum": true, "post /v1/getToken": true, "post /v1/getAward": true, "post /v1/getRespectMetadata": true, "get /v1/token/:tokenId": true, "post /v1/getAwardsOf": true };
 
-export const endpointTags = { "post /v1/putProposal": [], "post /v1/getProposal": [], "post /v1/getProposals": [], "get /v1/getPeriodNum": [] };
+export const endpointTags = { "post /v1/putProposal": [], "post /v1/getProposal": [], "post /v1/getProposals": [], "get /v1/getPeriodNum": [], "post /v1/getToken": [], "post /v1/getAward": [], "post /v1/getRespectMetadata": [], "get /v1/token/:tokenId": [], "post /v1/getAwardsOf": [] };
 
 export type Provider = <M extends Method, P extends Path>(method: M, path: P, params: Input[`${M} ${P}`]) => Promise<Response[`${M} ${P}`]>;
 

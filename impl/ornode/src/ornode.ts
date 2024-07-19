@@ -14,7 +14,8 @@ export async function init() {
   ornode = MongoOrnode.create({
     newRespect: config.contracts.newRespect,
     orec: config.contracts.orec,
-    providerUrl: config.providerUrl
+    providerUrl: config.providerUrl,
+    tokenCfg: config.tokenMetadataCfg
   })
 }
 

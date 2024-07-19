@@ -1,6 +1,6 @@
 {
-	"name": "Optimism Fractal Respect Award",
-	"description": "Award for a contribution to Optimsim Fractal",
+	"name": "Optimism Fractal Respect",
+	"description": "Awards for a contributions to Optimsim Fractal",
 	"image": "http://localhost:8090/public/of.png",
   "decimals": 0
 }

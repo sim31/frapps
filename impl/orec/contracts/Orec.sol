@@ -65,9 +65,9 @@ contract Orec is Ownable {
 
     event EmptyVoteIn(PropId indexed propId, address indexed voter);
     event WeightedVoteIn(PropId indexed propId, address indexed voter);
-    event Executed(PropId propId, bytes retVal);
-    event ExecutionFailed(PropId propId, bytes retVal);
-    event ProposalCreated(PropId propId);
+    event Executed(PropId indexed propId, bytes retVal);
+    event ExecutionFailed(PropId indexed propId, bytes retVal);
+    event ProposalCreated(PropId indexed propId);
     event Signal(uint8 indexed signalType, bytes data);
 
     error VoteEnded();

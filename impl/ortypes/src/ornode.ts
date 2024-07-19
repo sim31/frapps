@@ -206,7 +206,8 @@ export type ORNodePropStatus = z.infer<typeof zORNodePropStatus>;
 export const zErrorType = z.enum([
   "ProposalNotFound",
   "ProposalNotCreated",
-  "ProposalInvalid"
+  "ProposalInvalid",
+  "TokenNotFound"
 ]);
 export type ErrorType = z.infer<typeof zErrorType>;
 

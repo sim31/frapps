@@ -14,14 +14,23 @@ import {
   ProposalNotCreated,
   ProposalNotFound,
   OrecFactory,
-  Url
+  Url,
+  Bytes32,
+  zValueToRanking,
+  TokenNotFound
 } from "ortypes/index.js"
 import { ORNodePropStatus, Proposal, ProposalFull, ProposalValid, Tick, zORNodePropStatus, zProposal, zProposalValid } from "ortypes/ornode.js";
-import { JsonRpcProvider, Provider } from "ethers";
+import { JsonRpcProvider, Provider, toBeHex, toBigInt, ZeroAddress } from "ethers";
 import { MongoClient } from "mongodb";
 import { ProposalService } from "./mongodb/proposalService.js";
 import { TickService } from "./mongodb/tickService.js";
 import { ProposalEntity, TickEvent } from "./mongodb/entities.js";
+import { BigNumberish } from "ethers";
+import { RespectAwardMt, RespectFungibleMt, TokenId, unpackTokenId } from "ortypes/respect1155.js";
+import { TokenMtCfg } from "./config.js";
+import { RespectTokenService } from "./mongodb/respectTokenService.js";
+import { Erc1155Mt } from "ortypes/erc1155.js";
+import { stringify } from "ts-utils";
 
 
 export interface ConstructorConfig {
@@ -29,7 +38,8 @@ export interface ConstructorConfig {
    * For how long a proposal without weighted votes will be stored. In seconds
    * @default: orec.votePeriod
    */
-  weghtlessPropAliveness?: number
+  weghtlessPropAliveness?: number,
+  tokenCfg: TokenMtCfg
 }
 
 export interface Config extends ConstructorConfig {
@@ -49,6 +59,16 @@ type ORNodeContextConfig = Omit<ORContext.Config, "ornode">;
 
 type ORContext = ORContext.ORContext<ORNodeContextConfig>;
 
+export class IllegalEvent extends Error {
+  event: any;
+
+  constructor(event: any, message: string) {
+    super(`${message}. Event: ${event}`);
+    this.name = "IllegalEvent";
+    this.event = event;
+  }
+}
+
 /**
  * TODO: Currently this class only saves proposals which are created onchain after
  * it starts running. This means that it will miss any proposals that happened before ORNode was launched.
@@ -61,7 +81,10 @@ export class MongoOrnode implements IORNode {
   private _cfg: ConstructorConfig;
   private _mgClient: MongoClient;
   private _propService: ProposalService;
-  private _tickService: TickService
+  private _tickService: TickService;
+  private _tokenService: RespectTokenService;
+
+  private static _fungibleId = 0n;
 
   private _parseEventObject(obj: any): { txHash?: string } {
     // TODO: this is needed because I'm receiving an event parameter
@@ -85,6 +108,7 @@ export class MongoOrnode implements IORNode {
     mongoClient: MongoClient,
     propService: ProposalService,
     tickService: TickService,
+    tokenService: RespectTokenService,
     config: ConstructorConfig,
   ) {
     this._ctx = orcontext;
@@ -92,6 +116,7 @@ export class MongoOrnode implements IORNode {
     this._mgClient = mongoClient;
     this._propService = propService;
     this._tickService = tickService;
+    this._tokenService = tokenService;
 
     this._ctx.orec.on(this._ctx.orec.getEvent("ProposalCreated"), async (propId, event) => {
       console.debug("ProposalCreated event. PropId: ", propId, "event: ", event);
@@ -152,11 +177,111 @@ export class MongoOrnode implements IORNode {
         console.error("Error while handling Signal event: ", err);
       }
     });
+
+    const transferBatchEv = this._ctx.newRespect.getEvent("TransferBatch");
+    const transferSingleEv = this._ctx.newRespect.getEvent("TransferSingle");
+    this._ctx.newRespect.on(transferBatchEv, this._handleTransferEvent.bind(this));
+    this._ctx.newRespect.on(transferSingleEv, this._handleSingleTransferEvent.bind(this));
+  }
+
+  private async _handleSingleTransferEvent(
+    operator: EthAddress,
+    from: EthAddress,
+    to: EthAddress,
+    id: BigNumberish,
+    value: BigNumberish,
+    event: any
+  ) {
+    await this._handleTransferEvent(
+      operator, from, to, [id], [value], event
+    );
+  }
+
+  private async _handleTransferEvent(
+    operator: EthAddress,
+    from: EthAddress,
+    to: EthAddress,
+    ids: BigNumberish[],
+    values: BigNumberish[],
+    event: any
+  ) {
+    console.debug(`Handling transfer event. from: ${from}, to: ${to}, ids: ${ids}, values: ${values}`);
+    if (from === ZeroAddress && to !== ZeroAddress) {
+      // A mint
+      const awards: RespectAwardMt[] = [];
+      for (let [index, idsVal] of ids.entries()) {
+        const val = values[index];
+        if (val === undefined) {
+          throw new IllegalEvent(event, "values and ids do not match");
+        }
+
+        const id = toBigInt(idsVal);
+        console.debug("id: ", id);
+        if (id !== MongoOrnode._fungibleId) {
+          console.debug("ok1");
+          if (toBigInt(val) !== 1n) {
+            throw new IllegalEvent(event, "value in event should be 1")
+          }
+          const denomination = Number(await this._ctx.newRespect.valueOfToken(idsVal));
+          const levelRes = zValueToRanking.safeParse(denomination);
+
+          console.debug("ok2");
+
+          const { txHash } = this._parseEventObject(event);
+          
+          const tData = unpackTokenId(idsVal);
+          awards.push({
+            name: this._cfg.tokenCfg.award.name,
+            description: this._cfg.tokenCfg.award.description,
+            image: this._cfg.tokenCfg.award.image,
+            // TODO: derive and store: datetime, groupNum, reason, title
+            properties: {
+              tokenId: toBeHex(idsVal, 32),
+              recipient: tData.owner,
+              mintType: Number(toBigInt(tData.mintType)),
+              periodNumber: Number(toBigInt(tData.periodNumber)),
+              denomination,
+              level: levelRes.success ? levelRes.data : undefined,
+              mintTxHash: txHash
+            }
+          })
+        }
+      }
+      console.debug("creating awards: ", JSON.stringify(awards));
+      await this._tokenService.createAwards(awards);
+    } else if (from !== ZeroAddress && to === ZeroAddress) {
+      // TODO: you should not delete a burned token
+      // Use case: key rotation. When rotating keys you should burn old tokens and issue new, but you would like to have old token metadata for historical record.
+      const tokenIds: TokenId[] = [];
+      for (let [index, idsVal] of ids.entries()) {
+        const val = values[index];
+        if (val === undefined) {
+          throw new IllegalEvent(event, "values and ids do not match");
+        }
+        const id = toBigInt(idsVal);
+        if (id !== MongoOrnode._fungibleId) {
+          if (toBigInt(val) !== 1n) {
+            throw new IllegalEvent(event, "value in event should be 1")
+          }
+
+          tokenIds.push(toBeHex(idsVal));
+        }
+      }
+      
+      await this._tokenService.deleteAwards(tokenIds);
+    } else {
+      throw new IllegalEvent(event, "Received transfer event which is neither mint nor burn.");
+    }
   }
 
   private static async _connectToDb(
     config: Config
-  ): Promise<{ mgClient: MongoClient, propService: ProposalService, tickService: TickService }> {
+  ): Promise<{
+    mgClient: MongoClient,
+    propService: ProposalService,
+    tickService: TickService,
+    tokenService: RespectTokenService
+  }> {
     const url = config.mongoUrl ?? configDefaults.mongoUrl;
     const dbName = config.dbName ?? configDefaults.dbName;
     const mgClient = new MongoClient(url);
@@ -164,12 +289,14 @@ export class MongoOrnode implements IORNode {
 
     const propService = new ProposalService(mgClient, dbName);
     const tickService = new TickService(mgClient, dbName);
+    const tokenService = new RespectTokenService(mgClient, dbName);
 
-    return { mgClient, propService, tickService }
+    return { mgClient, propService, tickService, tokenService }
   }
 
   static async create(config: Config): Promise<MongoOrnode> {
-    const { mgClient, propService, tickService } = await MongoOrnode._connectToDb(config);
+    const { mgClient, propService, tickService, tokenService } =
+      await MongoOrnode._connectToDb(config);
 
     const contextCfg: ORNodeContextConfig = {
       orec: config.orec,
@@ -181,10 +308,11 @@ export class MongoOrnode implements IORNode {
     const propAliveness = config.weghtlessPropAliveness ?? Number(await ctx.orec.voteLen());
 
     const cfg: ConstructorConfig = {
-      weghtlessPropAliveness: propAliveness
+      weghtlessPropAliveness: propAliveness,
+      tokenCfg: config.tokenCfg
     }
 
-    const ornode = new MongoOrnode(ctx, mgClient, propService, tickService, cfg);
+    const ornode = new MongoOrnode(ctx, mgClient, propService, tickService, tokenService, cfg);
 
     return ornode
   }
@@ -249,6 +377,34 @@ export class MongoOrnode implements IORNode {
     this._ctx.callTest();
     const tickNum = await this._tickService.tickCount();
     return tickNum;
+  }
+
+  async getAward(tokenId: TokenId): Promise<RespectAwardMt> {
+    if (toBigInt(tokenId) === MongoOrnode._fungibleId) {
+      throw new Error(`Invalid request: ${tokenId} is an id of a fungible token`);
+    }
+    const award = await this._tokenService.findAward(tokenId);
+    if (award === null) {
+      throw new TokenNotFound(tokenId);
+    }
+    return award;
+  }
+
+  async getRespectMetadata(): Promise<RespectFungibleMt> {
+    return this._cfg.tokenCfg.fungible;
+  }
+
+  async getToken(tokenId: TokenId): Promise<Erc1155Mt> {
+    if (toBigInt(tokenId) === MongoOrnode._fungibleId) {
+      return await this.getRespectMetadata();
+    } else {
+      return await this.getAward(tokenId);
+    }
+  }
+
+  async getAwardsOf(account: EthAddress): Promise<RespectAwardMt[]> {
+    const awards = await this._tokenService.findAwardsOf(account);
+    return awards;
   }
 
 }

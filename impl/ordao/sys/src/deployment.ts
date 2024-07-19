@@ -137,6 +137,9 @@ export class Deployment {
    * Has to be run from hardhat script environment (run using `hardhat run <script-name>`)
    */
   public static async devDeploy(cfg: DevConfig = defaultDevConfig): Promise<Deployment> {
+    console.log(`votePeriod: ${cfg.votePeriod}`);
+    console.log(`vetoPeriod: ${cfg.vetoPeriod}`);
+
     ///// Get signers
     const signers = await hre.ethers.getSigners();
     const addrs = signers.map(signer => signer.address);

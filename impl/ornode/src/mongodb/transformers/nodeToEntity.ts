@@ -1,8 +1,9 @@
 import { zProposal } from "ortypes/ornode.js";
-import { zProposalEntity, ProposalEntity, zTickEntity, TickEntity, zTickEvent } from "../entities.js";
+import { zProposalEntity, ProposalEntity, zTickEntity, TickEntity, zTickEvent, RespectAwardEntity, zRespectAwardEntity } from "../entities.js";
 import { ObjectId } from "mongodb";
 import { addCustomIssue } from "ortypes";
 import { z } from "zod";
+import { zRespectAwardMt } from "ortypes/respect1155.js";
 
 export const zProposalToEntity = zProposal.transform((prop, ctx) => {
   if (prop.createTs === undefined) {
@@ -25,3 +26,11 @@ export const zTickToEntity = zTickEvent.transform((tick, ctx) => {
   }
   return entity;
 }).pipe(zTickEntity);
+
+export const zRespectAwardToEntity = zRespectAwardMt.transform(award => {
+  const entity: RespectAwardEntity = {
+    ...award,
+    _id: new ObjectId()
+  };
+  return entity;
+}).pipe(zRespectAwardEntity);

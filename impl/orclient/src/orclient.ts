@@ -5,12 +5,12 @@ import { ORContext, ConfigWithOrnode } from "ortypes/orContext.js";
 import { NodeToClientTransformer, zNVoteToClient } from "ortypes/transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "ortypes/transformers/clientToNodeTransformer.js";
 import { ProposalFull as NProp, ORNodePropStatus } from "ortypes/ornode.js";
-import { ErrorDecoder } from 'ethers-decode-error'
-import type { DecodedError } from 'ethers-decode-error'
-import { Bytes, EthAddress, PropId, ProposalNotCreated, ProposalState, TxHash, zVote as zNVote } from "ortypes";
+import { Bytes, EthAddress, PropId, ProposalNotCreated, ProposalState, TxHash, zVote as zNVote, DecodedError } from "ortypes";
 import { Method, Path, Input, Response } from "./ornodeClient/ornodeClient.js";
 import { sleep, stringify } from "ts-utils";
 import { resultArrayToObj } from "ortypes/utils.js";
+import { RespectAwardMt, RespectFungibleMt, TokenId } from "ortypes/respect1155.js";
+import { Erc1155Mt } from "ortypes/erc1155.js";
 
 export function isPropCreated(propState: ProposalState) {
   return propState.createTime > 0n;
@@ -51,24 +51,12 @@ export class ORClient {
   private _nodeToClient: NodeToClientTransformer;
   private _clientToNode: ClientToNodeTransformer;
   private _cfg: Config;
-  private _errDecoder: ErrorDecoder;
 
   constructor(context: ORContext<ConfigWithOrnode>, cfg: Config = defaultConfig) {
     this._ctx = context;
     this._nodeToClient = new NodeToClientTransformer(this._ctx);
     this._clientToNode = new ClientToNodeTransformer(this._ctx);
     this._cfg = cfg;
-    this._errDecoder = ErrorDecoder.create([
-      // TODO: this function accepts interfaces, so you should not need to copy fragments
-      // But for some reason it does not work (throws r.filter is not a function). I think it is this line:
-      // https://github.com/superical/ethers-decode-error/blob/5ba3ce49bcb5cd2824fc25014a00cd1e4f96ede1/src/error-decoder.ts#L116
-      // `instanceof` check fails because interface is being created by a different constructor function than ErrorDecoder uses.
-      // There's a problem with ethers / typechain commonjs vs ESM versions.
-      // Maybe I have a commonjs version of interface created by hardhat
-      // and ErrorDecoder is expecting esm?
-      new Array(...this._ctx.orec.interface.fragments),
-      new Array(...this._ctx.newRespect.interface.fragments),
-    ]);
   }
 
   connect(signer: Signer): ORClient {
@@ -236,6 +224,22 @@ export class ORClient {
     return await this.getPeriodNum();
   }
 
+  async getToken(tokenId: TokenId): Promise<Erc1155Mt> {
+    // TODO: fix type for ornode
+    return await this._ctx.ornode.getToken(tokenId);
+  }
+  async getAward(tokenId: TokenId): Promise<RespectAwardMt> {
+    // TODO: fix type for ornode
+    return await this._ctx.ornode.getAward(tokenId);
+  }
+  async getRespectMetadata(): Promise<RespectFungibleMt> {
+    return await this._ctx.ornode.getRespectMetadata();
+  }
+
+  async getAwardsOf(account: EthAddress): Promise<RespectAwardMt[]> {
+    return await this._ctx.ornode.getAwardsOf(account);
+  }
+
   private async _submitProposal(proposal: NProp, vote?: VoteWithProp): Promise<PutProposalRes> {
     console.debug("submitting to chain: ", proposal);
     const txId = await this._submitPropToChain(proposal, vote);
@@ -307,7 +311,7 @@ export class ORClient {
     } catch(err) {
       let decoded: DecodedError;
       try {
-        decoded = await this._errDecoder.decode(err);
+        decoded = await this._ctx.errorDecoder.decode(err);
       } catch(err2) {
         throw new TxFailed(err2, undefined, `Error decoding error. errMsg: ${errMsg}`);
       }

@@ -8,8 +8,9 @@ import { ORContext } from "ortypes/orContext.js";
 import { ConfigWithOrnode } from "ortypes/orContext.js";
 import { Bytes, EthAddress, PropId, Vote, zPropId } from "ortypes";
 import { VoteType } from "ortypes/orclient.js";
-import { packTokenId } from "ortypes/respect1155.js";
+import { packTokenId, RespectAwardMt, RespectFungibleMt, TokenId } from "ortypes/respect1155.js";
 import { stringify } from "ts-utils";
+import { Erc1155Mt } from "ortypes/erc1155.js";
 
 function createSchemaDescription<ZT extends ZodType>(
   zType: ZT,
@@ -249,6 +250,22 @@ export class ORCli {
 
   async respectOf(account: EthAddress): Promise<bigint> {
     return await this.orclient.respectOf(account);
+  }
+
+  async getToken(tokenId: TokenId): Promise<Erc1155Mt> {
+    return this.orclient.getToken(tokenId);
+  }
+
+  async getAward(tokenId: TokenId): Promise<RespectAwardMt> {
+    return this.orclient.getAward(tokenId);
+  }
+
+  async getRespectMetadata(): Promise<RespectFungibleMt> {
+    return this.orclient.getRespectMetadata();
+  }
+
+  async getAwardsOf(account: EthAddress): Promise<RespectAwardMt[]> {
+    return this.orclient.getAwardsOf(account);
   }
 
   async getPeriodNum(): Promise<number> {

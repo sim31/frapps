@@ -24,7 +24,8 @@ import {
   ExecStatus,
   zExecStatus,
   VoteStatus,
-  zVoteStatus
+  zVoteStatus,
+  ExecError,
 } from "../orclient.js";
 import {
   zProposal as zNProposal,
@@ -65,7 +66,8 @@ import {
   zVote as zNVote,
   Stage as NStage,
   VoteStatus as NVoteStatus,
-  ExecStatus as NExecStatus
+  ExecStatus as NExecStatus,
+  OnchainProp
 } from "../orec.js";
 
 type ORContext = OrigORContext<ConfigWithOrnode>;
@@ -387,12 +389,54 @@ export class NodeToClientTransformer {
     this._zNProposalToDecodedProp = mkzNProposalToDecodedProp(context);
   }
 
+  async _getExecStatus(
+    nodeProp: NProposal,
+    onchainProp: OnchainProp
+  ): Promise<{ status: ExecStatus, execError?: ExecError}> {
+    const status = execStatusMap[onchainProp.status];
+    const returnVal = { status };
+    if (
+      status === "ExecutionFailed" &&
+      nodeProp.executeTxHash !== undefined &&
+      this._ctx.runner.provider
+    ) {
+      const receipt = await this._ctx.runner.provider.getTransactionReceipt(nodeProp.executeTxHash);
+      if (receipt === null) {
+        console.error("Could not find transaction referenced as executeTxHash in proposal retrieved from ornode");
+        return returnVal;
+      }
+      const filter = this._ctx.orec.filters.ExecutionFailed(nodeProp.id);
+      const events = await this._ctx.orec.queryFilter(
+        filter,
+        receipt.blockNumber, receipt.blockNumber
+      );
+      if (events.length !== 1) {
+        console.error("Expected one ExecutionFailed event for proposal ", nodeProp.id, ". All proposals: ", JSON.stringify(events));
+        return returnVal;
+      } else {
+        try {
+          const retVal = events[0].args.retVal;
+          const error = this._ctx.errorDecoder.decodeReturnData(retVal);
+          return { status, execError: error };
+        } catch (err) {
+          console.error("Error decoding return data: ", err);
+          return returnVal;
+        }
+      }
+
+    } else {
+      return returnVal;
+    }
+  }
+
   async transformProp(nodeProp: NProposal): Promise<Proposal> {
     const propId = nodeProp.id;
     const onchainProp = await this._ctx.getProposalFromChain(propId);
+    const { status, execError } = await this._getExecStatus(nodeProp, onchainProp)
     const rProp: Proposal = {
       ...onchainProp,
-      status: execStatusMap[onchainProp.status],
+      status: status,
+      execError,
       stage: stageMap[onchainProp.stage],
       voteStatus: voteStatusMap[onchainProp.voteStatus],
     };

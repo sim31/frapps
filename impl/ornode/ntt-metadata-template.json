@@ -3,11 +3,15 @@
 	"description": "Award for a contribution to Optimsim Fractal",
 	"image": "http://localhost:8090/public/of.png",
 	"properties": {
-    "tokenId": "...",
-    "meetingNumber": "...",
-    "groupNumber": "",
-    "issueDate": "",
-    "level": "",
-    "value": ""
+        "tokenId": "...",
+        "recipient": "...",
+        "mintType": "",
+        "mintDatetime": "",
+        "value": "",
+        "meetingNumber": "...",
+        "groupNumber": "",
+        "level": "",
+        "reason": "",
+        "title": ""
 	}
 }

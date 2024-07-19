@@ -1,6 +1,9 @@
 import { stringify } from "ts-utils";
 import { PropId } from "./orec.js";
 import { ErrorType, ORNodePropStatus, Proposal, ProposalFull, zErrorType } from "./ornode.js";
+import { RespectAwardMt, RespectFungibleMt } from "./respect1155.js";
+import { Erc1155Mt, TokenId } from "./erc1155.js";
+import { EthAddress } from "./eth.js";
 
 export interface IORNode {
   /**
@@ -18,6 +21,10 @@ export interface IORNode {
 
   getPeriodNum: () => Promise<number>;
 
+  getToken: (tokenId: TokenId) => Promise<Erc1155Mt>;
+  getAward: (tokenId: TokenId) => Promise<RespectAwardMt>;
+  getRespectMetadata: () => Promise<RespectFungibleMt>;
+  getAwardsOf: (account: EthAddress) => Promise<RespectAwardMt[]>;
 }
 
 export class ProposalNotFound extends Error {
@@ -46,4 +53,13 @@ export class ProposalInvalid extends Error {
     super(msg);
     this.cause = cause;
   } 
+}
+
+export class TokenNotFound extends Error {
+  name: ErrorType = zErrorType.enum.ProposalNotFound;
+
+  constructor(tokenId: TokenId) {
+    const msg = `Token with id ${tokenId} does not exist`;
+    super(msg);
+  }
 }

@@ -2,20 +2,25 @@ import { Result, ZeroAddress } from "ethers";
 import { isTokenIdValid } from "respect1155-sc/utils/tokenId.js";
 import { Respect1155, Respect1155Interface } from "respect1155-sc/typechain-types/contracts/Respect1155.js";
 import { Respect1155__factory } from "respect1155-sc/typechain-types/index.js";
-import { zBigNumberish, zBytes32, zBytesLike, zEthAddress } from "./eth.js";
+import { zBigNumberish, zBytes32, zBytesLike, zEthAddress, zTxHash } from "./eth.js";
 import { z } from "zod";
 import { preprocessResultOrObj } from "./utils.js";
+import { zErc1155Mt } from "./erc1155.js";
 
 export type Contract = Respect1155;
 export const Factory = Respect1155__factory;
 export type Interface = Respect1155Interface;
 
-export const zMeetingNum = z.coerce.number().gt(0);
+export const zGroupNum = z.coerce.number().int().gt(0)
+export type GroupNum = z.infer<typeof zGroupNum>;
+
+export const zRankNum = z.number().int().lte(6).gt(0);
+
+export const zMeetingNum = z.coerce.number().int().gt(0);
 export type MeetingNum = z.infer<typeof zMeetingNum>;
 
-export const zPeriodNum = z.coerce.number().gte(0);
+export const zPeriodNum = z.coerce.number().int().gte(0);
 export type PeriodNum = z.infer<typeof zPeriodNum>;
-
 
 export const zTokenId = zBytes32.refine(val => {
   return isTokenIdValid(val);
@@ -27,7 +32,7 @@ export const zTokenIdNum = z.bigint().refine(val => {
 })
 export type TokenIdNum = z.infer<typeof zTokenIdNum>;
 
-export const zMintType = z.coerce.number().gte(0);
+export const zMintType = z.coerce.number().int().gte(0);
 export type MintType = z.infer<typeof zMintType>;
 
 export const zBreakoutMintType = z.literal(0);
@@ -103,5 +108,36 @@ const burnRespectVerify = zBurnRespectArgs.refine((val) => {
   return true;
 });
 export type BurnRespectArgs = z.infer<typeof zBurnRespectArgs>;
+
+/**
+ * Metadata for fungible respect
+ */
+export const zRespectFungibleMt = zErc1155Mt.extend({
+  decimals: z.literal(0)
+});
+/**
+ * Metadata for fungible respect
+ */
+export type RespectFungibleMt = z.infer<typeof zRespectFungibleMt>;
+
+export const zRespectAwardMt = zErc1155Mt
+  .omit({ decimals: true })
+  .required({ name: true })
+  .extend({
+    properties: z.object({
+      tokenId: zTokenId,
+      recipient: zEthAddress,
+      mintType: zMintType,
+      mintDateTime: z.string().datetime().optional(),
+      mintTxHash: zTxHash.optional(),
+      denomination: z.number().int().gte(0),
+      periodNumber: zMeetingNum,
+      groupNum: zGroupNum.optional(),
+      level: zRankNum.optional(),
+      reason: z.string().optional(),
+      title: z.string().optional()
+    })
+});
+export type RespectAwardMt = z.infer<typeof zRespectAwardMt>;
 
 export * from "respect1155-sc/utils/tokenId.js";

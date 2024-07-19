@@ -1,12 +1,14 @@
-import { EndpointsFactory, ServeStatic } from "express-zod-api";
+import { EndpointsFactory, ServeStatic, BuiltinLogger, createResultHandler } from "express-zod-api";
 import { z } from "zod";
 import { Routing } from "express-zod-api";
 import { zORNodePropStatus, zProposal, zProposalFull } from "ortypes/ornode.js";
-import { zPropId } from "ortypes";
+import { zEthAddress, zPropId } from "ortypes";
 import { resultHandler } from "./resultHandler.js";
 import { getOrnode } from "./ornode.js";
 import { stringify } from "ts-utils";
 import { join } from "path";
+import { zRespectAwardMt, zRespectFungibleMt, zTokenId, TokenId } from "ortypes/respect1155.js";
+import { Erc1155Mt, zErc1155Mt } from "ortypes/erc1155.js";
 
 const factory = new EndpointsFactory(resultHandler);
 
@@ -63,14 +65,94 @@ const getProposals = factory.build({
     const proposals = await n.getProposals(input.from, input.limit);
     return { proposals };
   }
+});
+
+async function handleGetToken(tokenId: TokenId) {
+  const n = await getOrnode();
+  const token = await n.getToken(tokenId);
+  return token;
+}
+ 
+
+const getTokenPost = factory.build({
+  method: "post",
+  input: z.object({
+    tokenId: zTokenId
+  }),
+  output: zErc1155Mt,
+  handler: async ({ input, options, logger }) => {
+    logger.debug(`getToken ${stringify(input)}. options: ${stringify(options)}`);
+    return await handleGetToken(input.tokenId);
+  }
+});
+
+const getAward = factory.build({
+  method: "post",
+  input: z.object({
+    tokenId: zTokenId
+  }),
+  output: zRespectAwardMt,
+  handler: async ({input, options, logger}) => {
+    logger.debug(`getAward ${stringify(input)}. options: ${stringify(options)}`);
+    const n = await getOrnode();
+    const token = await n.getAward(input.tokenId);
+    return token;
+  }
+});
+
+const getRespectMetadata = factory.build({
+  method: "post",
+  input: z.object({}),
+  output: zRespectFungibleMt,
+  handler: async ({input, options, logger}) => {
+    logger.debug(`getRespectMetadata ${stringify(input)}. options: ${stringify(options)}`);
+    const n = await getOrnode();
+    const token = await n.getRespectMetadata();
+    return token;
+  }
+});
+
+const getToken = factory.build({
+  method: "get",
+  input: z.object({
+    tokenId: zTokenId
+  }),
+  output: zErc1155Mt,
+  handler: async ({ input, options, logger }) => {
+    logger.debug(`token/${input.tokenId}  ${stringify(input)}. options: ${stringify(options)}`);
+    return await handleGetToken(input.tokenId);
+  }
 })
+
+const getAwardsOf = factory.build({
+  method: "post",
+  input: z.object({
+    account: zEthAddress
+  }),
+  output: z.object({
+    awards: zRespectAwardMt.array()
+  }),
+  handler: async ({input, options, logger}) => {
+    logger.debug(`getAwardsOf ${stringify(input)}. options: ${stringify(options)}`);
+    const n = await getOrnode();
+    const tokens = await n.getAwardsOf(input.account);
+    return { awards: tokens };
+  }
+});
 
 export const routing: Routing = {
   v1: {
     putProposal,
     getProposal,
     getProposals,
-    getPeriodNum
+    getPeriodNum,
+    getToken: getTokenPost,
+    getAward,
+    getRespectMetadata,
+    token: {
+      ":tokenId": getToken
+    },
+    getAwardsOf
   },
   public: new ServeStatic("./public", {
     dotfiles: "deny",

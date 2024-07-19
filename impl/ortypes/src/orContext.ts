@@ -10,6 +10,7 @@ import { InvalidArgumentError, Url, zUrl } from "./common.js";
 import { Required } from "utility-types";
 import { expect } from "chai";
 import { testVersion } from "orec/utils";
+import { ErrorDecoder, DecodedError } from 'ethers-decode-error'
 
 export interface State {
   orec: Orec,
@@ -51,6 +52,7 @@ export class ORContext<CT extends Config> {
   private _newRespectAddr?: EthAddress;
   private _orecAddr?: EthAddress;
   private _runner: ContractRunner;
+  private _errDecoder: ErrorDecoder;
 
   constructor(
     state: StateForConfig<CT>,
@@ -59,6 +61,19 @@ export class ORContext<CT extends Config> {
   ) {
     this._st = state;
     this._runner = runner;
+
+    this._errDecoder = ErrorDecoder.create([
+      // TODO: this function accepts interfaces, so you should not need to copy fragments
+      // But for some reason it does not work (throws r.filter is not a function). I think it is this line:
+      // https://github.com/superical/ethers-decode-error/blob/5ba3ce49bcb5cd2824fc25014a00cd1e4f96ede1/src/error-decoder.ts#L116
+      // `instanceof` check fails because interface is being created by a different constructor function than ErrorDecoder uses.
+      // There's a problem with ethers / typechain commonjs vs ESM versions.
+      // Maybe I have a commonjs version of interface created by hardhat
+      // and ErrorDecoder is expecting esm?
+      new Array(...state.orec.interface.fragments),
+      new Array(...state.newRespect.interface.fragments),
+    ]);
+
     if (validate) {
       this.validate();
     }
@@ -167,6 +182,10 @@ export class ORContext<CT extends Config> {
 
   get runner(): ContractRunner {
     return this._runner;
+  }
+
+  get errorDecoder(): ErrorDecoder {
+    return this._errDecoder;
   }
 
   async getOrecAddr(): Promise<EthAddress> {
