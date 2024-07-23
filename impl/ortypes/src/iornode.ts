@@ -21,7 +21,7 @@ export interface IORNode {
 
   getPeriodNum: () => Promise<number>;
 
-  getToken: (tokenId: TokenId) => Promise<Erc1155Mt>;
+  getToken: (tokenId: TokenId) => Promise<RespectFungibleMt | RespectAwardMt>;
   getAward: (tokenId: TokenId) => Promise<RespectAwardMt>;
   getRespectMetadata: () => Promise<RespectFungibleMt>;
   getAwardsOf: (account: EthAddress) => Promise<RespectAwardMt[]>;

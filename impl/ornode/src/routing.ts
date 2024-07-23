@@ -7,7 +7,7 @@ import { resultHandler } from "./resultHandler.js";
 import { getOrnode } from "./ornode.js";
 import { stringify } from "ts-utils";
 import { join } from "path";
-import { zRespectAwardMt, zRespectFungibleMt, zTokenId, TokenId } from "ortypes/respect1155.js";
+import { zRespectAwardMt, zRespectFungibleMt, zTokenId, TokenId, zFungibleTokenId } from "ortypes/respect1155.js";
 import { Erc1155Mt, zErc1155Mt } from "ortypes/erc1155.js";
 
 const factory = new EndpointsFactory(resultHandler);
@@ -72,14 +72,13 @@ async function handleGetToken(tokenId: TokenId) {
   const token = await n.getToken(tokenId);
   return token;
 }
- 
 
 const getTokenPost = factory.build({
   method: "post",
   input: z.object({
-    tokenId: zTokenId
+    tokenId: z.union([zFungibleTokenId, zTokenId])
   }),
-  output: zErc1155Mt,
+  output: z.union([zRespectFungibleMt, zRespectAwardMt]),
   handler: async ({ input, options, logger }) => {
     logger.debug(`getToken ${stringify(input)}. options: ${stringify(options)}`);
     return await handleGetToken(input.tokenId);
@@ -115,9 +114,9 @@ const getRespectMetadata = factory.build({
 const getToken = factory.build({
   method: "get",
   input: z.object({
-    tokenId: zTokenId
+    tokenId: z.union([zFungibleTokenId, zTokenId])
   }),
-  output: zErc1155Mt,
+  output: z.union([zRespectFungibleMt, zRespectAwardMt]),
   handler: async ({ input, options, logger }) => {
     logger.debug(`token/${input.tokenId}  ${stringify(input)}. options: ${stringify(options)}`);
     return await handleGetToken(input.tokenId);

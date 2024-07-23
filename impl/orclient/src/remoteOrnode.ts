@@ -72,7 +72,7 @@ export class RemoteOrnode implements IORNode {
     return data.periodNum;
   }
 
-  async getToken(tokenId: TokenId): Promise<Erc1155Mt> {
+  async getToken(tokenId: TokenId): Promise<RespectFungibleMt | RespectAwardMt> {
     const data = await this._makeOrnodeRequest("post", "/v1/getToken", { tokenId });
     return data;
   }

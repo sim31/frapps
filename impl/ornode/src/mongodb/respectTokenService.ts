@@ -5,7 +5,7 @@ import { EthAddress, PropId } from "ortypes";
 import { Proposal } from "ortypes/ornode.js";
 import { Optional } from "utility-types";
 import { zProposalToEntity, zRespectAwardToEntity } from "./transformers/nodeToEntity.js";
-import { RespectAwardMt, TokenId } from "ortypes/respect1155.js";
+import { RespectAwardMt, TokenId, BurnData } from "ortypes/respect1155.js";
 
 export class RespectTokenService {
   private readonly db: Db;
@@ -36,7 +36,7 @@ export class RespectTokenService {
   async createAwards(awards: RespectAwardMt[]): Promise<void> {
     const entities = awards.map(award => zRespectAwardToEntity.parse(award));
     try {
-      console.debug("Inserting: ", entities);
+      console.debug("Inserting: ", JSON.stringify(entities));
       await this.awards.insertMany(entities);
     } catch (err: any) {
       if (err.result?.result?.insertedIds !== undefined) {
@@ -58,4 +58,12 @@ export class RespectTokenService {
     });
     console.log(`Requested to delete: ${tokenIds}. Delete count: ${result.deletedCount}`);
   }
+
+  async burnAwards(tokenIds: TokenId[], burnData: BurnData): Promise<void> {
+    const filter = { "properties.tokenId": { $in: tokenIds } };
+    const update = { $set: { "properties.burned": burnData } };
+    const result = await this.awards.updateMany(filter, update);
+    console.log(`Requested to burn: ${tokenIds}. Burn data: ${burnData}, modified count: ${result.modifiedCount}`);
+  }
+
 }

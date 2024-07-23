@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import { addCustomIssue } from "ortypes";
 import { z } from "zod";
 import { zRespectAwardMt } from "ortypes/respect1155.js";
+import { stringify, withoutUndefined } from "ts-utils";
 
 export const zProposalToEntity = zProposal.transform((prop, ctx) => {
   if (prop.createTs === undefined) {
@@ -11,17 +12,20 @@ export const zProposalToEntity = zProposal.transform((prop, ctx) => {
     return z.NEVER;
   }
   const entity: ProposalEntity = {
-    ...prop,
+    ...withoutUndefined(prop),
     createTs: prop.createTs,
     _id: new ObjectId()
   }
+  // This is needed because if you insert object with undefined set for some field,
+  // you will get back null for that field once you retrieve the object.
+  // That will fail Zod parsing...
+  // https://devblog.me/wtf-mongo
   return entity;
-
 }).pipe(zProposalEntity);
 
 export const zTickToEntity = zTickEvent.transform((tick, ctx) => {
   const entity: TickEntity = {
-    ...tick,
+    ...withoutUndefined(tick),
     _id: new ObjectId()
   }
   return entity;
@@ -29,7 +33,7 @@ export const zTickToEntity = zTickEvent.transform((tick, ctx) => {
 
 export const zRespectAwardToEntity = zRespectAwardMt.transform(award => {
   const entity: RespectAwardEntity = {
-    ...award,
+    ...withoutUndefined(award),
     _id: new ObjectId()
   };
   return entity;

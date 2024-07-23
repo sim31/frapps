@@ -13,6 +13,27 @@ export const stringify = (obj: any) => JSON.stringify(
   2
 );
 
+export const deleteUndefined = (obj: any) => Object.keys(obj).forEach(key => {
+  if (typeof obj[key] === 'object') {
+    deleteUndefined(obj[key]);
+  } else if (obj[key] === undefined) {
+    delete obj[key];
+  }
+});
+
+export function withoutUndefined<T extends object>(obj: T): T {
+  let newObj: any = {};
+  const o: any = obj;
+  Object.keys(obj).forEach((key) => {
+    if (typeof o[key] === 'object' && o[key] !== null) {
+      newObj[key] = withoutUndefined(o[key]);
+    } else if (o[key] !== undefined) {
+      newObj[key] = o[key];
+    }
+  });
+  return newObj as T;
+}
+
 
 export { ErrorWithCause } from "./ErrorWithCause.js";
 

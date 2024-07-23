@@ -26,7 +26,7 @@ import { ProposalService } from "./mongodb/proposalService.js";
 import { TickService } from "./mongodb/tickService.js";
 import { ProposalEntity, TickEvent } from "./mongodb/entities.js";
 import { BigNumberish } from "ethers";
-import { RespectAwardMt, RespectFungibleMt, TokenId, unpackTokenId } from "ortypes/respect1155.js";
+import { BurnData, RespectAwardMt, RespectFungibleMt, TokenId, unpackTokenId } from "ortypes/respect1155.js";
 import { TokenMtCfg } from "./config.js";
 import { RespectTokenService } from "./mongodb/respectTokenService.js";
 import { Erc1155Mt } from "ortypes/erc1155.js";
@@ -205,7 +205,10 @@ export class MongoOrnode implements IORNode {
     values: BigNumberish[],
     event: any
   ) {
-    console.debug(`Handling transfer event. from: ${from}, to: ${to}, ids: ${ids}, values: ${values}`);
+    const { txHash } = this._parseEventObject(event);
+
+    console.debug(`Handling transfer event. from: ${from}, to: ${to}, ids: ${ids}, values: ${values}, tx: ${txHash}`);
+
     if (from === ZeroAddress && to !== ZeroAddress) {
       // A mint
       const awards: RespectAwardMt[] = [];
@@ -218,16 +221,12 @@ export class MongoOrnode implements IORNode {
         const id = toBigInt(idsVal);
         console.debug("id: ", id);
         if (id !== MongoOrnode._fungibleId) {
-          console.debug("ok1");
           if (toBigInt(val) !== 1n) {
             throw new IllegalEvent(event, "value in event should be 1")
           }
-          const denomination = Number(await this._ctx.newRespect.valueOfToken(idsVal));
+          const denomination = await this._ctx.newRespect.valueOfToken(idsVal);
           const levelRes = zValueToRanking.safeParse(denomination);
-
-          console.debug("ok2");
-
-          const { txHash } = this._parseEventObject(event);
+          console.debug("levelRes: ", levelRes);
           
           const tData = unpackTokenId(idsVal);
           awards.push({
@@ -240,9 +239,10 @@ export class MongoOrnode implements IORNode {
               recipient: tData.owner,
               mintType: Number(toBigInt(tData.mintType)),
               periodNumber: Number(toBigInt(tData.periodNumber)),
-              denomination,
+              denomination: Number(denomination),
               level: levelRes.success ? levelRes.data : undefined,
-              mintTxHash: txHash
+              mintTxHash: txHash,
+              burn: null
             }
           })
         }
@@ -250,25 +250,29 @@ export class MongoOrnode implements IORNode {
       console.debug("creating awards: ", JSON.stringify(awards));
       await this._tokenService.createAwards(awards);
     } else if (from !== ZeroAddress && to === ZeroAddress) {
-      // TODO: you should not delete a burned token
+      // Should not delete a burned token
       // Use case: key rotation. When rotating keys you should burn old tokens and issue new, but you would like to have old token metadata for historical record.
+
+      // TODO: retrieve burnReason
+      const burnData: BurnData = {
+        burnTxHash: txHash
+      };
+
       const tokenIds: TokenId[] = [];
       for (let [index, idsVal] of ids.entries()) {
         const val = values[index];
         if (val === undefined) {
           throw new IllegalEvent(event, "values and ids do not match");
         }
-        const id = toBigInt(idsVal);
-        if (id !== MongoOrnode._fungibleId) {
-          if (toBigInt(val) !== 1n) {
-            throw new IllegalEvent(event, "value in event should be 1")
-          }
 
-          tokenIds.push(toBeHex(idsVal));
+        const id = toBigInt(idsVal);
+        console.debug("id: ", id);
+        if (id !== MongoOrnode._fungibleId) {
+          tokenIds.push(toBeHex(idsVal, 32));
         }
       }
       
-      await this._tokenService.deleteAwards(tokenIds);
+      await this._tokenService.burnAwards(tokenIds, burnData);
     } else {
       throw new IllegalEvent(event, "Received transfer event which is neither mint nor burn.");
     }
@@ -394,7 +398,7 @@ export class MongoOrnode implements IORNode {
     return this._cfg.tokenCfg.fungible;
   }
 
-  async getToken(tokenId: TokenId): Promise<Erc1155Mt> {
+  async getToken(tokenId: TokenId): Promise<RespectFungibleMt | RespectAwardMt> {
     if (toBigInt(tokenId) === MongoOrnode._fungibleId) {
       return await this.getRespectMetadata();
     } else {

@@ -1,4 +1,4 @@
-import { Result, ZeroAddress } from "ethers";
+import { Result, ZeroAddress, zeroPadBytes } from "ethers";
 import { isTokenIdValid } from "respect1155-sc/utils/tokenId.js";
 import { Respect1155, Respect1155Interface } from "respect1155-sc/typechain-types/contracts/Respect1155.js";
 import { Respect1155__factory } from "respect1155-sc/typechain-types/index.js";
@@ -26,6 +26,8 @@ export const zTokenId = zBytes32.refine(val => {
   return isTokenIdValid(val);
 });
 export type TokenId = z.infer<typeof zTokenId>;
+
+export const zFungibleTokenId = z.literal(zeroPadBytes("0x00", 32));
 
 export const zTokenIdNum = z.bigint().refine(val => {
   return isTokenIdValid(val);
@@ -120,6 +122,12 @@ export const zRespectFungibleMt = zErc1155Mt.extend({
  */
 export type RespectFungibleMt = z.infer<typeof zRespectFungibleMt>;
 
+export const zBurnData = z.object({
+  burnTxHash: zTxHash.optional(),
+  burnReason: z.string().optional(),
+});
+export type BurnData = z.infer<typeof zBurnData>;
+
 export const zRespectAwardMt = zErc1155Mt
   .omit({ decimals: true })
   .required({ name: true })
@@ -131,11 +139,12 @@ export const zRespectAwardMt = zErc1155Mt
       mintDateTime: z.string().datetime().optional(),
       mintTxHash: zTxHash.optional(),
       denomination: z.number().int().gte(0),
-      periodNumber: zMeetingNum,
+      periodNumber: zPeriodNum,
       groupNum: zGroupNum.optional(),
       level: zRankNum.optional(),
       reason: z.string().optional(),
-      title: z.string().optional()
+      title: z.string().optional(),
+      burn: zBurnData.nullable().optional()
     })
 });
 export type RespectAwardMt = z.infer<typeof zRespectAwardMt>;

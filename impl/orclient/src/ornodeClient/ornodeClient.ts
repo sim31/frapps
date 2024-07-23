@@ -674,17 +674,38 @@ type GetV1GetPeriodNumResponse = {
 };
 
 type PostV1GetTokenInput = {
-    tokenId: string;
+    tokenId: "0x0000000000000000000000000000000000000000000000000000000000000000" | string;
 };
 
 type PostV1GetTokenResponse = {
     status: "success";
     data: {
         name?: string | undefined;
-        decimals?: number | undefined;
+        decimals: 0;
         description?: string | undefined;
         image?: string | undefined;
         properties?: {} | undefined;
+    } | {
+        name: string;
+        description?: string | undefined;
+        image?: string | undefined;
+        properties: {
+            tokenId: string;
+            recipient: any;
+            mintType: number;
+            mintDateTime?: string | undefined;
+            mintTxHash?: string | undefined;
+            denomination: number;
+            periodNumber: number;
+            groupNum?: number | undefined;
+            level?: number | undefined;
+            reason?: string | undefined;
+            title?: string | undefined;
+            burn?: ({
+                burnTxHash?: string | undefined;
+                burnReason?: string | undefined;
+            } | null) | undefined;
+        };
     };
 } | {
     status: "error";
@@ -716,6 +737,10 @@ type PostV1GetAwardResponse = {
             level?: number | undefined;
             reason?: string | undefined;
             title?: string | undefined;
+            burn?: ({
+                burnTxHash?: string | undefined;
+                burnReason?: string | undefined;
+            } | null) | undefined;
         };
     };
 } | {
@@ -746,17 +771,38 @@ type PostV1GetRespectMetadataResponse = {
 };
 
 type GetV1TokenTokenIdInput = {
-    tokenId: string;
+    tokenId: "0x0000000000000000000000000000000000000000000000000000000000000000" | string;
 };
 
 type GetV1TokenTokenIdResponse = {
     status: "success";
     data: {
         name?: string | undefined;
-        decimals?: number | undefined;
+        decimals: 0;
         description?: string | undefined;
         image?: string | undefined;
         properties?: {} | undefined;
+    } | {
+        name: string;
+        description?: string | undefined;
+        image?: string | undefined;
+        properties: {
+            tokenId: string;
+            recipient: any;
+            mintType: number;
+            mintDateTime?: string | undefined;
+            mintTxHash?: string | undefined;
+            denomination: number;
+            periodNumber: number;
+            groupNum?: number | undefined;
+            level?: number | undefined;
+            reason?: string | undefined;
+            title?: string | undefined;
+            burn?: ({
+                burnTxHash?: string | undefined;
+                burnReason?: string | undefined;
+            } | null) | undefined;
+        };
     };
 } | {
     status: "error";
@@ -789,6 +835,10 @@ type PostV1GetAwardsOfResponse = {
                 level?: number | undefined;
                 reason?: string | undefined;
                 title?: string | undefined;
+                burn?: ({
+                    burnTxHash?: string | undefined;
+                    burnReason?: string | undefined;
+                } | null) | undefined;
             };
         }[];
     };
