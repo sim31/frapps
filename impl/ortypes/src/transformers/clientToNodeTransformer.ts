@@ -206,8 +206,8 @@ function mkzCBurnRespReqToProposal(orctx: ORContext) {
   return zBurnRespectRequest.transform(async (val, ctx) => {
     try {
       const args: BurnRespectArgs = {
-        tokenId: val.tokenId,
-        data: ""
+        tokenId: zBigNumberishToBigint.parse((val.tokenId)),
+        data: "0x"
       };
       const cdata = respectInterface.encodeFunctionData(
         "burnRespect",

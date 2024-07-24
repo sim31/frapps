@@ -46,6 +46,7 @@ import {
   EthAddress,
   zBigNumberishToBigint,
   zBytesLikeToBytes,
+  zBigIntToBytes32,
 } from "../eth.js";
 import { z } from "zod";
 import { ConfigWithOrnode, ORContext as OrigORContext } from "../orContext.js";
@@ -192,7 +193,8 @@ function mkzNProposalToRespectAccount(orctx: ORContext) {
         value: args.request.value,
         title: attachment.mintTitle,
         reason: attachment.mintReason,
-        metadata: zNAttachmentToMetadata.parse(attachment)
+        metadata: zNAttachmentToMetadata.parse(attachment),
+        tokenId: zBigIntToBytes32.parse(args.request.id)
       }
 
       return r;
@@ -225,7 +227,7 @@ function mkzNProposalToBurnRespect(orctx: ORContext) {
 
       const r: BurnRespect = {
         propType: zPropType.Enum.burnRespect,
-        tokenId: args.tokenId,
+        tokenId: zBigIntToBytes32.parse(args.tokenId),
         reason: attachment.burnReason,
         metadata: zNAttachmentToMetadata.parse(attachment)
       }

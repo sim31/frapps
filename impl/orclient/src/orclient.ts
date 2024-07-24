@@ -1,5 +1,5 @@
 import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt, toBeHex } from "ethers";
-import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp, VoteType, Vote } from "ortypes/orclient.js";
+import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp, VoteType, Vote, GetTokenOpts } from "ortypes/orclient.js";
 import { TxFailed } from "./errors.js";
 import { ORContext, ConfigWithOrnode } from "ortypes/orContext.js";
 import { NodeToClientTransformer, zNVoteToClient } from "ortypes/transformers/nodeToClientTransformer.js";
@@ -224,20 +224,20 @@ export class ORClient {
     return await this.getPeriodNum();
   }
 
-  async getToken(tokenId: TokenId): Promise<Erc1155Mt> {
+  async getToken(tokenId: TokenId, opts?: GetTokenOpts): Promise<Erc1155Mt> {
     // TODO: fix type for ornode
-    return await this._ctx.ornode.getToken(tokenId);
+    return await this._ctx.ornode.getToken(tokenId, opts);
   }
-  async getAward(tokenId: TokenId): Promise<RespectAwardMt> {
+  async getAward(tokenId: TokenId, opts?: GetTokenOpts): Promise<RespectAwardMt> {
     // TODO: fix type for ornode
-    return await this._ctx.ornode.getAward(tokenId);
+    return await this._ctx.ornode.getAward(tokenId, opts);
   }
   async getRespectMetadata(): Promise<RespectFungibleMt> {
     return await this._ctx.ornode.getRespectMetadata();
   }
 
-  async getAwardsOf(account: EthAddress): Promise<RespectAwardMt[]> {
-    return await this._ctx.ornode.getAwardsOf(account);
+  async getAwardsOf(account: EthAddress, opts?: GetTokenOpts): Promise<RespectAwardMt[]> {
+    return await this._ctx.ornode.getAwardsOf(account, opts);
   }
 
   private async _submitProposal(proposal: NProp, vote?: VoteWithProp): Promise<PutProposalRes> {

@@ -252,20 +252,20 @@ export class ORCli {
     return await this.orclient.respectOf(account);
   }
 
-  async getToken(tokenId: TokenId): Promise<Erc1155Mt> {
-    return this.orclient.getToken(tokenId);
+  async getToken(tokenId: TokenId, opts?: any): Promise<Erc1155Mt> {
+    return this.orclient.getToken(tokenId, opts);
   }
 
-  async getAward(tokenId: TokenId): Promise<RespectAwardMt> {
-    return this.orclient.getAward(tokenId);
+  async getAward(tokenId: TokenId, opts?: any): Promise<RespectAwardMt> {
+    return this.orclient.getAward(tokenId, opts);
   }
 
   async getRespectMetadata(): Promise<RespectFungibleMt> {
     return this.orclient.getRespectMetadata();
   }
 
-  async getAwardsOf(account: EthAddress): Promise<RespectAwardMt[]> {
-    return this.orclient.getAwardsOf(account);
+  async getAwardsOf(account: EthAddress, opts?: any): Promise<RespectAwardMt[]> {
+    return this.orclient.getAwardsOf(account, opts);
   }
 
   async getPeriodNum(): Promise<number> {

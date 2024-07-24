@@ -1,5 +1,5 @@
 import { EthAddress, IORNode, PropId, ProposalInvalid, ProposalNotCreated, ProposalNotFound } from "ortypes";
-import { ORNodePropStatus, Proposal, ProposalFull, zErrorType } from "ortypes/ornode.js";
+import { GetTokenOpts, ORNodePropStatus, Proposal, ProposalFull, zErrorType } from "ortypes/ornode.js";
 import { OrnodeClient, createOrnodeClient } from "./ornodeClient/index.js";
 import { Input, Method, Path, Response } from "./ornodeClient/ornodeClient.js"
 import { stringify } from "ts-utils";
@@ -72,13 +72,19 @@ export class RemoteOrnode implements IORNode {
     return data.periodNum;
   }
 
-  async getToken(tokenId: TokenId): Promise<RespectFungibleMt | RespectAwardMt> {
-    const data = await this._makeOrnodeRequest("post", "/v1/getToken", { tokenId });
+  async getToken(
+    tokenId: TokenId,
+    opts?: GetTokenOpts
+  ): Promise<RespectFungibleMt | RespectAwardMt> {
+    const data = await this._makeOrnodeRequest("post", "/v1/getToken", { tokenId, opts });
     return data;
   }
 
-  async getAward(tokenId: TokenId): Promise<RespectAwardMt> {
-    const data = await this._makeOrnodeRequest("post", "/v1/getAward", { tokenId });
+  async getAward(
+    tokenId: TokenId,
+    opts?: GetTokenOpts
+  ): Promise<RespectAwardMt> {
+    const data = await this._makeOrnodeRequest("post", "/v1/getAward", { tokenId, opts });
     return data;
   }
 
@@ -87,8 +93,11 @@ export class RemoteOrnode implements IORNode {
     return data;
   }
 
-  async getAwardsOf(account: EthAddress): Promise<RespectAwardMt[]> {
-    const data = await this._makeOrnodeRequest("post", "/v1/getAwardsOf", { account });
+  async getAwardsOf(
+    account: EthAddress,
+    opts?: GetTokenOpts
+  ): Promise<RespectAwardMt[]> {
+    const data = await this._makeOrnodeRequest("post", "/v1/getAwardsOf", { account, opts });
     return data.awards;
   }
 

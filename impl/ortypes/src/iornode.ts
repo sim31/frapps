@@ -1,6 +1,13 @@
 import { stringify } from "ts-utils";
 import { PropId } from "./orec.js";
-import { ErrorType, ORNodePropStatus, Proposal, ProposalFull, zErrorType } from "./ornode.js";
+import {
+  ErrorType,
+  ORNodePropStatus,
+  Proposal,
+  ProposalFull,
+  zErrorType,
+  GetTokenOpts,
+} from "./ornode.js";
 import { RespectAwardMt, RespectFungibleMt } from "./respect1155.js";
 import { Erc1155Mt, TokenId } from "./erc1155.js";
 import { EthAddress } from "./eth.js";
@@ -21,14 +28,24 @@ export interface IORNode {
 
   getPeriodNum: () => Promise<number>;
 
-  getToken: (tokenId: TokenId) => Promise<RespectFungibleMt | RespectAwardMt>;
-  getAward: (tokenId: TokenId) => Promise<RespectAwardMt>;
+  /**
+   * @param opts - options. default: { burned: true }
+   */
+  getToken: (tokenId: TokenId, opts?: GetTokenOpts) => Promise<RespectFungibleMt | RespectAwardMt>;
+  /**
+   * @param opts - options. default: { burned: true }
+   */
+  getAward: (tokenId: TokenId, opts?: GetTokenOpts) => Promise<RespectAwardMt>;
   getRespectMetadata: () => Promise<RespectFungibleMt>;
-  getAwardsOf: (account: EthAddress) => Promise<RespectAwardMt[]>;
+  /**
+   * @param opts - options. default: { burned: false }
+   */
+  getAwardsOf: (account: EthAddress, opts?: GetTokenOpts) => Promise<RespectAwardMt[]>;
 }
 
 export class ProposalNotFound extends Error {
   name: ErrorType = zErrorType.enum.ProposalNotFound;
+  statusCode: number = 400
 
   constructor(propId: PropId) {
     const msg = `Proposal with id ${propId} does not exist`;
@@ -47,6 +64,7 @@ export class ProposalNotCreated extends Error {
 export class ProposalInvalid extends Error {
   name: ErrorType = zErrorType.enum.ProposalNotCreated;
   cause: string;
+  statusCode: number = 400
 
   constructor(proposal: Proposal, cause: any) {
     const msg = `Proposal invalid. Proposal: ${stringify(proposal)}`;
@@ -56,7 +74,8 @@ export class ProposalInvalid extends Error {
 }
 
 export class TokenNotFound extends Error {
-  name: ErrorType = zErrorType.enum.ProposalNotFound;
+  name: ErrorType = zErrorType.enum.TokenNotFound;
+  statusCode: number = 404
 
   constructor(tokenId: TokenId) {
     const msg = `Token with id ${tokenId} does not exist`;

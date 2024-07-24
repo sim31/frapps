@@ -6,6 +6,11 @@ import { propId } from "orec/utils";
 import { zBytesLikeToBytes, zTxHash } from "./eth.js";
 import { zTimestamp } from "./common.js";
 
+export {
+  zGetTokenOpts,
+  GetTokenOpts,
+} from "./respect1155.js";
+
 export const zPropContent = zProposedMsg;
 export type PropContent = z.infer<typeof zPropContent>;
 
@@ -210,7 +215,6 @@ export const zErrorType = z.enum([
   "TokenNotFound"
 ]);
 export type ErrorType = z.infer<typeof zErrorType>;
-
 
 export function idOfRespectBreakoutAttach(attachment: RespectBreakoutAttachment) {
   const a: Required<RespectBreakoutAttachment> = {

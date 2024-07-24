@@ -29,7 +29,10 @@ export const resultHandler = createResultHandler({
       return;
     }
 
-    const statusCode = getStatusCodeFromError(error);
+    let statusCode = getStatusCodeFromError(error);
+    if (typeof (error as any)['statusCode'] === 'number') {
+      statusCode = (error as any)['statusCode'];
+    }
     const message = getMessageFromError(error);
     console.debug("Returning error: ", error);
     response.status(statusCode).json({

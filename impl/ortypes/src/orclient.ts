@@ -6,6 +6,8 @@ import { zBytes, zEthAddress, zTxHash, zUint } from "./eth.js";
 import { zTimestamp } from "./common.js";
 import { ErrorType } from "ethers-decode-error";
 
+export { zGetTokenOpts, GetTokenOpts } from "./respect1155.js";
+
 export const zProposalMetadata = z.object({
   propTitle: z.string().optional(),
   propDescription: z.string().optional()
@@ -78,7 +80,8 @@ export const zRespectAccount = zDecodedPropBase.extend({
   account: zEthAddress,
   value: zUint,
   title: z.string(),
-  reason: z.string()
+  reason: z.string(),
+  tokenId: zTokenId
 });
 export type RespectAccount = z.infer<typeof zRespectAccount>;
 
@@ -91,7 +94,7 @@ export type RespectAccount = z.infer<typeof zRespectAccount>;
 
 // }
 export const zRespectAccountRequest = zRespectAccount
-  .omit({ propType: true })
+  .omit({ propType: true, tokenId: true })
   .partial({ mintType: true, meetingNum: true, metadata: true })
 export type RespectAccountRequest = z.infer<typeof zRespectAccountRequest>;
 

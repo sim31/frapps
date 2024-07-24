@@ -12,13 +12,11 @@ export const zPropEntityToProp = zProposalEntity.transform((entity) => {
 }).pipe(zProposal);
 
 export const zRAwardEntityToAward = zRespectAwardEntity.transform(entity => {
-  // TODO: issue - I'm storing fields with value - undefined and on retrieval they are made to null
-  // https://devblog.me/wtf-mongo
-  // Maybe do this before inserting? https://stackoverflow.com/questions/25421233/javascript-removing-undefined-fields-from-an-object
   const award = {
     ...entity,
     _id: undefined
   };
   const naward: RespectAwardMt = award;
+  console.debug("zRAwrdEntityToAward ok");
   return naward;
 }).pipe(zRespectAwardMt);

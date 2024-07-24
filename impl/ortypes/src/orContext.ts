@@ -142,12 +142,12 @@ export class ORContext<CT extends Config> {
       ornode: config.ornode as CT_['ornode'],
     };
 
-    const ctx = new ORContext<CT_>(st as any, runner);
+    const ctx = new ORContext<CT_>(st as any, runner, false);
     ctx._oldRespectAddr = oldRespAddr;
 
     await ctx.validate();
 
-    console.debug("This is new 4");
+    // console.debug("This is new 4");
 
     return ctx;
   }

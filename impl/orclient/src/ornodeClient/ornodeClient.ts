@@ -675,6 +675,9 @@ type GetV1GetPeriodNumResponse = {
 
 type PostV1GetTokenInput = {
     tokenId: "0x0000000000000000000000000000000000000000000000000000000000000000" | string;
+    opts?: {
+        burned?: boolean;
+    };
 };
 
 type PostV1GetTokenResponse = {
@@ -717,6 +720,9 @@ type PostV1GetTokenResponse = {
 
 type PostV1GetAwardInput = {
     tokenId: string;
+    opts?: {
+        burned?: boolean;
+    };
 };
 
 type PostV1GetAwardResponse = {
@@ -814,6 +820,9 @@ type GetV1TokenTokenIdResponse = {
 
 type PostV1GetAwardsOfInput = {
     account: string;
+    opts?: {
+        burned?: boolean;
+    };
 };
 
 type PostV1GetAwardsOfResponse = {

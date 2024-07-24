@@ -17,9 +17,19 @@ import {
   Url,
   Bytes32,
   zValueToRanking,
-  TokenNotFound
+  TokenNotFound,
 } from "ortypes/index.js"
-import { ORNodePropStatus, Proposal, ProposalFull, ProposalValid, Tick, zORNodePropStatus, zProposal, zProposalValid } from "ortypes/ornode.js";
+import {
+  ORNodePropStatus,
+  Proposal,
+  ProposalFull,
+  ProposalValid,
+  Tick,
+  zORNodePropStatus,
+  zProposal,
+  zProposalValid,
+  GetTokenOpts
+} from "ortypes/ornode.js";
 import { JsonRpcProvider, Provider, toBeHex, toBigInt, ZeroAddress } from "ethers";
 import { MongoClient } from "mongodb";
 import { ProposalService } from "./mongodb/proposalService.js";
@@ -288,7 +298,7 @@ export class MongoOrnode implements IORNode {
   }> {
     const url = config.mongoUrl ?? configDefaults.mongoUrl;
     const dbName = config.dbName ?? configDefaults.dbName;
-    const mgClient = new MongoClient(url);
+    const mgClient = new MongoClient(url, { directConnection: true });
     await mgClient.connect();
 
     const propService = new ProposalService(mgClient, dbName);
@@ -383,14 +393,18 @@ export class MongoOrnode implements IORNode {
     return tickNum;
   }
 
-  async getAward(tokenId: TokenId): Promise<RespectAwardMt> {
+  async getAward(
+    tokenId: TokenId,
+    opts?: GetTokenOpts
+  ): Promise<RespectAwardMt> {
     if (toBigInt(tokenId) === MongoOrnode._fungibleId) {
       throw new Error(`Invalid request: ${tokenId} is an id of a fungible token`);
     }
-    const award = await this._tokenService.findAward(tokenId);
+    const award = await this._tokenService.findAward(tokenId, opts);
     if (award === null) {
       throw new TokenNotFound(tokenId);
     }
+    console.debug("Retrieved award: ", stringify(award))
     return award;
   }
 
@@ -398,16 +412,22 @@ export class MongoOrnode implements IORNode {
     return this._cfg.tokenCfg.fungible;
   }
 
-  async getToken(tokenId: TokenId): Promise<RespectFungibleMt | RespectAwardMt> {
+  async getToken(
+    tokenId: TokenId,
+    opts?: GetTokenOpts
+  ): Promise<RespectFungibleMt | RespectAwardMt> {
     if (toBigInt(tokenId) === MongoOrnode._fungibleId) {
       return await this.getRespectMetadata();
     } else {
-      return await this.getAward(tokenId);
+      return await this.getAward(tokenId, opts);
     }
   }
 
-  async getAwardsOf(account: EthAddress): Promise<RespectAwardMt[]> {
-    const awards = await this._tokenService.findAwardsOf(account);
+  async getAwardsOf(
+    account: EthAddress,
+    opts?: GetTokenOpts
+  ): Promise<RespectAwardMt[]> {
+    const awards = await this._tokenService.findAwardsOf(account, opts);
     return awards;
   }
 

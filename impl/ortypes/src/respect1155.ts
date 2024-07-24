@@ -98,7 +98,7 @@ const mintRespectVerify = zMintRespectArgs.refine((val) => {
 export type MintRespectArgs = z.infer<typeof zMintRespectArgs>;
 
 export const zBurnRespectArgsBase = z.object({
-  tokenId: zTokenId,
+  tokenId: zTokenIdNum,
   data: zBytesLike
 });
 export const zBurnRespectArgs = preprocessResultOrObj(zBurnRespectArgsBase);
@@ -148,5 +148,10 @@ export const zRespectAwardMt = zErc1155Mt
     })
 });
 export type RespectAwardMt = z.infer<typeof zRespectAwardMt>;
+
+export const zGetTokenOpts = z.object({
+  burned: z.boolean().default(false)
+})
+export type GetTokenOpts = z.infer<typeof zGetTokenOpts>;
 
 export * from "respect1155-sc/utils/tokenId.js";

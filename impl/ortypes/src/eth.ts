@@ -1,4 +1,4 @@
-import { getAddress, getBigInt, hexlify, isBytesLike, isHexString, ZeroAddress } from 'ethers';
+import { getAddress, getBigInt, hexlify, isBytesLike, isHexString, toBeHex, ZeroAddress } from 'ethers';
 import { z } from "zod";
 import { addCustomIssue } from './zErrorHandling.js';
 
@@ -85,5 +85,7 @@ export const zBigNumberishToBigint = zBigNumberish.transform((val, ctx) => {
   return getBigInt(val);
 }).pipe(z.bigint());
 
-
+export const zBigIntToBytes32 = z.bigint().transform(val => {
+  return toBeHex(val, 32);
+}).pipe(zBytes32);
 
