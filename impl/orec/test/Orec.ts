@@ -11,21 +11,29 @@ import {
   isBytesLike,
   toUtf8Bytes, hexlify
 } from "ethers";
-import { MintableToken, Orec } from "../typechain-types/index.js";
+import { MintableRespectToken, MintableToken, Orec } from "../typechain-types/index.js";
 import {
   isPropId, propId, PropId,
   MIN_1, DAY_1, HOUR_1, DAY_6,
   ExecStatus, VoteType,
-  TokenType
 } from "../utils";
 
 const MAX_LIVE_VOTES = 4;
 
-async function deployToken(symbol: string = "TOK") {
+type TokenType = "MintableToken" | "MintableRespectToken";
+
+let irespectId: string;
+
+async function deployToken(
+  symbol: string = "TOK",
+  contract: TokenType = "MintableToken"
+) {
   // Contracts are deployed using the first signer/account by default
   const [tokenOwner, otherAccount] = await hre.ethers.getSigners();
 
-  const tokenFactory = await hre.ethers.getContractFactory("MintableToken");
+  const tokenFactory = contract === "MintableToken"
+    ? await hre.ethers.getContractFactory("MintableToken")
+    : await hre.ethers.getContractFactory("MintableRespectToken");
   const token = await tokenFactory.deploy(tokenOwner, "TOKEN", symbol);
   const tokenAddress = await token.getAddress();
 
@@ -56,11 +64,11 @@ async function deployToken(symbol: string = "TOK") {
   return { token, tokenOwner, otherAccount, tokenAddress, buildMintProp, buildBurnProp };
 }
 
-async function deployOrec() {
+async function deployOrec(tokenSymbol?: string, tokenType?: TokenType) {
   // Contracts are deployed using the first signer/account by default
   const [owner, otherAccount] = await hre.ethers.getSigners();
 
-  const { token, tokenOwner, tokenAddress, buildMintProp, buildBurnProp } = await deployToken();
+  const { token, tokenOwner, tokenAddress, buildMintProp, buildBurnProp } = await deployToken(tokenSymbol, tokenType);
 
   const Orec = await hre.ethers.getContractFactory("Orec");
   const orec = await Orec.deploy(
@@ -71,8 +79,21 @@ async function deployOrec() {
   return { orec, token, tokenOwner, tokenAddress, buildMintProp, buildBurnProp };
 }
 
-async function deployOrecWithProposals() {
-  const { orec, token, tokenOwner, tokenAddress, buildMintProp, buildBurnProp } = await loadFixture(deployOrec);
+async function deployOrecWithToken() {
+  return await deployOrec();
+}
+
+async function deployOrecWithRespect() {
+  const r = await deployOrec("RES", "MintableRespectToken");
+  const { token } = r;
+  irespectId = await (token as MintableRespectToken).respectInterfaceId();
+  return r;
+}
+
+async function _deployOrecWithProposals(tokenType: TokenType) {
+  const { orec, token, tokenOwner, tokenAddress, buildMintProp, buildBurnProp } = tokenType === "MintableToken"
+    ? await loadFixture(deployOrecWithToken)
+    : await loadFixture(deployOrecWithRespect);
 
   const accounts = await hre.ethers.getSigners();
 
@@ -105,8 +126,21 @@ async function deployOrecWithProposals() {
    };
 }
 
-async function deployOrecWithProposalsAndBalances() {
-  const vars = await loadFixture(deployOrecWithProposals);
+async function deployOrecWithProposals() {
+  return await _deployOrecWithProposals("MintableToken");
+}
+
+async function deployOrecWithRespAndProposals() {
+  const r = await _deployOrecWithProposals("MintableRespectToken");
+  const { token } = r;
+  expect(await token.supportsInterface(irespectId)).to.be.true;
+  return r;
+}
+
+async function _deployOrecWithProposalsAndBalances(tokenType: TokenType) {
+  const vars = tokenType === "MintableToken"
+    ? await loadFixture(deployOrecWithProposals)
+    : await loadFixture(deployOrecWithRespAndProposals);
   const { token, accounts, orec } = vars;
 
   await expect(token.mint(accounts[0], 5)).to.not.be.reverted;
@@ -126,6 +160,17 @@ async function deployOrecWithProposalsAndBalances() {
   await token.transferOwnership(orec);
 
   return vars;
+}
+
+async function deployOrecWithProposalsAndBalances() {
+  return await _deployOrecWithProposalsAndBalances("MintableToken");
+}
+
+async function deployOrecRespWithProposalsAndBalances() {
+  const r = await _deployOrecWithProposalsAndBalances("MintableRespectToken");
+  const { token } = r;
+  expect(await token.supportsInterface(irespectId)).to.be.true;
+  return r;
 }
 
 describe("Orec", function () {
@@ -161,19 +206,19 @@ describe("Orec", function () {
 
   describe("Deployment", function () {
     it("Should set respectContract", async function () {
-      const { orec, token, tokenAddress } = await loadFixture(deployOrec);
+      const { orec, token, tokenAddress } = await loadFixture(deployOrecWithToken);
 
       expect(await orec.respectContract()).to.be.equal(tokenAddress);
     });
 
     it("should set itself as the owner", async function() {
-      const { orec, token, tokenAddress } = await loadFixture(deployOrec);
+      const { orec, token, tokenAddress } = await loadFixture(deployOrecWithToken);
 
       expect(await orec.owner()).to.be.equal(await orec.getAddress())
     });
 
     it("should set voteLen, vetoLen and minWeight", async function() {
-      const { orec, token, tokenAddress } = await loadFixture(deployOrec);
+      const { orec, token, tokenAddress } = await loadFixture(deployOrecWithToken);
 
       expect(await orec.voteLen()).to.be.equal(DAY_1);
       expect(await orec.vetoLen()).to.be.equal(DAY_6);
@@ -187,7 +232,8 @@ describe("Orec", function () {
 
   describe("propose", function() {
     it("should store a proposal with initial values", async function() {
-      const { orec, token, tokenAddress, buildMintProp } = await loadFixture(deployOrec);
+      const { orec, token, tokenAddress, buildMintProp } = await loadFixture(deployOrecWithToken);
+
       const accounts = await hre.ethers.getSigners();
 
       // token.mint(accounts[2], 10).
@@ -203,7 +249,7 @@ describe("Orec", function () {
     });
 
     it("should store proposal with current block time as createTime", async function() {
-      const { orec, buildMintProp } = await loadFixture(deployOrec);
+      const { orec, buildMintProp } = await loadFixture(deployOrecWithToken);
       const accounts = await hre.ethers.getSigners();
 
       const prop = buildMintProp(accounts[3].address, 20);
@@ -216,7 +262,7 @@ describe("Orec", function () {
     });
 
     it("should not allow proposing what already exist", async function() {
-      const { orec, token, tokenAddress, buildMintProp } = await loadFixture(deployOrec);
+      const { orec, token, tokenAddress, buildMintProp } = await loadFixture(deployOrecWithToken);
       const accounts = await hre.ethers.getSigners();
 
       // token.mint(accounts[2], 10).
@@ -844,6 +890,192 @@ describe("Orec", function () {
       expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
 
     })
+  });
+
+  describe("support for IRespect implementers as respectContract's", function() {
+
+    describe("Deployment", function () {
+      it("Should set respectContract", async function () {
+        const { orec, token, tokenAddress } = await loadFixture(deployOrecWithRespect);
+        expect(await token.supportsInterface(irespectId)).to.be.true;
+
+        expect(await orec.respectContract()).to.be.equal(tokenAddress);
+      });
+
+      it("should set itself as the owner", async function() {
+        const { orec, token, tokenAddress } = await loadFixture(deployOrecWithToken);
+
+        expect(await orec.owner()).to.be.equal(await orec.getAddress())
+      });
+
+      it("should set voteLen, vetoLen and minWeight", async function() {
+        const { orec, token, tokenAddress } = await loadFixture(deployOrecWithToken);
+
+        expect(await orec.voteLen()).to.be.equal(DAY_1);
+        expect(await orec.vetoLen()).to.be.equal(DAY_6);
+        expect(await orec.minWeight()).to.be.equal(5);
+      })
+    });
+
+    describe("vote", function() {
+      describe("voteTime (period: [createTime, createTime + voteLen))", function() {
+        it("should allow voting yes during [createTime, createTime + voteLen) period", async function () {
+          const { orec, accounts, token, proposals: props } = await loadFixture(deployOrecWithRespAndProposals);
+
+          await expectVoteCounted(orec, token, props[0].id, accounts[0], VoteType.Yes);
+
+          await time.increase(HOUR_1);
+
+          await expectVoteCounted(orec, token, props[0].id, accounts[1], VoteType.Yes);
+
+          await time.increase(22n * HOUR_1 + 55n * MIN_1);
+
+          await expectVoteCounted(orec, token, props[0].id, accounts[2], VoteType.Yes);
+        });
+        it("should not allow voting with none vtype", async function() {
+          const { orec, accounts, token, proposals: props} = await loadFixture(deployOrecWithRespAndProposals);
+
+          await expectVoteReverted(orec, token, props[0].id, accounts[0], VoteType.None);
+
+          await time.increase(HOUR_1);
+
+          await expectVoteReverted(orec, token, props[0].id, accounts[1], VoteType.None);
+
+          await time.increase(22n * HOUR_1 + 59n * MIN_1);
+
+          await expectVoteReverted(orec, token, props[0].id, accounts[2], VoteType.None);
+        })
+        it("should increment yesWeight of proposal by the token balance of voter", async function() {
+          const { orec, accounts, token, proposals: props } = await loadFixture(deployOrecRespWithProposalsAndBalances);
+
+          await expectVoteCounted(orec, token, props[0].id, accounts[0], VoteType.Yes);
+          let expYesWeight = await token.balanceOf(accounts[0]);
+          let prop = await orec.proposals(props[0].id);
+          expect(prop.yesWeight).to.be.equal(expYesWeight);
+          expect(prop.noWeight).to.be.equal(0);
+
+          await time.increase(HOUR_1);
+
+          await expectVoteCounted(orec, token, props[0].id, accounts[1], VoteType.Yes);
+          expYesWeight += await token.balanceOf(accounts[1]);
+          prop = await orec.proposals(props[0].id);
+          expect(prop.yesWeight).to.be.equal(expYesWeight);
+          expect(prop.noWeight).to.be.equal(0);
+
+          await time.increase(22n * HOUR_1 + 55n * MIN_1);
+
+          await expectVoteCounted(orec, token, props[0].id, accounts[2], VoteType.Yes);
+          expYesWeight += await token.balanceOf(accounts[2]);
+          prop = await orec.proposals(props[0].id);
+          expect(prop.yesWeight).to.be.equal(expYesWeight);
+          expect(prop.noWeight).to.be.equal(0);
+        });
+        it("should allow voting no during [createTime, createTime+voteLen) period", async function() {
+          const { orec, accounts, token, proposals: props } = await loadFixture(deployOrecRespWithProposalsAndBalances);
+
+          await expectVoteCounted(orec, token, props[0].id, accounts[0], VoteType.No);
+
+          await time.increase(HOUR_1);
+
+          await expectVoteCounted(orec, token, props[0].id, accounts[1], VoteType.No);
+
+          await time.increase(22n * HOUR_1 + 55n * MIN_1);
+
+          await expectVoteCounted(orec, token, props[0].id, accounts[2], VoteType.No);
+        })
+        it("should increment noWeight of proposal by the token balance of a voter", async function() {
+          const { orec, accounts, token, proposals: props } = await loadFixture(deployOrecRespWithProposalsAndBalances);
+
+          await expectVoteCounted(orec, token, props[0].id, accounts[0], VoteType.No);
+          let expNoWeight = await token.balanceOf(accounts[0]);
+          let prop = await orec.proposals(props[0].id);
+          expect(prop.yesWeight).to.be.equal(0);
+          expect(prop.noWeight).to.be.equal(expNoWeight);
+
+          await time.increase(HOUR_1);
+
+          await expectVoteCounted(orec, token, props[0].id, accounts[1], VoteType.No);
+          expNoWeight += await token.balanceOf(accounts[1]);
+          prop = await orec.proposals(props[0].id);
+          expect(prop.yesWeight).to.be.equal(0);
+          expect(prop.noWeight).to.be.equal(expNoWeight);
+        });
+        it("should allow switching from yes to no during [createTime, createTime+voteLen)", async function() {
+          const { orec, accounts, token, proposals: props } = await loadFixture(deployOrecRespWithProposalsAndBalances);
+
+          await expectVoteCounted(orec, token, props[1].id, accounts[3], VoteType.Yes);
+
+          await time.increase(MIN_1);
+
+          await expectVoteCounted(orec, token, props[1].id, accounts[3], VoteType.No);
+        });
+        it("should subtract from yesWeight and add to noWeight in case of a switched vote", async function() {
+          const { orec, accounts, token, proposals: props } = await loadFixture(deployOrecRespWithProposalsAndBalances);
+
+          await expectVoteCounted(orec, token, props[1].id, accounts[3], VoteType.Yes);
+          let expYesWeight = await token.balanceOf(accounts[3]);
+          let expNoWeight = 0n;
+          let prop = await orec.proposals(props[1].id);
+          expect(prop.yesWeight).to.be.equal(expYesWeight);
+          expect(prop.noWeight).to.be.equal(expNoWeight);
+
+          await time.increase(MIN_1);
+
+          await expectVoteCounted(orec, token, props[1].id, accounts[3], VoteType.No);
+          expNoWeight = expYesWeight;
+          expYesWeight = 0n;
+          prop = await orec.proposals(props[1].id);
+          expect(prop.yesWeight).to.be.equal(expYesWeight);
+          expect(prop.noWeight).to.be.equal(expNoWeight);
+        })
+
+        it("should not allow switching from no to yes", async function () {
+          const { orec, accounts, token, proposals: props } = await loadFixture(deployOrecRespWithProposalsAndBalances);
+
+          await expectVoteCounted(orec, token, props[1].id, accounts[3], VoteType.No);
+
+          await time.increase(MIN_1);
+
+          await expectVoteReverted(orec, token, props[1].id, accounts[3], VoteType.Yes);
+        });
+
+        it("should create a proposal if it does not exist yet", async function() {
+          const { orec, accounts, token, voteLen, buildMintProp } = await loadFixture(deployOrecRespWithProposalsAndBalances);
+
+          const prop1 = buildMintProp(accounts[0].address, 10);
+          await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.Yes);
+          let storedProp = await orec.proposals(prop1.id);
+          expect(await orec.proposalExists(prop1.id)).to.be.true;
+          expect(storedProp.createTime).not.equal(0);
+          expect(storedProp.yesWeight).to.equal(await token.balanceOf(accounts[6].address));
+          expect(storedProp.status).to.be.equal(ExecStatus.NotExecuted);
+          expect(storedProp.noWeight).to.be.equal(0);
+
+          await time.increase(HOUR_1);
+          
+          // Check if others can vote on the new proposal as well
+          await expectVoteCounted(orec, token, prop1.id, accounts[7], VoteType.Yes);
+          storedProp = await orec.proposals(prop1.id);
+          expect(await orec.proposalExists(prop1.id)).to.be.true;
+          const newWeight =
+            await token.balanceOf(accounts[6].address) + await token.balanceOf(accounts[7].address);
+          expect(storedProp.yesWeight).to.equal(newWeight);
+          expect(storedProp.status).to.be.equal(ExecStatus.NotExecuted);
+          expect(storedProp.noWeight).to.be.equal(0);
+
+          await time.increase(MIN_1);
+
+          await expectVoteCounted(orec, token, prop1.id, accounts[8], VoteType.No);
+          storedProp = await orec.proposals(prop1.id);
+          expect(await orec.proposalExists(prop1.id)).to.be.true;
+          expect(storedProp.yesWeight).to.equal(newWeight);
+          expect(storedProp.status).to.be.equal(ExecStatus.NotExecuted);
+          expect(storedProp.noWeight).to.be.equal(
+            await token.balanceOf(accounts[8].address)
+          );
+        })
+      });
+    })
   })
 
   describe("Settings", function() {
@@ -882,6 +1114,50 @@ describe("Orec", function () {
 
       // Create a new token
       const { token: newToken, tokenAddress: newTokenAddress} = await deployToken("TOK1");
+      await expect(newToken.mint(accounts[10], 5)).to.not.be.reverted;
+      await expect(newToken.mint(accounts[11], 8)).to.not.be.reverted;
+      await expect(newToken.mint(accounts[12], 13)).to.not.be.reverted;
+      await expect(newToken.mint(accounts[13], 21)).to.not.be.reverted;
+      await expect(newToken.mint(accounts[14], 34)).to.not.be.reverted;
+      await expect(newToken.mint(accounts[15], 55)).to.not.be.reverted;
+      await expect(newToken.mint(accounts[16], 89)).to.not.be.reverted;
+
+      // Set orec ownerRespect to newToken
+      const cdata = orec.interface.encodeFunctionData(
+        "setRespectContract",
+        [newTokenAddress]
+      );
+      const msg: Orec.MessageStruct = {
+        addr: await orec.getAddress(),
+        cdata,
+        memo: toUtf8Bytes("setOwnerRespect1")
+      };
+      const pId = propId(msg);
+
+      await expectVoteCounted(orec, token, pId, accounts[1], VoteType.Yes);
+
+      await time.increase(voteLen + vetoLen);
+
+      await expect(orec.execute(msg)).to.emit(orec, "Executed");
+
+      expect(await orec.respectContract()).to.be.equal(newTokenAddress);
+
+      // Test proposals with new token as ownerRespect
+      const prop = await buildMintProp(accounts[16].address, 10);
+      await expectVoteCounted(orec, newToken, prop.id, accounts[16], VoteType.Yes);
+      await time.increase(voteLen + vetoLen);
+      await expect(orec.execute(prop.msg)).to.not.be.reverted;
+
+      expect(await token.balanceOf(accounts[16].address)).to.be.equal(10);
+    });
+    it("should allow itself to change respect contract to IRespect type", async function() {
+      const { orec, accounts, token, voteLen, vetoLen, buildMintProp, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      // Create a new token
+      const { token: newToken, tokenAddress: newTokenAddress} = await deployToken("TOK1", "MintableRespectToken");
+
+      expect(await newToken.supportsInterface(irespectId)).to.be.true;
+
       await expect(newToken.mint(accounts[10], 5)).to.not.be.reverted;
       await expect(newToken.mint(accounts[11], 8)).to.not.be.reverted;
       await expect(newToken.mint(accounts[12], 13)).to.not.be.reverted;
