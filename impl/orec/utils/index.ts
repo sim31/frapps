@@ -20,6 +20,10 @@ export enum ExecStatus {
   ExecutionFailed
 }
 
+export enum TokenType {
+  ERC20 = 0,
+  ERC1155 = 1
+}
 
 export type PropId = BytesLike;
 export function isPropId(value: any): value is PropId {

@@ -3,8 +3,9 @@ pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-contract MintableToken is Ownable, ERC20 {
+contract MintableToken is Ownable, ERC20, ERC165 {
     constructor(
       address owner,
       string memory name_,
@@ -17,5 +18,10 @@ contract MintableToken is Ownable, ERC20 {
 
     function burn(address account, uint256 amount) public onlyOwner {
         _burn(account, amount);
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
+        return interfaceId == type(IERC20).interfaceId ||
+               super.supportsInterface(interfaceId);
     }
 }

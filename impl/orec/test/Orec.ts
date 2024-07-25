@@ -15,17 +15,18 @@ import { MintableToken, Orec } from "../typechain-types/index.js";
 import {
   isPropId, propId, PropId,
   MIN_1, DAY_1, HOUR_1, DAY_6,
-  ExecStatus, VoteType
+  ExecStatus, VoteType,
+  TokenType
 } from "../utils";
 
 const MAX_LIVE_VOTES = 4;
 
-async function deployToken() {
+async function deployToken(symbol: string = "TOK") {
   // Contracts are deployed using the first signer/account by default
   const [tokenOwner, otherAccount] = await hre.ethers.getSigners();
 
   const tokenFactory = await hre.ethers.getContractFactory("MintableToken");
-  const token = await tokenFactory.deploy(tokenOwner, "TOKEN", "TOK");
+  const token = await tokenFactory.deploy(tokenOwner, "TOKEN", symbol);
   const tokenAddress = await token.getAddress();
 
   let mintNonce = 0;
@@ -162,7 +163,7 @@ describe("Orec", function () {
     it("Should set respectContract", async function () {
       const { orec, token, tokenAddress } = await loadFixture(deployOrec);
 
-      expect(await orec.respectContract()).to.equal(tokenAddress);
+      expect(await orec.respectContract()).to.be.equal(tokenAddress);
     });
 
     it("should set itself as the owner", async function() {
@@ -781,7 +782,7 @@ describe("Orec", function () {
 
       await expect(orec.signal(3, toUtf8Bytes("some data"))).to.be.reverted;
     });
-  })
+  });
 
   describe("Spam prevention", function() {
     it("should not allow having more than max_live_votes of yes votes on live proposals", async function () {
@@ -876,12 +877,52 @@ describe("Orec", function () {
       await time.increase(voteLen + HOUR_1 * 6n);
       await expectVoteCounted(orec, token, pId2, accounts[2], VoteType.Yes);
     });
+    it("should allow itself to change respect contract", async function() {
+      const { orec, accounts, token, voteLen, vetoLen, buildMintProp, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      // Create a new token
+      const { token: newToken, tokenAddress: newTokenAddress} = await deployToken("TOK1");
+      await expect(newToken.mint(accounts[10], 5)).to.not.be.reverted;
+      await expect(newToken.mint(accounts[11], 8)).to.not.be.reverted;
+      await expect(newToken.mint(accounts[12], 13)).to.not.be.reverted;
+      await expect(newToken.mint(accounts[13], 21)).to.not.be.reverted;
+      await expect(newToken.mint(accounts[14], 34)).to.not.be.reverted;
+      await expect(newToken.mint(accounts[15], 55)).to.not.be.reverted;
+      await expect(newToken.mint(accounts[16], 89)).to.not.be.reverted;
+
+      // Set orec ownerRespect to newToken
+      const cdata = orec.interface.encodeFunctionData(
+        "setRespectContract",
+        [newTokenAddress]
+      );
+      const msg: Orec.MessageStruct = {
+        addr: await orec.getAddress(),
+        cdata,
+        memo: toUtf8Bytes("setOwnerRespect1")
+      };
+      const pId = propId(msg);
+
+      await expectVoteCounted(orec, token, pId, accounts[1], VoteType.Yes);
+
+      await time.increase(voteLen + vetoLen);
+
+      await expect(orec.execute(msg)).to.emit(orec, "Executed");
+
+      expect(await orec.respectContract()).to.be.equal(newTokenAddress);
+
+      // Test proposals with new token as ownerRespect
+      const prop = await buildMintProp(accounts[16].address, 10);
+      await expectVoteCounted(orec, newToken, prop.id, accounts[16], VoteType.Yes);
+      await time.increase(voteLen + vetoLen);
+      await expect(orec.execute(prop.msg)).to.not.be.reverted;
+
+      expect(await token.balanceOf(accounts[16].address)).to.be.equal(10);
+    });
     it("should not allow anyone else to change voteLen");
     it("should allow itself to change vetoLen")
     it("should not allow anyone else to change vetoLen")
     it("should allow tself to change minWeight")
     it("should not allow anyone else to change minWeight")
-    it("should allow itself to change respect contract")
     it("should not allow anyone else to change respect contract")
   });
 

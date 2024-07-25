@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.24;
 
+import "orec/contracts/IRespect.sol";
 import "./IRespect1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
@@ -47,9 +48,10 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
         return
+            interfaceId == type(IRespect).interfaceId ||
+            interfaceId == type(IRespect1155).interfaceId ||
             interfaceId == type(IERC1155).interfaceId ||
             interfaceId == type(IERC1155MetadataURI).interfaceId ||
-            interfaceId == type(IRespect1155).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

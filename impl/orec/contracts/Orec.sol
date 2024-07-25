@@ -4,12 +4,15 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "./IRespect.sol";
 
 // Uncomment this line to use console.log
 import "hardhat/console.sol";
 
 /**
- * @title Optimistic Respect-based execution contract
+ * @title Optimistic Respect-based executive contract
  * @notice `respectContract` is expected to be a token contract which has
  * relatively stable distribution (it does not change at all (historical
  * distribution) or it at least does not change when voting on proposals is
@@ -19,7 +22,6 @@ import "hardhat/console.sol";
  * some might have weights determined by the new distribution (depending on
  * when they vote).
  */
-
 contract Orec is Ownable {
     /// PropId = keccak256(Message)
     type PropId is bytes32;
@@ -34,6 +36,8 @@ contract Orec is Ownable {
         VoteType vtype;
         uint256 weight;
     }
+
+    enum RespectAPIType { IRespect, ERC20 }
 
     struct Message {
         address addr;
@@ -82,15 +86,15 @@ contract Orec is Ownable {
     error ProposalDoesNotExist();
     error InvalidVote();
     error MaxLiveYesVotesExceeded();
+    error UnsupportedRespectContract();
 
     uint64 public voteLen = 1 days;
     uint64 public vetoLen = 6 days;
     uint256 public minWeight = 256;
-    // TODO: make it work with ERC-1155
-    // TODO: make configurable
-    // TODO: document info about how it might work with tokens whose balances might change during proposal passing time
-    //      - I think this is best used with parent Respect distribution creating child distribution (so respect created by previous version of a fractal would be issuing new respect through this)
-    IERC20 public respectContract;
+
+    address public respectContract;
+    RespectAPIType internal _respectAPType;
+
     /// It's actually max live *yes* votes
     uint8 public maxLiveVotes;
 
@@ -103,13 +107,13 @@ contract Orec is Ownable {
     mapping (address => EnumerableSet.Bytes32Set) private _liveVotes;
 
     constructor(
-        IERC20 respectContract_,
+        IERC165 respectContract_,
         uint64 voteLenSeconds_,
         uint64 vetoLenSeconds_,
         uint256 minWeight_,
         uint8 maxLiveYesVotes_
     ) Ownable(address(this)) {
-        respectContract = respectContract_;
+        _setRespectContract(respectContract_);
         voteLen = voteLenSeconds_;
         vetoLen = vetoLenSeconds_;
         minWeight = minWeight_;
@@ -220,8 +224,8 @@ contract Orec is Ownable {
         return _isExpired(p);
     }
 
-    function setRespectContract(address newAddr) public onlyOwner {
-        respectContract = IERC20(newAddr);
+    function setRespectContract(IERC165 respect) public onlyOwner {
+        _setRespectContract(respect);
     }
 
     function setMinWeight(uint256 newMinWeigth) public onlyOwner {
@@ -252,6 +256,26 @@ contract Orec is Ownable {
 
     function signal(uint8 signalType, bytes calldata data) public onlyOwner {
         emit Signal(signalType, data);
+    }
+
+    function _setRespectContract(IERC165 respect) internal {
+        address raddr = address(respect);
+        if (respect.supportsInterface(type(IRespect).interfaceId)) {
+            _respectAPType = RespectAPIType.IRespect;
+        } else {
+            // Try using balanceOf function for retrieving vote weight.
+            // Let's just call it here to see if it is working.
+            // Not using supportsInterface in this case because
+            // we don't need it to support full ERC20 interface,
+            // plus old FractalRespect contract does not return
+            // that it supports ERC20.
+            uint256 balance = (IERC20(raddr)).balanceOf(address(this));
+            if (!(balance >= 0 && balance <= type(uint256).max)) {
+                revert UnsupportedRespectContract();
+            }
+            _respectAPType = RespectAPIType.ERC20;
+        }
+        respectContract = raddr;
     }
 
     function _propose(PropId propId, ProposalState storage p) private {
@@ -329,7 +353,7 @@ contract Orec is Ownable {
                 revert MaxLiveYesVotesExceeded();
             }
 
-            uint256 w = respectContract.balanceOf(msg.sender);
+            uint256 w = voteWeightOf(msg.sender);
             newVote = Vote(VoteType.Yes, w);
 
             // console.log("Voting yes. Account: ", msg.sender, ", weight: ", w);
@@ -346,7 +370,7 @@ contract Orec is Ownable {
                 p.yesWeight -= uint256(currentVote.weight);
                 p.noWeight += uint256(currentVote.weight);
             } else {
-                uint256 weight = respectContract.balanceOf(msg.sender);
+                uint256 weight = voteWeightOf(msg.sender);
                 newVote = Vote(VoteType.No, weight);
                 p.noWeight += weight;
             }
@@ -365,6 +389,14 @@ contract Orec is Ownable {
     function updateLiveVotes(address account) public {
         EnumerableSet.Bytes32Set storage voteSet = _liveVotes[account];
         _updateLiveVotes(voteSet);
+    }
+
+    function voteWeightOf(address account) public view returns (uint256) {
+        if (_respectAPType == RespectAPIType.IRespect) {
+            return (IRespect(respectContract)).respectOf(account);
+        } else {
+            return (IERC20(respectContract)).balanceOf(account);
+        }
     }
 
     function _updateLiveVotes(EnumerableSet.Bytes32Set storage voteSet) internal {

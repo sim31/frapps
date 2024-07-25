@@ -2,12 +2,12 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import "orec/contracts/IRespect.sol";
 
 /**
  * @title Interface for Respect tokens
  */
-interface IRespect1155 is IERC1155 {
+interface IRespect1155 is IERC1155, IRespect {
     /**
      * @notice Returns the amount of Respect a particular NTT carries
      * @dev Must throw if `tokenId` is 0
