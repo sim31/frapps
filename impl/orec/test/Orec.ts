@@ -16,7 +16,7 @@ import {
   isPropId, propId, PropId,
   MIN_1, DAY_1, HOUR_1, DAY_6,
   ExecStatus, VoteType,
-  Stage
+  Stage, VoteStatus
 } from "../utils";
 
 const MAX_LIVE_VOTES = 4;
@@ -247,6 +247,14 @@ describe("Orec", function () {
       expect(storedProp.yesWeight).to.equal(0);
       expect(storedProp.noWeight).to.equal(0);
       expect(storedProp.status).to.equal(0);
+
+      expect(await orec.getStage(prop.id)).to.be.equal(Stage.Voting);
+      expect(await orec.getVoteStatus(prop.id)).to.be.equal(VoteStatus.Failing);
+      expect(await orec.isVotePeriod(prop.id)).to.be.true;
+      expect(await orec.isVetoOrVotePeriod(prop.id)).to.be.true;
+      expect(await orec.isVetoPeriod(prop.id)).to.be.false;
+      expect(await orec.isActive(prop.id)).to.be.true;
+      expect(await orec.isExpired(prop.id)).to.be.false;
     });
 
     it("should store proposal with current block time as createTime", async function() {
@@ -276,19 +284,6 @@ describe("Orec", function () {
       await expect(orec.propose(prop2.id)).to.not.be.reverted;
 
       await expect(orec.propose(prop2.id)).to.be.reverted;
-    });
-
-    it("should set proposal to Voting stage", async function() {
-      const { orec, token, tokenAddress, buildMintProp } = await loadFixture(deployOrecWithToken);
-
-      const accounts = await hre.ethers.getSigners();
-
-      // token.mint(accounts[2], 10).
-      const prop = buildMintProp(accounts[2].address, 10);
-
-      await expect(orec.propose(prop.id)).to.not.be.reverted;
-
-      expect(await orec.getStage(prop.id)).to.be.equal(Stage.Voting);
     });
   })
 
@@ -1290,12 +1285,12 @@ describe("Orec", function () {
 
   // TODO: remaining functions
   //  * getVoteStatus
-  //  * remove
   //  * isVotePeriod
   //  * isVetoPeriod
   //  * isVetoOrVotePeriod
   //  * isActive
   //  * isExpired
+  //  * remove
   //  * settings setters
 
 });

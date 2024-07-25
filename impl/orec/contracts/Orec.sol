@@ -66,7 +66,6 @@ contract Orec is Ownable {
         Message message;
     }
 
-
     event EmptyVoteIn(PropId indexed propId, address indexed voter);
     event WeightedVoteIn(PropId indexed propId, address indexed voter);
     event Executed(PropId indexed propId, bytes retVal);

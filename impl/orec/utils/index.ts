@@ -27,6 +27,13 @@ export enum Stage {
   Expired
 }
 
+export enum VoteStatus {
+  Passing = 0,
+  Failing,
+  Passed,
+  Failed
+};
+
 export type PropId = BytesLike;
 export function isPropId(value: any): value is PropId {
   // TODO: check length
