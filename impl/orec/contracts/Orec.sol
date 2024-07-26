@@ -71,6 +71,7 @@ contract Orec is Ownable {
     event Executed(PropId indexed propId, bytes retVal);
     event ExecutionFailed(PropId indexed propId, bytes retVal);
     event ProposalCreated(PropId indexed propId);
+    event ProposalRemoved(PropId indexed propId);
     event Signal(uint8 indexed signalType, bytes data);
 
     error VoteEnded();
@@ -172,6 +173,7 @@ contract Orec is Ownable {
         }
 
         delete proposals[propId];
+        emit ProposalRemoved(propId);
     }
 
     function proposalExists(PropId propId) public view returns (bool) {
@@ -196,15 +198,20 @@ contract Orec is Ownable {
 
     function getStage(PropId propId) public view returns (Stage) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
-        if (_isVotePeriod(p)) {
-            return Stage.Voting;
-        } else if (_isVetoPeriod(p)) {
-            return Stage.Veto;
-        } else if (_isExpired(p)) {
+        VoteStatus vstatus = _getVoteStatus(p);
+        if (vstatus == VoteStatus.Failed) {
             return Stage.Expired;
+        } else if (vstatus == VoteStatus.Passed) {
+            if (p.status == ExecStatus.Executed || p.status == ExecStatus.ExecutionFailed) {
+                return Stage.Expired;
+            } else {
+                return Stage.Execution;
+            }
+        } else if (_isVotePeriod(p)) {
+            return Stage.Voting;
         } else {
-            assert(_getVoteStatus(p) == VoteStatus.Passed);
-            return Stage.Execution;
+            assert(_isVetoPeriod(p));
+            return Stage.Veto;
         }
     }
 
@@ -213,7 +220,7 @@ contract Orec is Ownable {
         return _getVoteStatus(p);
     }
 
-    function isActive(PropId propId) public view returns (bool) {
+    function isVoteActive(PropId propId) public view returns (bool) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
         return _isVoteActive(p);
     }
@@ -298,7 +305,6 @@ contract Orec is Ownable {
         return age < voteLen + vetoLen;
     }
 
-
     function _isPassingThreshold(ProposalState storage prop) internal view returns (bool) {
         return prop.noWeight * 2 < prop.yesWeight && prop.yesWeight >= minWeight; 
     }
@@ -321,7 +327,11 @@ contract Orec is Ownable {
     }
 
     function _isExpired(ProposalState storage prop) internal view returns (bool) {
-        return _getVoteStatus(prop) == VoteStatus.Failed
+        return _isExpired(prop, _getVoteStatus(prop));
+    }
+
+    function _isExpired(ProposalState storage prop, VoteStatus vstatus) internal view returns (bool) {
+        return vstatus == VoteStatus.Failed
                || prop.status == ExecStatus.Executed
                || prop.status == ExecStatus.ExecutionFailed;
     }

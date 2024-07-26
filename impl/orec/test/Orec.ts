@@ -253,7 +253,7 @@ describe("Orec", function () {
       expect(await orec.isVotePeriod(prop.id)).to.be.true;
       expect(await orec.isVetoOrVotePeriod(prop.id)).to.be.true;
       expect(await orec.isVetoPeriod(prop.id)).to.be.false;
-      expect(await orec.isActive(prop.id)).to.be.true;
+      expect(await orec.isVoteActive(prop.id)).to.be.true;
       expect(await orec.isExpired(prop.id)).to.be.false;
     });
 
@@ -486,6 +486,8 @@ describe("Orec", function () {
       it("should not allow voting with none vtype", async function() {
         const { orec, accounts, token, voteLen, proposals: props } = await loadFixture(deployOrecWithProposalsAndBalances);
 
+        await expectVoteCounted(orec, token, props[0].id, accounts[0], VoteType.Yes);
+
         await time.increase(voteLen + MIN_1);
         expect(await orec.getStage(props[0].id)).to.be.equal(Stage.Veto);
 
@@ -563,7 +565,7 @@ describe("Orec", function () {
         expect(prop.yesWeight).to.be.equal(0);
         expect(prop.noWeight).to.be.equal(w);
 
-        expect(await orec.getStage(props[0].id)).to.be.equal(Stage.Veto);
+        expect(await orec.getStage(props[0].id)).to.be.equal(Stage.Expired);
       });
       it("should not allow switching from no to yes", async function() {
         const { orec, accounts, token, voteLen, proposals: props } = await loadFixture(deployOrecWithProposalsAndBalances);
@@ -1283,14 +1285,146 @@ describe("Orec", function () {
     it("should not allow anyone else to change maxLiveVotes")
   });
 
+  describe("remove", function() {
+    it("should allow anyone to remove after vote period ends without votes", async function() {
+      const { orec, accounts, token, voteLen, vetoLen, proposals: props } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      const propState = await orec.proposals(props[3].id);
+      expect(propState.createTime).to.not.equal(0);
+
+      await time.increase(voteLen);
+
+      expect(propState.createTime).to.not.equal(0);
+      expect(await orec.getVoteStatus(props[3].id)).to.be.equal(VoteStatus.Failed);
+      expect(await orec.getStage(props[3].id)).to.be.equal(Stage.Expired);
+
+      await expect(orec.remove(props[3].id))
+        .to.emit(orec, "ProposalRemoved").withArgs(props[3].id);
+
+      const newPropState = await orec.proposals(props[3].id);
+      expect(newPropState.createTime).to.equal(0)
+    });
+
+    it("should allow anyone to remove after proposal is successfully vetoed", async function() {
+      const { orec, accounts, token, voteLen, vetoLen, proposals: props } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      const propState = await orec.proposals(props[3].id);
+      expect(propState.createTime).to.not.equal(0);
+
+      await expectVoteCounted(orec, token, props[3].msg, accounts[1], VoteType.Yes);
+      expect(await orec.getVoteStatus(props[3].id)).to.be.equal(VoteStatus.Passing);
+
+      await time.increase(voteLen);
+      expect(await orec.getStage(props[3].id)).to.be.equal(Stage.Veto);
+
+      await expectVoteCounted(orec, token, props[3].msg, accounts[0], VoteType.No);
+
+      expect(await orec.getVoteStatus(props[3].id)).to.be.equal(VoteStatus.Failed);
+      expect(await orec.getStage(props[3].id)).to.be.equal(Stage.Expired);
+
+      await expect(orec.remove(props[3].id))
+        .to.emit(orec, "ProposalRemoved").withArgs(props[3].id);
+
+      const newPropState = await orec.proposals(props[3].id);
+      expect(newPropState.createTime).to.equal(0)
+    });
+
+    it("should allow anyone to remove after proposal is successfully executed", async function() {
+      const { orec, accounts, token, voteLen, vetoLen, proposals: props } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      const propState = await orec.proposals(props[3].id);
+      expect(propState.createTime).to.not.equal(0);
+
+      await expectVoteCounted(orec, token, props[3].msg, accounts[1], VoteType.Yes);
+      expect(await orec.getVoteStatus(props[3].id)).to.be.equal(VoteStatus.Passing);
+
+      await time.increase(voteLen + vetoLen);
+      expect(await orec.getVoteStatus(props[3].id)).to.be.equal(VoteStatus.Passed);
+      expect(await orec.getStage(props[3].id)).to.be.equal(Stage.Execution);
+
+      await expect(orec.execute(props[3].msg))
+        .to.emit(orec, "Executed").withArgs(props[3].id, "0x")
+
+      expect(await orec.getStage(props[3].id)).to.be.equal(Stage.Expired);
+
+      await expect(orec.remove(props[3].id))
+        .to.emit(orec, "ProposalRemoved").withArgs(props[3].id);
+
+      const newPropState = await orec.proposals(props[3].id);
+      expect(newPropState.createTime).to.equal(0)
+    });
+
+    it("should allow anyone to remove after proposal execution fails", async function() {
+      const { orec, accounts, token, buildBurnProp, voteLen, vetoLen, proposals: props } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      const prop = buildBurnProp(accounts[0].address, 1000000);
+
+      await expectVoteCounted(orec, token, prop.id, accounts[0], VoteType.Yes);
+      await expectVoteCounted(orec, token, prop.id, accounts[1], VoteType.Yes);
+      await time.increase(voteLen + vetoLen);
+      expect(await orec.getStage(prop.id)).to.be.equal(Stage.Execution);
+      await expect(orec.execute(prop.msg)).to.emit(orec, "ExecutionFailed");
+      expect(await orec.getStage(prop.id)).to.be.equal(Stage.Expired);
+
+      await expect(orec.remove(props[3].id))
+        .to.emit(orec, "ProposalRemoved").withArgs(props[3].id);
+
+      const newPropState = await orec.proposals(props[3].id);
+      expect(newPropState.createTime).to.equal(0)
+    });
+
+    it("should not allow removing proposal in vote stage", async function() {
+      const { orec, accounts, token, voteLen, vetoLen, proposals: props } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      await expect(orec.remove(props[0].id)).to.be.reverted;
+      await expect(orec.remove(props[1].id)).to.be.reverted;
+      await expect(orec.remove(props[2].id)).to.be.reverted;
+    })
+    it("should not allow removing proposal in veto stage", async function() {
+      const { orec, accounts, token, voteLen, vetoLen, proposals: props } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      const propState = await orec.proposals(props[3].id);
+      expect(propState.createTime).to.not.equal(0);
+
+      await expectVoteCounted(orec, token, props[3].msg, accounts[1], VoteType.Yes);
+      expect(await orec.getVoteStatus(props[3].id)).to.be.equal(VoteStatus.Passing);
+
+      await time.increase(voteLen);
+      expect(await orec.getVoteStatus(props[3].id)).to.be.equal(VoteStatus.Passing);
+      expect(await orec.getStage(props[3].id)).to.be.equal(Stage.Veto);
+
+      await expect(orec.remove(props[3].id)).to.be.reverted;
+    })
+
+    it("should not allow removing proposal in execute stage", async function() {
+      const { orec, accounts, token, voteLen, vetoLen, proposals: props } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      const propState = await orec.proposals(props[3].id);
+      expect(propState.createTime).to.not.equal(0);
+
+      await expectVoteCounted(orec, token, props[3].msg, accounts[1], VoteType.Yes);
+      expect(await orec.getVoteStatus(props[3].id)).to.be.equal(VoteStatus.Passing);
+
+      await time.increase(voteLen + vetoLen);
+      expect(await orec.getVoteStatus(props[3].id)).to.be.equal(VoteStatus.Passed);
+      expect(await orec.getStage(props[3].id)).to.be.equal(Stage.Execution);
+
+      await expect(orec.remove(props[3].id)).to.be.reverted;
+    })
+  });
+
+
+  // TODO: test that proposal enters expired stage and failed vote status
+  // during veto time if it does not have threshold
+
   // TODO: remaining functions
   //  * getVoteStatus
+  //  * remove
   //  * isVotePeriod
   //  * isVetoPeriod
   //  * isVetoOrVotePeriod
-  //  * isActive
+  //  * isVoteActive
   //  * isExpired
-  //  * remove
   //  * settings setters
 
 });
