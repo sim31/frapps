@@ -74,7 +74,8 @@ export class ORClient {
   // }
 
   /**
-   * Returns proposal by id
+   * Returns proposal by id.
+   * Test...
    * @param id - proposal id
    */
   async getProposal(id: PropId): Promise<Proposal> {
@@ -158,6 +159,21 @@ export class ORClient {
   }
 
   // UC6
+  /**
+   * @example
+   * ```
+   * this.orclient.burnRespect(
+   *   {
+   *     tokenId: "0x000000010000000000000002f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+   *     reason: "some optional reason"
+   *   },
+   *   {
+   *       memo: "Some memo",
+   *       vote: "Yes"
+   *   }
+   * );
+   * ```
+   */
   async burnRespect(
     req: BurnRespectRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }

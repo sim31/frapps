@@ -2,7 +2,7 @@
   "name": "ortypes",
   "type": "module",
   "version": "1.0.0",
-  "description": "Types for Optimystic Respect Based DAO and its components",
+  "description": "Types for Optimistic Respect Based DAO and its components",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
