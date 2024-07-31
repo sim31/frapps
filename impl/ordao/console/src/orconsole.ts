@@ -1,32 +1,52 @@
 import { ORClient, defaultConfig, Config } from "orclient/index.js";
-import { ORContext, ConfigWithOrnode } from "ortypes/orContext.js";
+import { ORContext as ORContextOrig, ConfigWithOrnode } from "ortypes/orContext.js";
 import { stringify } from "ts-utils";
 
-export class ORConsole extends ORClient {
-  private _methods: string[];
-  private _docPath = "/classes/ORConsole.html";
+// Re-define so that ORContext docs are included
+export class ORContext extends ORContextOrig<ConfigWithOrnode> {}
 
-  constructor(context: ORContext<ConfigWithOrnode>, cfg: Config = defaultConfig) {
+function _getPublicFunctions(): string[] {
+  return Object.getOwnPropertyNames(ORClient.prototype)
+    .filter(m => m[0] != '_');
+}
+
+const _methods = _getPublicFunctions();
+
+const _docPath = "/classes/ORConsole.html";
+
+export class ORConsole extends ORClient {
+
+  constructor(context: ORContext, cfg: Config = defaultConfig) {
     super(context, cfg);
 
-    this._methods = Object.getOwnPropertyNames(ORClient.prototype)
-      .filter(m => m[0] != '_');
-    console.log("methods: ", stringify(this._methods));
+    console.log("methods: ", stringify(_methods));
   }
 
-  help(method?: string) {
-    const methodMatch = method === undefined
-      ? undefined
-      : this._methods.find(m => m === method);
+  // Re-define so that ORContext docs are included
+  get context(): ORContext {
+    return super.context;
+  }
+}
 
-    if (methodMatch === undefined) {
-      console.log(this._methods);
-    } else {
-      window.location.hash = methodMatch;
-      if (window.location.pathname !== this._docPath) {
-        window.location.pathname = this._docPath;
+function _init() {
+  for (const fname of _methods) {
+    const prop = (ORClient.prototype as any)[fname];
+    if (prop !== undefined) {
+      prop['help'] = () => {
+        window.location.hash = fname;
+        if (window.location.pathname !== _docPath) {
+          window.location.pathname = _docPath;
+        }
       }
     }
   }
 
+  (ORClient.prototype as any)['help'] = () => {
+    console.log("Available methods: ", _methods);
+    console.log("Use c.<method>.help() to get further help on any of the methods.")
+    console.log("Example: c.proposeRespectTo.help()")
+    console.log("         c.vote.help()")
+  }
 }
+
+_init();

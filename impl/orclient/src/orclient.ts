@@ -37,15 +37,6 @@ export interface PutProposalRes {
   status: ORNodePropStatus
 }
 
-/**
- * @notice When creating proposals this class first creates them onchain then tries to push them to ORNode (because ORNode won't accept them until they are submitted onchain).
- * This creates a risk that proposal is submitted onchain but fails to be submitted to ORNode.
- * For now the way we deal with it is that simply throw an exception with a ornode proposal we were trying to push.
- * The user of this class can then try doing {orclient}.context.ornode.putProposal(prop) again.
- * Worst case scenario is that some metadata about a proposal won't be visible in the frontend
- * because the creator of proposal failed to submit to ornode. That's not the worst thing that could happen - other users simply shouldn't vote for proposal if they lack details about it.
- * 
- */
 export class ORClient {
   private _ctx: ORContext<ConfigWithOrnode>;
   private _nodeToClient: NodeToClientTransformer;
@@ -59,24 +50,32 @@ export class ORClient {
     this._cfg = cfg;
   }
 
+  /**
+   * Return new instance that authors OREC transactions as `signer`.
+   * @param signer - ethers.Signer implementation that should be used to sign transactions
+   * @returns - new instance of ORClient.
+   */
   connect(signer: Signer): ORClient {
     const newCtx = this._ctx.connect(signer);    
-    return new ORClient(newCtx);
+    return new ORClient(newCtx, this._cfg);
   }
 
+  /**
+   * Context for ORDAO. From it you can get components of ORDAO:
+   * * Smart contracts;
+   * * Contract runner;
+   * * Used endpoints (for ORNode and Ethereum RPC API)
+   */
   get context(): ORContext<ConfigWithOrnode> {
     return this._ctx;
   }
 
-  // static async createORClient(config: Config): Promise<ORClient> {
-  //   const client = new ORClient(config);
-  //   return client;
-  // }
-
   /**
-   * Returns proposal by id.
-   * Test...
+   * Returns proposal by its id.
    * @param id - proposal id
+   * 
+   * @example
+   * await c.getProposal("0x2f5e1602a2e1ccc9cf707bc57361ae6587cd87e8ae27105cae38c0db12f4fab1")
    */
   async getProposal(id: PropId): Promise<Proposal> {
     //client.provide("get", "/v1/user/retrieve", { id: "10" });
@@ -85,13 +84,17 @@ export class ORClient {
     return this._nodeToClient.transformProp(proposal);
   }
 
-  // UC8
+  // TODO: add filters - e.g. to return only active proposals
   /**
    * Returns a list of proposals ordered from latest to oldest
-   * @param from - Start of proposal range. 0 - last proposal, 1 - second to  last proposal and so on
-   * @param count - Number of proposals to return
+   * @param from - start of proposal range. 0 - last proposal, 1 - second to last proposal and so on
+   * @param limit - maximum number of proposals to return
+   * @returns List of proposals
+   * 
+   * @example
+   * await c.getProposals()
    */
-  async lsProposals(from: number = 0, limit: number = 50): Promise<Proposal[]> {
+  async getProposals(from: number = 0, limit: number = 50): Promise<Proposal[]> {
     const nprops = await this._ctx.ornode.getProposals(from, limit);
     const props: Proposal[] = [];
     for (const nprop of nprops) {
@@ -100,9 +103,35 @@ export class ORClient {
     return props;
   }
 
-  // UC2
-  // TODO: Allow specifying text string instead of hexstring and convert it
+  /**
+   * Vote on a proposal.
+   * @param propId - id of a proposal to vote on.
+   * @param vote - what to vote for.
+   * * 'Yes' - vote for proposals;
+   * * 'No' - vote against;
+   * @param memo - memo text string to submit with proposal.
+   * @returns hash of submitted transaction
+   * 
+   * @remarks Note that memo string with go with calldata of transaction, so longer string will cost more.
+   * 
+   * @example
+   * await c.vote("0x2f5e1602a2e1ccc9cf707bc57361ae6587cd87e8ae27105cae38c0db12f4fab1", "Yes")
+   */
   async vote(propId: PropId, vote: VoteType, memo?: string): Promise<TxHash>;
+  /**
+   * Vote on a proposal.
+   * @param request - parameters for a vote as an object. See {@link ORConsole#vote}.
+   * @returns hash of submitted transaction
+   * 
+   * @remarks Note that memo string with go with calldata of transaction, so longer string will cost more.
+   * 
+   * @example
+   * await c.vote({
+       propId: "0x2f5e1602a2e1ccc9cf707bc57361ae6587cd87e8ae27105cae38c0db12f4fab1",
+       vote: "Yes",
+       memo: "Optional memo"
+     })
+   */
   async vote(request: VoteRequest): Promise<TxHash>;
   async vote(pidOrReq: VoteRequest | PropId, vote?: VoteType, memo?: string): Promise<TxHash> {
     let req: VoteRequest;
@@ -111,7 +140,7 @@ export class ORClient {
     } else {
       req = pidOrReq as VoteRequest;
     }
-    const m = this.encodeMemo(req.memo);
+    const m = this._encodeMemo(req.memo);
     const v = this._clientToNode.transformVoteType(req.vote);
     const orec = this._ctx.orec;
     const errMsg = `orec.vote(${req.propId}, ${v}, ${m})`
@@ -120,11 +149,14 @@ export class ORClient {
     return await this._handleTxPromise(promise, this._cfg.otherConfirms, errMsg);
   }
 
-  encodeMemo(memo?: string): Bytes {
-    return memo !== undefined && memo != "" ? hexlify(toUtf8Bytes(memo)) : "0x";
-  }
-
-  // UC3
+  // TODO: return proposal status and return value
+  /**
+   * Execute a passed proposal. Will fail if proposal is not passed yet.
+   * @param propId - id of proposal to execute.
+   * 
+   * @example
+   * await c.execute("0x2f5e1602a2e1ccc9cf707bc57361ae6587cd87e8ae27105cae38c0db12f4fab1")
+   */
   async execute(propId: PropId) {
     const orec = this._ctx.orec;
     const nprop = await this._ctx.ornode.getProposal(propId);
@@ -135,8 +167,46 @@ export class ORClient {
     }
   }
 
-  // UC{1,4}
-  async submitBreakoutResult(
+  /**
+   * Create a proposal to award respect game participants of a single breakout room, based on results of that breakout room.
+   * @param request - breakout room results, plus optional metadata.
+   * @param vote - vote to submit with the result. Default: `{ vote: "Yes" }`.
+   * @returns resulting proposal and its status.
+   * 
+   * @remarks 
+   * The respect amounts to award are calculated automatically based on rankings:
+   * * Level 6 - 55
+   * * Level 5 - 34
+   * * Level 4 - 21
+   * * Level 3 - 13
+   * * Level 2 - 8
+   * * Level 1 - 5
+   * 
+   * The actual onchain proposal is just for minting Respect according to distribution above.
+   * 
+   * If `vote` parameter is not specified "Yes" vote is submitted.
+   * If you want to make this proposal but don't want to vote for it, specify `{ vote: "None" }`.
+   * 
+   * @example
+   * 
+     await c.proposeBreakoutResult(
+       {
+         meetingNum: 1,
+         groupNum: 1,
+         rankings: [
+           "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+           "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+           "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+           "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+         ]
+       },
+       {
+         memo: "Some memo",
+         vote: "Yes"
+       }
+     )
+   */
+  async proposeBreakoutResult(
     request: RespectBreakoutRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<PutProposalRes> {
@@ -146,7 +216,28 @@ export class ORClient {
     const proposal = await this._clientToNode.transformRespectBreakout(request);
     return await this._submitProposal(proposal, v);
   }
-  // UC5
+
+  /**
+   * Propose to mint a single Respect award to a single account.
+   * 
+   * @param req - specification for the Respect award, plus optional metadata.
+   * @param vote - vote to submit with the result. Default: `{ vote: "Yes" }`.
+   * @returns resulting proposal and its status.
+   * 
+   * @remarks
+   * If `vote` parameter is not specified "Yes" vote is submitted.
+   * If you want to make this proposal but don't want to vote for it, specify `{ vote: "None" }`.
+   * 
+   * @example
+   * await c.proposeRespectTo({
+       meetingNum: 1,
+       mintType: 1,
+       account: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+       value: 10n,
+       title: "Reward Title",
+       reason: "Reward reason"
+    })
+   */
   async proposeRespectTo(
     req: RespectAccountRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
@@ -158,13 +249,20 @@ export class ORClient {
     return await this._submitProposal(proposal, v);
   }
 
-  // UC6
   /**
+   * Create a proposal to burn a single Respect award.
+   * @param req - specification for the award to burn, plus optional metadata.
+   * @param vote - vote to submit with the result. Default: `{ vote: "Yes" }`.
+   * @returns resulting proposal and its status.
+   * 
+   * @remarks
+   * If `vote` parameter is not specified "Yes" vote is submitted.
+   * If you want to make this proposal but don't want to vote for it, specify `{ vote: "None" }`.
+   * 
    * @example
-   * ```
-   * this.orclient.burnRespect(
+   * await c.proposeBurnRespect(
    *   {
-   *     tokenId: "0x000000010000000000000002f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+   *     tokenId: "0x000000010000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
    *     reason: "some optional reason"
    *   },
    *   {
@@ -172,9 +270,8 @@ export class ORClient {
    *       vote: "Yes"
    *   }
    * );
-   * ```
    */
-  async burnRespect(
+  async proposeBurnRespect(
     req: BurnRespectRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
   ): Promise<PutProposalRes> {
@@ -183,6 +280,9 @@ export class ORClient {
     return await this._submitProposal(proposal, v);
   }
 
+  /**
+   * Create a proposal to issue a custom signal event from OREC contract.
+   */
   async proposeCustomSignal(
     req: CustomSignalRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
@@ -192,7 +292,20 @@ export class ORClient {
     return await this._submitProposal(proposal, v);
   }
 
-  // UC7
+  /**
+   * Create a proposal to issue a tick signal. Tick signals increment the period / meeting number returned by orclient (see {@link ORConsole#getPeriodNum}).
+   * 
+   * @param req - optional metadata to submit with a tick signal
+   * @param vote - vote to submit with the result. Default: `{ vote: "Yes" }`.
+   * @returns resulting proposal and its status.
+   * 
+   * @remarks
+   * If `vote` parameter is not specified "Yes" vote is submitted.
+   * If you want to make this proposal but don't want to vote for it, specify `{ vote: "None" }`.
+   * 
+   * @example
+   * await c.proposeTick();
+   */
   async proposeTick(
     req: TickRequest = {},
     vote: VoteWithPropRequest = { vote: "Yes" }
@@ -207,6 +320,17 @@ export class ORClient {
     return await this._submitProposal(proposal, v);
   }
 
+  /**
+   * Create a proposal to an EVM call to some contract.
+   * 
+   * @param req - specification for the EVM message to send.
+   * @param vote - vote to submit with the result. Default: `{ vote: "Yes" }`.
+   * @returns resulting proposal and its status.
+   * 
+   * @remarks
+   * If `vote` parameter is not specified "Yes" vote is submitted.
+   * If you want to make this proposal but don't want to vote for it, specify `{ vote: "None" }`.
+   */
   async proposeCustomCall(
     req: CustomCallRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
@@ -216,44 +340,108 @@ export class ORClient {
     return await this._submitProposal(proposal, v);
   }
 
+  /**
+   * Get vote of an account on a proposal.
+   * 
+   * @param propId - proposal id
+   * @param voter - voter
+   */
   async getVote(propId: PropId, voter: EthAddress): Promise<Vote> {
     const vote = zNVote.parse(await this._ctx.orec.votes(propId, voter));
     console.debug("vote: ", vote);
     return this._nodeToClient.transformVote(vote);
   }
 
-  async oldRespectOf(account: EthAddress): Promise<bigint> {
+
+  /**
+   * Get old Respect an account has.
+   */
+  async getOldRespectOf(account: EthAddress): Promise<bigint> {
     return await this._ctx.oldRespect.balanceOf(account);
   }
 
-  async respectOf(account: EthAddress): Promise<bigint> {
+  /**
+   * Get Respect an account has
+   */
+  async getRespectOf(account: EthAddress): Promise<bigint> {
     return await this._ctx.newRespect.respectOf(account);
   }
 
+  /**
+   * Get period number (incremented using ticks see {@link ORConsole#proposeTick}).
+   */
   async getPeriodNum(): Promise<number> {
     return await this._ctx.ornode.getPeriodNum();
   }
+
+  /**
+   * Get next meeting number (which is current period number + 1).
+   */
   async getNextMeetingNum(): Promise<number> {
     return await this.getPeriodNum() + 1;
   }
+  /**
+   * Get last meeting number (which is equal to current period number).
+   */
   async getLastMeetingNum(): Promise<number> {
     return await this.getPeriodNum();
   }
 
+  /**
+   * Get metadata of specific token. The token can be fungible Respect token or Respect award token (NTT).
+   * 
+   * @param tokenId - id of a token.
+   * @param opts - additional options for retrieval function. default: { burned: true }.
+   * 
+   * @remarks
+   * If `tokenId` is an id of a burned token, this function might return a metadata for token which is burned onchain.
+   * Pass `{ burned: false }` as `opts` parameter to change this behaviour.
+   */
   async getToken(tokenId: TokenId, opts?: GetTokenOpts): Promise<Erc1155Mt> {
     // TODO: fix type for ornode
     return await this._ctx.ornode.getToken(tokenId, opts);
   }
+
+  /**
+   * Get metadata of specific Respect award NTT.
+   * 
+   * @param tokenId - id of a token.
+   * @param opts - additional options for retrieval function. default: { burned: true }.
+   * 
+   * @remarks
+   * If `tokenId` is an id of a burned token, this function might return a metadata for token which is burned onchain.
+   * Pass `{ burned: false }` as `opts` parameter to change this behaviour.
+   */
   async getAward(tokenId: TokenId, opts?: GetTokenOpts): Promise<RespectAwardMt> {
     // TODO: fix type for ornode
     return await this._ctx.ornode.getAward(tokenId, opts);
   }
+
+  /**
+   * Get metadata of fungible non-transferrable Respect token.
+   */
   async getRespectMetadata(): Promise<RespectFungibleMt> {
     return await this._ctx.ornode.getRespectMetadata();
   }
 
+  // TODO: getAwards function where account would be as filter (as opts)
+  // and opts would additionally have limit parameter
+  /**
+   * Get metadata of Respect awards for specific account.
+   * 
+   * @param account - account which received the awards
+   * @param opts - additional options for retrieval function. default: { burned: false }.
+   * 
+   * @remarks
+   * By default this function does not return metadata for tokens which are burned onchain.
+   * Pass `{ burned: true }` as `opts` parameter to change this behaviour.
+   */
   async getAwardsOf(account: EthAddress, opts?: GetTokenOpts): Promise<RespectAwardMt[]> {
     return await this._ctx.ornode.getAwardsOf(account, opts);
+  }
+
+  private _encodeMemo(memo?: string): Bytes {
+    return memo !== undefined && memo != "" ? hexlify(toUtf8Bytes(memo)) : "0x";
   }
 
   private async _submitProposal(proposal: NProp, vote?: VoteWithProp): Promise<PutProposalRes> {
@@ -305,7 +493,7 @@ export class ORClient {
       return this._ctx.orec.vote(
           proposal.id,
           v,
-          this.encodeMemo(vote.memo)
+          this._encodeMemo(vote.memo)
       );
     } else {
       return this._ctx.orec.propose(proposal.id);

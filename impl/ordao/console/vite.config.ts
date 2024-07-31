@@ -5,7 +5,7 @@ import { resolve } from "path";
 export default defineConfig({
   optimizeDeps: {
     esbuildOptions: { preserveSymlinks: true },
-    // force: true
+    force: true
   },
   resolve: {
     preserveSymlinks: true,

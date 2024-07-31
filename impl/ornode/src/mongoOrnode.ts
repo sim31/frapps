@@ -244,6 +244,8 @@ export class MongoOrnode implements IORNode {
             description: this._cfg.tokenCfg.award.description,
             image: this._cfg.tokenCfg.award.image,
             // TODO: derive and store: datetime, groupNum, reason, title
+            // TODO: retrieve execute event from the same transaction
+            // then retrieve groupNum, reason and title from the proposal executed. For time and date get date of transaction.
             properties: {
               tokenId: toBeHex(idsVal, 32),
               recipient: tData.owner,

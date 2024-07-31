@@ -110,5 +110,9 @@
   },
   "include": [
     "src/**/*"
+  ],
+  "exclude": [
+    "src/orcli.ts"
   ]
+
 }

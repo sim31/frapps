@@ -32,6 +32,9 @@ export interface IORNode {
    * @param opts - options. default: { burned: true }
    */
   getToken: (tokenId: TokenId, opts?: GetTokenOpts) => Promise<RespectFungibleMt | RespectAwardMt>;
+
+  // TODO: should have a function to get latest awards and getAwardsOf should return latest awards and should limit amount of awards returned.
+
   /**
    * @param opts - options. default: { burned: true }
    */

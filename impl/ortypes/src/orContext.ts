@@ -40,12 +40,9 @@ export interface ConfigWithOrnode extends Config {
 export type StateForConfig<CT extends Config> =
   CT extends ConfigWithOrnode ? StateWithOrnode : State;
 
-// TODO: async function to create context from addresses or passed contracts
-// First base context with only respect contract and orec.
-// Then extended class with old respect as well
-// ORNode should accept this context through constructor
-// See current ornodeMemImpl for how to create contracts from addresses
-
+/**
+ * Class for holding context for ORDAO (smart contract, urls, addresses composing the ORDAO system).
+ */
 export class ORContext<CT extends Config> {
   private _st: StateForConfig<CT>;
   private _oldRespectAddr?: EthAddress;
@@ -172,7 +169,7 @@ export class ORContext<CT extends Config> {
     return this._st.newRespect;
   } 
 
-  get ornode(): ORContext<CT>['_st']['ornode'] {
+  get ornode(): StateForConfig<CT>['ornode'] {
     return this._st.ornode;
   }
 
