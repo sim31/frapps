@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
     esbuildOptions: { preserveSymlinks: true },
-    force: true
+    force: true,
   },
   resolve: {
     preserveSymlinks: true,

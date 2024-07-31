@@ -194,6 +194,18 @@ export const zProposalMsgFull = zProposal.required({
 })
 export type ProposalMsgFull = z.infer<typeof zProposalMsgFull>;
 
+export const zGetProposalsSpec = z.object({
+  before: z.date().optional(),
+  limit: z.number().int().gt(0).optional(),
+  execStatFilter: z.array(zExecStatus).optional(),
+  voteStatFilter: z.array(zVoteStatus).optional(),
+  stageFilter: z.array(zStage).optional()
+});
+/**
+ * Some description
+ */
+export type GetProposalsSpec = z.infer<typeof zGetProposalsSpec>;
+
 export function isPropMsgFull(prop: Proposal): prop is ProposalMsgFull {
   return prop.addr !== undefined && prop.cdata !== undefined && prop.memo !== undefined;
 }

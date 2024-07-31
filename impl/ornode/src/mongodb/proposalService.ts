@@ -2,15 +2,25 @@ import { MongoClient, Db, ObjectId } from "mongodb";
 import { ProposalEntity, zProposalEntity } from "./entities.js";
 import { zPropEntityToProp } from "./transformers/entityToNode.js";
 import { PropId } from "ortypes";
-import { Proposal } from "ortypes/ornode.js";
+import { GetProposalsSpec, Proposal } from "ortypes/ornode.js";
 import { Optional } from "utility-types";
 import { zProposalToEntity } from "./transformers/nodeToEntity.js";
 
+export type Config = {
+  defaultDocLimit: number;
+}
+
+export const defaultConfig: Config = {
+  defaultDocLimit: 50
+};
+
 export class ProposalService {
   private readonly db: Db;
+  private _cfg: Config;
 
-  constructor(mongoClient: MongoClient, dbName: string) {
+  constructor(mongoClient: MongoClient, dbName: string, config: Config = defaultConfig) {
     this.db = mongoClient.db(dbName);
+    this._cfg = config;
   }
 
   private get proposals() {
@@ -22,9 +32,19 @@ export class ProposalService {
     return entity !== null ? zPropEntityToProp.parse(entity) : null;
   }
 
-  async lastProposals(limit: number = 50): Promise<Proposal[]> {
-    const entities = await this.proposals.find().sort({ createTs: -1 }).limit(limit);
-    // TODO: more efficient way to do this?
+  /**
+   * Returns proposals ordered from oldest to newest
+   */
+  async getProposals(spec: GetProposalsSpec): Promise<Proposal[]> {
+    const filter: any = {};
+
+    if (spec.before !== undefined) {
+      filter['createTs'] = { $lte: spec.before }
+    }
+
+    const entities = await this.proposals.find(filter)
+      .sort({ createTs: -1 })
+      .limit(spec.limit ?? this._cfg.defaultDocLimit);
     const dtos = entities.map(ent => {
       return zPropEntityToProp.parse(ent);
     });

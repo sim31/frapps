@@ -1,5 +1,5 @@
 import { EthAddress, IORNode, PropId, ProposalInvalid, ProposalNotCreated, ProposalNotFound } from "ortypes";
-import { GetTokenOpts, ORNodePropStatus, Proposal, ProposalFull, zErrorType } from "ortypes/ornode.js";
+import { GetProposalsSpec, GetTokenOpts, ORNodePropStatus, Proposal, ProposalFull, zErrorType } from "ortypes/ornode.js";
 import { OrnodeClient, createOrnodeClient } from "./ornodeClient/index.js";
 import { Input, Method, Path, Response } from "./ornodeClient/ornodeClient.js"
 import { stringify } from "ts-utils";
@@ -62,8 +62,8 @@ export class RemoteOrnode implements IORNode {
     return data;
   }
 
-  async getProposals(from: number, limit: number): Promise<Proposal[]> {
-    const data = await this._makeOrnodeRequest("post", "/v1/getProposals", { from, limit });
+  async getProposals(spec: GetProposalsSpec): Promise<Proposal[]> {
+    const data = await this._makeOrnodeRequest("post", "/v1/getProposals", { spec });
     return data.proposals;
   }
 

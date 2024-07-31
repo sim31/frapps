@@ -421,8 +421,10 @@ type PostV1GetProposalResponse = {
 };
 
 type PostV1GetProposalsInput = {
-    from: number;
-    limit: number;
+    spec: {
+        untilTime?: number | undefined;
+        limit?: number | undefined;
+    };
 };
 
 type PostV1GetProposalsResponse = {

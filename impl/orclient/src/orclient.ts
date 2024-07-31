@@ -1,5 +1,5 @@
 import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt, toBeHex } from "ethers";
-import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp, VoteType, Vote, GetTokenOpts } from "ortypes/orclient.js";
+import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp, VoteType, Vote, GetTokenOpts, GetProposalsSpec } from "ortypes/orclient.js";
 import { TxFailed } from "./errors.js";
 import { ORContext, ConfigWithOrnode } from "ortypes/orContext.js";
 import { NodeToClientTransformer, zNVoteToClient } from "ortypes/transformers/nodeToClientTransformer.js";
@@ -87,20 +87,40 @@ export class ORClient {
   // TODO: add filters - e.g. to return only active proposals
   /**
    * Returns a list of proposals ordered from latest to oldest
-   * @param from - start of proposal range. 0 - last proposal, 1 - second to last proposal and so on
-   * @param limit - maximum number of proposals to return
+   * 
+   * @param spec - specification for query:
+   * * `before` - oldest creation date for proposal. If specified, only proposals which were created up to this date will be returned;
+   * * `limit` - maximum number of proposals to return. If not specified, it's up to ornode implementation.
+   * * `execStatFilter` - list of ExecutionStatus values. Proposals which have execution status other than any of values in this list, will be filtered out. If undefined, then no filtering based on execution status is done.
+   * * `voteStatFilter` - list of VoteStatus values. Proposals which have vote status other than any of values specified in the list will be filtered out (not returned). If undefined - no filtering based on vote status is done.
+   * * `stageFilter` - list of Stage values. Proposals which are in stage other than any of stages specified in this list will be filtered out. If undefined - no filtering based on proposal stage is done.
    * @returns List of proposals
    * 
    * @example
    * await c.getProposals()
    */
-  async getProposals(from: number = 0, limit: number = 50): Promise<Proposal[]> {
-    const nprops = await this._ctx.ornode.getProposals(from, limit);
+  async getProposals(spec?: GetProposalsSpec): Promise<Proposal[]> {
+    const nspec = this._clientToNode.transformGetProposalsSpec(spec ?? {});
+    const nprops = await this._ctx.ornode.getProposals(nspec);
     const props: Proposal[] = [];
     for (const nprop of nprops) {
-      props.push(await this._nodeToClient.transformProp(nprop));
+      const tprop = await this._nodeToClient.transformProp(nprop);
+
+      const passExecStatFilter =
+        spec?.execStatFilter === undefined ||
+        spec.execStatFilter.includes(tprop.status);
+      const passStageFilter = 
+        spec?.stageFilter === undefined ||
+        spec.stageFilter.includes(tprop.stage);
+      const passVoteStatFilter =
+        spec?.voteStatFilter === undefined ||
+        spec.voteStatFilter.includes(tprop.voteStatus);
+
+      if (passExecStatFilter && passStageFilter && passVoteStatFilter) {
+        props.push(tprop);
+      }
     }
-    return props;
+    return props
   }
 
   /**

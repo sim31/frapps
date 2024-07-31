@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { solidityPackedKeccak256 } from "ethers";
-import { PropId, zPropId, zProposedMsg } from "./orec.js";
+import { PropId, zExecStatus, zPropId, zProposedMsg, zStage, zVoteStatus } from "./orec.js";
 import { zGroupNum, zPropType } from "./fractal.js";
 import { propId } from "orec/utils";
 import { zBytesLikeToBytes, zTxHash } from "./eth.js";
@@ -215,6 +215,12 @@ export const zErrorType = z.enum([
   "TokenNotFound"
 ]);
 export type ErrorType = z.infer<typeof zErrorType>;
+
+export const zGetProposalsSpec = z.object({
+  before: zTimestamp.optional(),
+  limit: z.number().int().gt(0).optional(),
+});
+export type GetProposalsSpec = z.infer<typeof zGetProposalsSpec>;
 
 export function idOfRespectBreakoutAttach(attachment: RespectBreakoutAttachment) {
   const a: Required<RespectBreakoutAttachment> = {

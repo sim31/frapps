@@ -14,9 +14,11 @@ import {
   zRespectBreakoutRequest,
   zTickRequest,
   zVoteType as zCVoteType,
-  VoteType as CVoteType
+  VoteType as CVoteType,
+  GetProposalsSpec as CGetProposalsSpec,
+  zGetProposalsSpec as zCGetProposalsSpec
 } from "../orclient.js";
-import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, TickValid, idOfBurnRespectAttach, idOfCustomCallAttach, idOfCustomSignalAttach, idOfRespectAccountAttach, idOfRespectBreakoutAttach, zBurnRespect, zBurnRespectValid, zCustomCall, zCustomCallValid, zCustomSignal, zCustomSignalValid, zRespectAccount, zRespectAccountValid, zRespectBreakout, zRespectBreakoutValid, zTick, zTickValid } from "../ornode.js";
+import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, TickValid, idOfBurnRespectAttach, idOfCustomCallAttach, idOfCustomSignalAttach, idOfRespectAccountAttach, idOfRespectBreakoutAttach, zBurnRespect, zBurnRespectValid, zCustomCall, zCustomCallValid, zCustomSignal, zCustomSignalValid, zRespectAccount, zRespectAccountValid, zRespectBreakout, zRespectBreakoutValid, zTick, zTickValid, zGetProposalsSpec, GetProposalsSpec } from "../ornode.js";
 import { ConfigWithOrnode, ORContext as OrigORContext } from "../orContext.js";
 import { CustomSignalArgs, OrecFactory, zTickSignalType, zVoteType, VoteType } from "../orec.js";
 import { BurnRespectArgs, MintRequest, MintRespectArgs, MintRespectGroupArgs, Factory as Respect1155Factory, zBreakoutMintType, zMintRespectArgs, zUnspecifiedMintType } from "../respect1155.js";
@@ -353,6 +355,11 @@ function mkzCCustomCallReqToProposal(orctx: ORContext) {
   }).pipe(zCustomCallValid);
 }
 
+// const zCGetProposalsSpecToNode = zCGetProposalsSpec.transform(spec => {
+//   const nspec: GetProposalsSpec = {
+//     untilTime: spec.untilTime
+//   }
+// })
 
 export class ClientToNodeTransformer {
   private _ctx: ORContext
@@ -372,6 +379,13 @@ export class ClientToNodeTransformer {
     this._zCCustomSignalReqToProposal = mkzCCustomSignalReqToProposal(this._ctx);
     this._zCTickReqToProposal = mkzTickReqToProposal(this._ctx);
     this._zCCustomCallReqToProposal = mkzCCustomCallReqToProposal(this._ctx);
+  }
+
+  transformGetProposalsSpec(spec: CGetProposalsSpec): GetProposalsSpec {
+    return {
+      before: spec.before !== undefined ? spec.before.valueOf() / 1000 : undefined,
+      limit: spec.limit
+    };
   }
 
   async transformRespectBreakout(req: RespectBreakoutRequest): Promise<RespectBreakout> {

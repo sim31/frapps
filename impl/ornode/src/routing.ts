@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Routing } from "express-zod-api";
 import {
   GetTokenOpts,
+  zGetProposalsSpec,
   zORNodePropStatus,
   zProposal,
   zProposalFull,
@@ -57,17 +58,14 @@ const getProposal = factory.build({
 
 const getProposals = factory.build({
   method: "post",
-  input: z.object({
-    from: z.number(),
-    limit: z.number()
-  }),
+  input: z.object({ spec: zGetProposalsSpec }),
   output: z.object({
     proposals: z.array(zProposal)
   }),
   handler: async ({input, options, logger}) => {
     logger.debug(`getProposals ${stringify(input)}. options: ${stringify(options)}`);
     const n = await getOrnode();
-    const proposals = await n.getProposals(input.from, input.limit);
+    const proposals = await n.getProposals(input.spec);
     return { proposals };
   }
 });

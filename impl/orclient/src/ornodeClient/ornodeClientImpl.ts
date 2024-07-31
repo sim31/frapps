@@ -1,6 +1,6 @@
 import { stringify } from "ts-utils";
-import { Implementation } from "./ornodeClient.js";
-import { jsonEndpoints } from "./ornodeClient.js";
+import { Implementation } from "./ornodeClient.js"
+import { jsonEndpoints } from "./ornodeClient.js"
 
 export function createImplementation(ornodeUrl: string): Implementation {
   return async (method, path, params) => {

@@ -7,6 +7,7 @@ import {
   ProposalFull,
   zErrorType,
   GetTokenOpts,
+  GetProposalsSpec,
 } from "./ornode.js";
 import { RespectAwardMt, RespectFungibleMt } from "./respect1155.js";
 import { Erc1155Mt, TokenId } from "./erc1155.js";
@@ -24,7 +25,7 @@ export interface IORNode {
    * Should return only proposals which have been submitted onchain
    */
   getProposal: (id: PropId) => Promise<Proposal>;
-  getProposals: (from: number, limit: number) => Promise<Proposal[]>
+  getProposals: (spec: GetProposalsSpec) => Promise<Proposal[]>
 
   getPeriodNum: () => Promise<number>;
 

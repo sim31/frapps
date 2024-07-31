@@ -28,7 +28,8 @@ import {
   zORNodePropStatus,
   zProposal,
   zProposalValid,
-  GetTokenOpts
+  GetTokenOpts,
+  GetProposalsSpec
 } from "ortypes/ornode.js";
 import { JsonRpcProvider, Provider, toBeHex, toBigInt, ZeroAddress } from "ethers";
 import { MongoClient } from "mongodb";
@@ -384,8 +385,8 @@ export class MongoOrnode implements IORNode {
   // Second, this is a bad interface anyway, because this API does not expose
   // sequence numbers of proposals anywhere, so from clent's point of view `from`
   // is meaningless. Better make it a date
-  async getProposals(from: number, limit: number): Promise<Proposal[]> {
-    return await this._propService.lastProposals(limit);
+  async getProposals(spec: GetProposalsSpec): Promise<Proposal[]> {
+    return await this._propService.getProposals(spec);
   }
 
   // TODO:
