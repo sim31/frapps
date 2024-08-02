@@ -14,6 +14,7 @@ const _methods = _getPublicFunctions();
 
 const _docPath = "/classes/ORConsole.html";
 
+// TODO: add intro to documentation and about how to use the console.
 export class ORConsole extends ORClient {
 
   constructor(context: ORContext, cfg: Config = defaultConfig) {
@@ -22,7 +23,7 @@ export class ORConsole extends ORClient {
     console.log("methods: ", stringify(_methods));
   }
 
-  // Re-define so that ORContext docs are included
+  // Re-defining so that ORContext docs are included
   get context(): ORContext {
     return super.context;
   }

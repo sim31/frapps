@@ -144,7 +144,8 @@ export const zRespectAwardMt = zErc1155Mt
       level: zRankNum.optional(),
       reason: z.string().optional(),
       title: z.string().optional(),
-      burn: zBurnData.nullable().optional()
+      burn: zBurnData.nullable().optional(),
+      mintProposalId: zBytes32.optional()
     })
 });
 export type RespectAwardMt = z.infer<typeof zRespectAwardMt>;

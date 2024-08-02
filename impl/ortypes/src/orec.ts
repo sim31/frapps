@@ -1,4 +1,5 @@
 import { Orec, Orec__factory } from "orec/typechain-types";
+import { ExecutedEvent } from "orec/typechain-types/contracts/Orec.js";
 import { z } from "zod";
 import { zBytes32, zBytesLike, zEthAddress, zUint8 } from "./eth.js";
 import { preprocessResultOrObj } from "./utils.js";
@@ -7,6 +8,7 @@ export type OrecContract = Orec;
 export { Orec__factory };
 export const OrecFactory = Orec__factory;
 export type MessageStruct = Orec.MessageStruct;
+export type ExecutedOutputObj = ExecutedEvent.OutputObject;
 
 export enum Stage {
   Voting,

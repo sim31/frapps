@@ -188,11 +188,11 @@ describe("orclient", function() {
         }
       ]
 
-      let result = await confirm(cl.submitBreakoutResult(groupRes[2]));
+      let result = await confirm(cl.proposeBreakoutResult(groupRes[2]));
       resultProps.push(result.proposal);
-      result = await confirm(cl.submitBreakoutResult(groupRes[1]));
+      result = await confirm(cl.proposeBreakoutResult(groupRes[1]));
       resultProps.push(result.proposal);
-      result = await confirm(cl.submitBreakoutResult(groupRes[0]));
+      result = await confirm(cl.proposeBreakoutResult(groupRes[0]));
       resultProps.push(result.proposal);
     });
 
@@ -200,7 +200,7 @@ describe("orclient", function() {
       let resultProps: Proposal[];
 
       before("call lsProposals", async function() {
-        resultProps = await cl.lsProposals();
+        resultProps = await cl.getProposals();
       });
       it("should return submitted proposals ordered from newest to oldest", async function() {
         for (const [index, prop] of resultProps.entries()) {
@@ -670,7 +670,7 @@ describe("orclient", function() {
       };
 
       resultProps = [];
-      resultProps.push((await confirm(cl.submitBreakoutResult(groupRes, { memo: "smth"}))).proposal)
+      resultProps.push((await confirm(cl.proposeBreakoutResult(groupRes, { memo: "smth"}))).proposal)
 
       mintProps = [];
       mintProps.push((await confirm(cl.proposeRespectTo(mintReq, { memo: "aa"}))).proposal);
@@ -756,7 +756,7 @@ describe("orclient", function() {
         }
       };
       resultProps = [];
-      resultProps.push((await confirm(cl.submitBreakoutResult(groupRes))).proposal)
+      resultProps.push((await confirm(cl.proposeBreakoutResult(groupRes))).proposal)
 
       mintProps = [];
       mintProps.push((await confirm(cl.proposeRespectTo(mintReq))).proposal);

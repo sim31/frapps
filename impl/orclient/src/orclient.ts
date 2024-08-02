@@ -84,7 +84,6 @@ export class ORClient {
     return this._nodeToClient.transformProp(proposal);
   }
 
-  // TODO: add filters - e.g. to return only active proposals
   /**
    * Returns a list of proposals ordered from latest to oldest
    * 
@@ -418,7 +417,6 @@ export class ORClient {
    * Pass `{ burned: false }` as `opts` parameter to change this behaviour.
    */
   async getToken(tokenId: TokenId, opts?: GetTokenOpts): Promise<Erc1155Mt> {
-    // TODO: fix type for ornode
     return await this._ctx.ornode.getToken(tokenId, opts);
   }
 
@@ -433,7 +431,6 @@ export class ORClient {
    * Pass `{ burned: false }` as `opts` parameter to change this behaviour.
    */
   async getAward(tokenId: TokenId, opts?: GetTokenOpts): Promise<RespectAwardMt> {
-    // TODO: fix type for ornode
     return await this._ctx.ornode.getAward(tokenId, opts);
   }
 
@@ -546,6 +543,4 @@ export class ORClient {
     }
     return resp.hash;
   }
-
-  // TODO: function to list respect NTTs
 }
