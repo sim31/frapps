@@ -1,10 +1,8 @@
 import { MongoClient, Db, ObjectId } from "mongodb";
-import { PropId } from "ortypes";
-import { TickEntity, TickEvent, zTickEntity } from "./entities.js";
-import { zTickToEntity } from "./transformers/nodeToEntity.js";
-import { Optional } from "utility-types";
+import { ITickStore, TickEvent } from "../ordb/itickStore.js";
+import { withoutUndefined } from "ts-utils";
 
-export class TickService {
+export class TickStore implements ITickStore {
   private readonly db: Db;
 
   constructor(mongoClient: MongoClient, dbName: string) {
@@ -12,7 +10,7 @@ export class TickService {
   }
 
   private get ticks() {
-    return this.db.collection<TickEntity>("ticks");
+    return this.db.collection<TickEvent>("ticks");
   }
 
   async tickCount(): Promise<number> {
@@ -24,10 +22,9 @@ export class TickService {
   //   return entity !== null ? zTickEntityToDTO.parse(entity) : null;
   // }
 
-  async createTick(tick: TickEvent): Promise<TickEvent> {
-    const entity = zTickToEntity.parse(tick);
-    await this.ticks.insertOne(entity);
-    return tick;
+  async createTick(tick: TickEvent): Promise<void> {
+    const res = await this.ticks.insertOne(withoutUndefined(tick));
+    console.debug("Inserted tick _id: ", res.insertedId);
   }
 
 }

@@ -7,6 +7,12 @@ import { z } from "zod";
 import { preprocessResultOrObj } from "./utils.js";
 import { zErc1155Mt } from "./erc1155.js";
 
+export {
+  TransferBatchEvent,
+  TransferSingleEvent
+} from "respect1155-sc/typechain-types/@openzeppelin/contracts/token/ERC1155/IERC1155.js";
+export * from "respect1155-sc/typechain-types/common.js";
+
 export type Contract = Respect1155;
 export const Factory = Respect1155__factory;
 export type Interface = Respect1155Interface;

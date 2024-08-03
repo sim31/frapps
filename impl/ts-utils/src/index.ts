@@ -34,6 +34,17 @@ export function withoutUndefined<T extends object>(obj: T): T {
   return newObj as T;
 }
 
+export function withoutProperty<T extends object, K extends keyof T>(
+  obj: T,
+  key: K
+): Omit<T, K> {
+  const ret = {
+    ...obj,
+  }
+  delete ret[key];
+  return ret;
+}
+
 
 export { ErrorWithCause } from "./ErrorWithCause.js";
 

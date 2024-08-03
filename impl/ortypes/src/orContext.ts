@@ -177,6 +177,10 @@ export class ORContext<CT extends Config> {
     return this._st.oldRespect;
   }
 
+  get fungibleId(): bigint {
+    return 0n;
+  }
+
   get runner(): ContractRunner {
     return this._runner;
   }

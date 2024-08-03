@@ -1,22 +1,10 @@
 import { MongoClient, Db, ObjectId } from "mongodb";
-import { ProposalEntity, RespectAwardEntity, zProposalEntity } from "./entities.js";
-import { zPropEntityToProp, zRAwardEntityToAward } from "./transformers/entityToNode.js";
-import {
-  EthAddress,
-  PropId,
-} from "ortypes";
-import {
-  Proposal,
-  GetTokenOpts as NGetTokenOpts,
-} from "ortypes/ornode.js";
-import { Optional } from "utility-types";
-import { zProposalToEntity, zRespectAwardToEntity } from "./transformers/nodeToEntity.js";
-import { RespectAwardMt, TokenId, BurnData } from "ortypes/respect1155.js";
-import { stringify } from "ts-utils";
+import { EthAddress } from "ortypes";
+import { stringify, withoutUndefined } from "ts-utils";
+import { IAwardStore, RespectAwardMt, TokenId, GetTokenOpts, zRespectAwardMt, BurnData } from "../ordb/iawardStore.js";
+import { withoutId } from "./utils.js";
 
-export type GetAwardOpts = NGetTokenOpts;
-
-export class RespectTokenService {
+export class AwardStore implements IAwardStore {
   private readonly db: Db;
 
   constructor(mongoClient: MongoClient, dbName: string) {
@@ -24,10 +12,10 @@ export class RespectTokenService {
   }
 
   private get awards() {
-    return this.db.collection<RespectAwardEntity>("awards");
+    return this.db.collection<RespectAwardMt>("awards");
   }
 
-  async findAward(id: TokenId, opts: GetAwardOpts = { burned: true }): Promise<RespectAwardMt | null> {
+  async getAward(id: TokenId, opts: GetTokenOpts = { burned: true }): Promise<RespectAwardMt | null> {
     const filter = opts.burned === false
       ? { 
         "properties.tokenId": id,
@@ -35,12 +23,17 @@ export class RespectTokenService {
       } : {
         "properties.tokenId": id,
       };
-    const entity = await this.awards.findOne(filter);
-    console.debug("found award: ", stringify(entity));
-    return entity !== null ? zRAwardEntityToAward.parse(entity) : null;
+    const doc = await this.awards.findOne(filter);
+    if (doc !== null) {
+      console.debug("Retrieved award _id: ", doc._id, ", id: ", id);
+      return zRespectAwardMt.parse(withoutId(doc));
+    } else {
+      console.debug("Did not find award id: ", id);
+      return null;
+    }
   }
 
-  async findAwardsOf(recipient: EthAddress, opts: GetAwardOpts = { burned: false }): Promise<RespectAwardMt[]> {
+  async getAwardsOf(recipient: EthAddress, opts: GetTokenOpts = { burned: false }): Promise<RespectAwardMt[]> {
     const filter = opts.burned === false
       ? { 
         "properties.recipient": recipient,
@@ -48,16 +41,19 @@ export class RespectTokenService {
       } : {
         "properties.recipient": recipient
       };
-    const entities = await this.awards.find(filter);
-    const awards = entities.map(entity => zRAwardEntityToAward.parse(entity));
-    return await awards.toArray();
+    const cursor = await this.awards.find(filter);
+    const awards = cursor.map(entity => zRespectAwardMt.parse(withoutId(entity)));
+
+    const rval = await awards.toArray();
+    console.debug("Found docs for spec. Spec: ", stringify(opts), ". Count: ", rval.length);
+    return rval;
   }
 
   async createAwards(awards: RespectAwardMt[]): Promise<void> {
-    const entities = awards.map(award => zRespectAwardToEntity.parse(award));
+    const _awards = awards.map(award => zRespectAwardMt.parse(withoutUndefined(award)));
     try {
-      console.debug("Inserting: ", JSON.stringify(entities));
-      await this.awards.insertMany(entities);
+      console.debug("Inserting: ", JSON.stringify(_awards));
+      await this.awards.insertMany(_awards);
     } catch (err: any) {
       if (err.result?.result?.insertedIds !== undefined) {
         console.error(`A MongoBulkWriteException occurred, but there are successfully processed documents.`);

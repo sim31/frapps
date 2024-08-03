@@ -10,7 +10,7 @@ import {
 } from "ortypes/ornode.js";
 import { zEthAddress, zPropId } from "ortypes";
 import { resultHandler } from "./resultHandler.js";
-import { getOrnode } from "./ornode.js";
+import { getOrnode } from "./mongoOrnode.js";
 import { stringify } from "ts-utils";
 import { join } from "path";
 import { zRespectAwardMt, zRespectFungibleMt, zTokenId, TokenId, zFungibleTokenId, zGetTokenOpts } from "ortypes/respect1155.js";

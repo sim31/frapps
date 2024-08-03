@@ -8,7 +8,17 @@ export type OrecContract = Orec;
 export { Orec__factory };
 export const OrecFactory = Orec__factory;
 export type MessageStruct = Orec.MessageStruct;
-export type ExecutedOutputObj = ExecutedEvent.OutputObject;
+
+export {
+  ProposalCreatedEvent,
+  ExecutedEvent,
+  ExecutionFailedEvent,
+  EmptyVoteInEvent,
+  WeightedVoteInEvent,
+  ProposalRemovedEvent,
+  SignalEvent
+} from "orec/typechain-types/contracts/Orec.js";
+export * from "orec/typechain-types/common.js";
 
 export enum Stage {
   Voting,
