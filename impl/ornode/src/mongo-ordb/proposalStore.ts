@@ -66,16 +66,13 @@ export class ProposalStore implements IProposalStore {
   async updateProposal(id: PropId, update: Partial<Proposal>): Promise<void> {
     console.debug("Updating proposal id ", id, " with: ", update);
 
-    const newDoc = await this.proposals.findOneAndUpdate(
+    const res = await this.proposals.updateOne(
       { id },
       { $set: update },
-      { returnDocument: "after" }
     );
 
-    if (newDoc !== null) {
-      console.debug("Updated proposal _id: ", newDoc._id);
-    } else {
-      console.debug("Failed to update proposal");
+    if (res.modifiedCount !== 1) {
+      throw new Error(`Failed to update proposal: ${id}`);
     }
   }
 

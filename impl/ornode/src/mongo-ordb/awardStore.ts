@@ -53,7 +53,10 @@ export class AwardStore implements IAwardStore {
     const _awards = awards.map(award => zRespectAwardMt.parse(withoutUndefined(award)));
     try {
       console.debug("Inserting: ", JSON.stringify(_awards));
-      await this.awards.insertMany(_awards);
+      const res = await this.awards.insertMany(_awards);
+      if (res.insertedCount !== awards.length) {
+        throw new Error(`Failed inserting awards: ${stringify(awards)}`);
+      }
     } catch (err: any) {
       if (err.result?.result?.insertedIds !== undefined) {
         console.error(`A MongoBulkWriteException occurred, but there are successfully processed documents.`);
@@ -73,13 +76,35 @@ export class AwardStore implements IAwardStore {
       "properties.tokenId": { $in: tokenIds }
     });
     console.log(`Requested to delete: ${tokenIds}. Delete count: ${result.deletedCount}`);
+    if (result.deletedCount !== tokenIds.length) {
+      throw new Error("Failed to delete requested docs");
+    }
   }
 
   async burnAwards(tokenIds: TokenId[], burnData: BurnData): Promise<void> {
     const filter = { "properties.tokenId": { $in: tokenIds } };
     const update = { $set: { "properties.burn": burnData } };
     const result = await this.awards.updateMany(filter, update);
-    console.log(`Requested to burn: ${tokenIds}. Burn data: ${JSON.stringify(burnData)}, modified count: ${result.modifiedCount}`);
+    console.debug(`Requested to burn: ${tokenIds}. Burn data: ${JSON.stringify(burnData)}, modified count: ${result.modifiedCount}`);
+    if (result.modifiedCount !== tokenIds.length) {
+      throw new Error(`Failed to burn awards. tokenIds: ${stringify(tokenIds)}, burnData: ${burnData}`);
+    }
+  }
+
+  async updateAwardPropsIfExists(
+    tokenId: TokenId,
+    update: Partial<RespectAwardMt['properties']>,
+  ): Promise<boolean> {
+    const filter = { "properties.tokenId": tokenId };
+    const fieldUpdates: any = {};
+    for (const [key, value] of Object.entries(update)) {
+      fieldUpdates[`properties.${key}`] = value;
+    }
+    console.debug("fieldUpdates: ", stringify(fieldUpdates));
+    const upd = { $set: fieldUpdates };
+    const updated = await this.awards.findOneAndUpdate(filter, update);
+    console.debug(`Requested to update: ${tokenId}. Update data: ${stringify(update)}`);
+    return updated !== null;
   }
 
 }

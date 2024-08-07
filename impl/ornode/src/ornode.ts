@@ -17,7 +17,10 @@ import {
   ProposalInvalid,
   ProposalNotCreated,
   ProposalNotFound,
-  TokenNotFound
+  TokenNotFound,
+  TxHash,
+  zBytesLikeToBytes,
+  zBreakoutMintRequest
 } from "ortypes"
 import { TokenMtCfg } from "./config.js"
 import { IOrdb } from "./ordb/iordb.js";
@@ -33,7 +36,8 @@ import {
   TransferSingleEvent,
   TypedEventLog as RTypedEventLog,
   GetTokenOpts,
-  RespectFungibleMt
+  RespectFungibleMt,
+  zMintRespectArgs
 } from "ortypes/respect1155.js";
 import { BigNumberish, toBeHex, toBigInt, ZeroAddress } from "ethers";
 import {
@@ -76,6 +80,8 @@ export class ORNode implements IORNode {
   private _db: IOrdb;
   private _ctx: ORContext;
   private _cfg: ConstructorConfig
+  
+  private _tokUpdPool: Record<TokenId, Partial<RespectAwardMt['properties']>> = {};
 
   private constructor(
     orcontext: ORContext,
@@ -236,6 +242,107 @@ export class ORNode implements IORNode {
       }
     }
 
+  private async _updateTokensWithExec(
+    tokenPropUpdates: Record<TokenId, Partial<RespectAwardMt['properties']>>
+  ) {
+    for (const [tid, upd] of Object.entries(tokenPropUpdates)) {
+      const success = await this._db.awards.updateAwardPropsIfExists(tid, upd);
+      if (!success) {
+        console.debug("Storing token update into update pool. Token id: ", tid);
+        this._tokUpdPool[tid] = upd;
+      } else {
+        console.debug("Updated token: ", tid);
+      }
+    }
+  }
+
+  private async _refreshAwardUpdPool(awards: RespectAwardMt[]) {
+    for (const award of awards) {
+      const tokenId = award.properties.tokenId;
+      const update = this._tokUpdPool[tokenId];
+      if (update !== undefined) {
+        const success = await this._db.awards.updateAwardPropsIfExists(tokenId, update);        
+        if (!success) {
+          console.error("Failed updating token from _refreshAwardUpdPool. Token id: ", tokenId);
+        } else {
+          console.debug("Updated token ", tokenId, " from _refreshAwardUPdPool");
+        }
+        delete this._tokUpdPool[tokenId];
+      }
+    }
+  }
+
+  private async _handleTokenMints(
+    propId: PropId,
+    retVal: string,
+    event: TypedEventLog<ExecutedEvent.Event>,
+    txHash?: TxHash,
+  ) {
+    // check if event being executed is breakout result or individual mint
+    const prop = await this._db.proposals.getProposal(propId);
+    if (!prop) {
+      console.error("Could not find proposal: ", propId);
+      return;
+    }
+
+    let propUpdates: 
+      Record<TokenId, Partial<RespectAwardMt['properties']>> = {};
+    if (prop.attachment?.propType === 'respectBreakout') {
+      if (prop.content === undefined) {
+        console.error("Don't have content of proposal to set token details");
+        return;
+      }
+      if (prop.content.addr !== await this._ctx.getNewRespectAddr()) {
+        return;
+      }
+      const data = zBytesLikeToBytes.parse(prop.content.cdata);
+      const tx = this._ctx.newRespect.interface.parseTransaction({ data });
+      const mintReq = zBreakoutMintRequest.parse(tx?.args);
+      // TODO: for each mintReq.id...
+      const propUpdate = {
+        mintProposalId: propId,
+        groupNum: prop.attachment?.groupNum,
+      }
+      for (const req of mintReq.mintRequests) {
+        propUpdates[toBeHex(req.id)] = propUpdate;
+      }
+    } else if (prop.attachment?.propType === 'respectAccount') {
+      if (prop.content === undefined) {
+        console.error("Don't have content of proposal to set token details");
+        return;
+      }
+      if (prop.content.addr !== await this._ctx.getNewRespectAddr()) {
+        return;
+      }
+
+      const data = zBytesLikeToBytes.parse(prop.content.cdata);
+      const tx = this._ctx.newRespect.interface.parseTransaction({ data });
+      const args = zMintRespectArgs.parse(tx?.args)
+
+      const propUpdate = {
+        mintProposalId: propId,
+        title: prop.attachment.mintTitle,
+        reason: prop.attachment.mintReason,
+      }
+      propUpdates[toBeHex(args.request.id)] = propUpdate;
+    }
+
+    if (Object.keys(propUpdates).length > 0) {
+      try {
+        const block = await event.getBlock();
+        for (const upd of Object.values(propUpdates)) {
+          upd.mintDateTime = new Date(block.timestamp * 1000).toUTCString();
+        }
+      } catch(err) {
+        console.error("Failed setting datetime for proposal: ", err);
+        console.error("event: ", stringify(event));
+        throw err;
+      }
+
+      await this._updateTokensWithExec(propUpdates);
+    }
+  }
+
   private _propExecHandler: TypedListener<ExecutedEvent.Event> =
     async (
       propId: string,
@@ -245,6 +352,8 @@ export class ORNode implements IORNode {
       console.debug("Exec event. PropId: ", propId, ", event: ", event);
       const { txHash } = this._parseEventObject(event);
       await this._onExec(event.eventName, propId, retVal, txHash);
+
+      this._handleTokenMints(propId, retVal, event, txHash);
     }
 
   private _propExecFailedHandler: TypedListener<ExecutionFailedEvent.Event> =
@@ -349,6 +458,7 @@ export class ORNode implements IORNode {
       }
       console.debug("creating awards: ", JSON.stringify(awards));
       await this._db.awards.createAwards(awards);
+      await this._refreshAwardUpdPool(awards);
     } else if (from !== ZeroAddress && to === ZeroAddress) {
       // Should not delete a burned token
       // Use case: key rotation. When rotating keys you should burn old tokens and issue new, but you would like to have old token metadata for historical record.
