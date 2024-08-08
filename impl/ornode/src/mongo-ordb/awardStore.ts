@@ -91,20 +91,4 @@ export class AwardStore implements IAwardStore {
     }
   }
 
-  async updateAwardPropsIfExists(
-    tokenId: TokenId,
-    update: Partial<RespectAwardMt['properties']>,
-  ): Promise<boolean> {
-    const filter = { "properties.tokenId": tokenId };
-    const fieldUpdates: any = {};
-    for (const [key, value] of Object.entries(update)) {
-      fieldUpdates[`properties.${key}`] = value;
-    }
-    console.debug("fieldUpdates: ", stringify(fieldUpdates));
-    const upd = { $set: fieldUpdates };
-    const updated = await this.awards.findOneAndUpdate(filter, update);
-    console.debug(`Requested to update: ${tokenId}. Update data: ${stringify(update)}`);
-    return updated !== null;
-  }
-
 }

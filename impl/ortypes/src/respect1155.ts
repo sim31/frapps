@@ -35,6 +35,8 @@ export type TokenId = z.infer<typeof zTokenId>;
 
 export const zFungibleTokenId = z.literal(zeroPadBytes("0x00", 32));
 
+export const zFungibleTokenIdNum = z.literal(0n);
+
 export const zTokenIdNum = z.bigint().refine(val => {
   return isTokenIdValid(val);
 })

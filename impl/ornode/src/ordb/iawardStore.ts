@@ -17,9 +17,4 @@ export interface IAwardStore {
   deleteAwards: (tokenIds: TokenId[]) => Promise<void>
 
   burnAwards: (tokenIds: TokenId[], burnData: BurnData) => Promise<void>
-
-  updateAwardPropsIfExists: (
-    tokenId: TokenId,
-    update: Partial<RespectAwardMt['properties']>
-  ) => Promise<boolean>
 }
