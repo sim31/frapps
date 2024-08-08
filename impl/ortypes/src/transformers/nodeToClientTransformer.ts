@@ -391,7 +391,7 @@ export class NodeToClientTransformer {
     this._zNProposalToDecodedProp = mkzNProposalToDecodedProp(context);
   }
 
-  async _getExecStatus(
+  async getExecStatus(
     nodeProp: NProposal,
     onchainProp: OnchainProp
   ): Promise<{ status: ExecStatus, execError?: ExecError}> {
@@ -434,7 +434,7 @@ export class NodeToClientTransformer {
   async transformProp(nodeProp: NProposal): Promise<Proposal> {
     const propId = nodeProp.id;
     const onchainProp = await this._ctx.getProposalFromChain(propId);
-    const { status, execError } = await this._getExecStatus(nodeProp, onchainProp)
+    const { status, execError } = await this.getExecStatus(nodeProp, onchainProp)
     const rProp: Proposal = {
       ...onchainProp,
       status: status,

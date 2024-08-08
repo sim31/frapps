@@ -1,16 +1,17 @@
 import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt, toBeHex } from "ethers";
-import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp, VoteType, Vote, GetProposalsSpec, GetAwardsSpec } from "ortypes/orclient.js";
+import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp, VoteType, Vote, GetProposalsSpec, GetAwardsSpec, ExecError } from "ortypes/orclient.js";
 import { TxFailed } from "./errors.js";
 import { ORContext, ConfigWithOrnode } from "ortypes/orContext.js";
 import { NodeToClientTransformer, zNVoteToClient } from "ortypes/transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "ortypes/transformers/clientToNodeTransformer.js";
 import { ProposalFull as NProp, ORNodePropStatus } from "ortypes/ornode.js";
-import { Bytes, EthAddress, PropId, ProposalNotCreated, ProposalState, TxHash, zVote as zNVote, DecodedError } from "ortypes";
+import { Bytes, EthAddress, PropId, ProposalNotCreated, ProposalState, TxHash, zVote as zNVote, DecodedError, ExecutedEvent, ExecutionFailedEvent, zPropId, zBytes } from "ortypes";
 import { Method, Path, Input, Response } from "./ornodeClient/ornodeClient.js";
 import { sleep, stringify } from "ts-utils";
 import { resultArrayToObj } from "ortypes/utils.js";
 import { RespectAwardMt, RespectFungibleMt, TokenId } from "ortypes/respect1155.js";
 import { Erc1155Mt } from "ortypes/erc1155.js";
+import { z } from "zod";
 
 export function isPropCreated(propState: ProposalState) {
   return propState.createTime > 0n;
@@ -32,10 +33,21 @@ export const defaultConfig: Config = {
   propResubmitInterval: 3000
 }
 
-export interface PutProposalRes {
+export interface OnchainActionRes {
+  txReceipt: ContractTransactionReceipt
+}
+
+export interface ProposeRes extends OnchainActionRes {
   proposal: Proposal,
   status: ORNodePropStatus
 }
+
+export type ExecRes = OnchainActionRes & {
+  execStatus: "Executed"
+} | OnchainActionRes & {
+  execStatus: "ExecutionFailed"
+  execError?: ExecError
+};
 
 export class ORClient {
   private _ctx: ORContext<ConfigWithOrnode>;
@@ -129,14 +141,13 @@ export class ORClient {
    * * 'Yes' - vote for proposals;
    * * 'No' - vote against;
    * @param memo - memo text string to submit with proposal.
-   * @returns hash of submitted transaction
    * 
    * @remarks Note that memo string with go with calldata of transaction, so longer string will cost more.
    * 
    * @example
    * await c.vote("0x2f5e1602a2e1ccc9cf707bc57361ae6587cd87e8ae27105cae38c0db12f4fab1", "Yes")
    */
-  async vote(propId: PropId, vote: VoteType, memo?: string): Promise<TxHash>;
+  async vote(propId: PropId, vote: VoteType, memo?: string): Promise<OnchainActionRes>;
   /**
    * Vote on a proposal.
    * @param request - parameters for a vote as an object. See {@link ORConsole#vote}.
@@ -151,8 +162,8 @@ export class ORClient {
        memo: "Optional memo"
      })
    */
-  async vote(request: VoteRequest): Promise<TxHash>;
-  async vote(pidOrReq: VoteRequest | PropId, vote?: VoteType, memo?: string): Promise<TxHash> {
+  async vote(request: VoteRequest): Promise<OnchainActionRes>;
+  async vote(pidOrReq: VoteRequest | PropId, vote?: VoteType, memo?: string): Promise<OnchainActionRes> {
     let req: VoteRequest;
     if (vote !== undefined && typeof pidOrReq === 'string') {
       req = { propId: pidOrReq, vote, memo }      
@@ -165,10 +176,10 @@ export class ORClient {
     const errMsg = `orec.vote(${req.propId}, ${v}, ${m})`
     console.debug(errMsg);
     const promise = orec.vote(req.propId, v, m);
-    return await this._handleTxPromise(promise, this._cfg.otherConfirms, errMsg);
+    const txReceipt = await this._handleTxPromise(promise, this._cfg.otherConfirms, errMsg);
+    return { txReceipt };
   }
 
-  // TODO: return proposal status and return value
   /**
    * Execute a passed proposal. Will fail if proposal is not passed yet.
    * @param propId - id of proposal to execute.
@@ -176,13 +187,30 @@ export class ORClient {
    * @example
    * await c.execute("0x2f5e1602a2e1ccc9cf707bc57361ae6587cd87e8ae27105cae38c0db12f4fab1")
    */
-  async execute(propId: PropId) {
+  async execute(propId: PropId): Promise<ExecRes> {
     const orec = this._ctx.orec;
     const nprop = await this._ctx.ornode.getProposal(propId);
     if (nprop.content !== undefined) {
       const errMsg = `orec.execute(${propId})`;
       const promise = orec.execute(nprop.content);
-      await this._handleTxPromise(promise, this._cfg.otherConfirms, errMsg);
+      const receipt = await this._handleTxPromise(promise, this._cfg.otherConfirms, errMsg);
+      const ev = this._execEventFromReceipt(receipt);
+      if (ev.name === "Executed") {
+        return {
+          txReceipt: receipt,
+          execStatus: "Executed"
+        }
+      } else {
+        const execStatus = z.literal("ExecutionFailed").parse(ev.name);
+        const error = this._ctx.errorDecoder.decodeReturnData(ev.args.retVal);
+        return {
+          txReceipt: receipt,
+          execStatus,
+          execError: error
+        }
+      }
+    } else {
+      throw new Error("Don't have proposal content to execute");
     }
   }
 
@@ -228,7 +256,7 @@ export class ORClient {
   async proposeBreakoutResult(
     request: RespectBreakoutRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
-  ): Promise<PutProposalRes> {
+  ): Promise<ProposeRes> {
     console.debug("submitting breakout result");
     const v = zVoteWithProp.parse(vote); 
     console.debug("parsed vote");
@@ -260,7 +288,7 @@ export class ORClient {
   async proposeRespectTo(
     req: RespectAccountRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
-  ): Promise<PutProposalRes> {
+  ): Promise<ProposeRes> {
     const v = zVoteWithProp.parse(vote); 
     console.debug("parsed vote")
     const proposal = await this._clientToNode.transformRespectAccount(req);
@@ -293,7 +321,7 @@ export class ORClient {
   async proposeBurnRespect(
     req: BurnRespectRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
-  ): Promise<PutProposalRes> {
+  ): Promise<ProposeRes> {
     const v = zVoteWithProp.parse(vote); 
     const proposal = await this._clientToNode.transformBurnRespect(req);
     return await this._submitProposal(proposal, v);
@@ -305,7 +333,7 @@ export class ORClient {
   async proposeCustomSignal(
     req: CustomSignalRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
-  ): Promise<PutProposalRes> {
+  ): Promise<ProposeRes> {
     const v = zVoteWithProp.parse(vote); 
     const proposal = await this._clientToNode.transformCustomSignal(req);
     return await this._submitProposal(proposal, v);
@@ -328,7 +356,7 @@ export class ORClient {
   async proposeTick(
     req: TickRequest = {},
     vote: VoteWithPropRequest = { vote: "Yes" }
-  ): Promise<PutProposalRes> {
+  ): Promise<ProposeRes> {
     const v = zVoteWithProp.parse(vote); 
 
     if (req.data === undefined) {
@@ -353,7 +381,7 @@ export class ORClient {
   async proposeCustomCall(
     req: CustomCallRequest,
     vote: VoteWithPropRequest = { vote: "Yes" }
-  ): Promise<PutProposalRes> {
+  ): Promise<ProposeRes> {
     const v = zVoteWithProp.parse(vote); 
     const proposal = await this._clientToNode.transformCustomCall(req);
     return await this._submitProposal(proposal, v);
@@ -466,17 +494,18 @@ export class ORClient {
     return memo !== undefined && memo != "" ? hexlify(toUtf8Bytes(memo)) : "0x";
   }
 
-  private async _submitProposal(proposal: NProp, vote?: VoteWithProp): Promise<PutProposalRes> {
+  private async _submitProposal(proposal: NProp, vote?: VoteWithProp): Promise<ProposeRes> {
     console.debug("submitting to chain: ", proposal);
-    const txId = await this._submitPropToChain(proposal, vote);
-    proposal.createTxHash = txId;
+    const receipt = await this._submitPropToChain(proposal, vote);
+    proposal.createTxHash = receipt.hash;
     console.debug("submitting to ornode");
     const status = await this._submitPropToOrnode(proposal);
     console.debug("Submitted proposal id: ", proposal.id, "status: ", status);
     const cprop = await this._nodeToClient.transformProp(proposal);
     return {
       proposal: cprop,
-      status
+      status,
+      txReceipt: receipt
     };
   }
 
@@ -526,7 +555,7 @@ export class ORClient {
     promise: Promise<ContractTransactionResponse>,
     confirms: number,
     errMsg?: string
-  ): Promise<TxHash> {
+  ): Promise<ContractTransactionReceipt> {
     let resp: Awaited<typeof promise>;
     let receipt: Awaited<ReturnType<typeof resp.wait>>;
     try {
@@ -546,6 +575,49 @@ export class ORClient {
     if (receipt === null || receipt.status !== 1) {
       throw new TxFailed(resp, receipt, errMsg);
     }
-    return resp.hash;
+    return receipt;
+  }
+
+  private _execEventFromReceipt(
+    receipt: ContractTransactionReceipt
+  ): {
+    name: "Executed" | "ExecutionFailed",
+    args: ExecutedEvent.OutputObject | ExecutionFailedEvent.OutputObject
+  } {
+
+    const execSig = "Executed(bytes32,bytes)";
+    const execFailedSig = "ExecutionFailed(bytes32,bytes)";
+    const _c1 = this._ctx.orec.filters[execSig];
+    const _c2 = this._ctx.orec.filters[execFailedSig];
+
+    const events: ReturnType<ORClient["_execEventFromReceipt"]>[] = [];
+    for (const log of receipt.logs) {
+      const ld = this._ctx.orec.interface.parseLog(log);
+      if (ld?.signature === execSig) {
+        events.push({
+          name: "Executed",
+          args: {
+            propId: zPropId.parse(ld.args[0]),
+            retVal: zBytes.parse(ld.args[1]),
+          }
+        })
+      } else if (ld?.signature === execFailedSig) {
+        events.push({
+          name: "ExecutionFailed",
+          args: {
+            propId: zPropId.parse(ld.args[0]),
+            retVal: zBytes.parse(ld.args[1])
+          }
+        })
+      }
+    }
+
+    if (events.length > 1) {
+      throw new Error(`More than one exec event in tx. Receipt: ${stringify(receipt)}. Events: ${stringify(events)}`);
+    } else if (events.length < 1) {
+      throw new Error("Execution did not trigger any exec events");
+    } else {
+      return events[0];
+    }
   }
 }

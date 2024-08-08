@@ -12,7 +12,7 @@ export default defineConfig({
   },
   server: {
     watch: {
-      followSymlinks: true
+      followSymlinks: true,
     } 
   },
   build: {
