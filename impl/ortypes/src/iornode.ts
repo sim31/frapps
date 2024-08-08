@@ -6,7 +6,7 @@ import {
   Proposal,
   ProposalFull,
   zErrorType,
-  GetTokenOpts,
+  GetAwardsSpec,
   GetProposalsSpec,
 } from "./ornode.js";
 import { RespectAwardMt, RespectFungibleMt } from "./respect1155.js";
@@ -25,26 +25,17 @@ export interface IORNode {
    * Should return only proposals which have been submitted onchain
    */
   getProposal: (id: PropId) => Promise<Proposal>;
-  getProposals: (spec: GetProposalsSpec) => Promise<Proposal[]>
+  getProposals: (spec?: GetProposalsSpec) => Promise<Proposal[]>
 
   getPeriodNum: () => Promise<number>;
 
-  /**
-   * @param opts - options. default: { burned: true }
-   */
-  getToken: (tokenId: TokenId, opts?: GetTokenOpts) => Promise<RespectFungibleMt | RespectAwardMt>;
+  getToken: (tokenId: TokenId) => Promise<RespectFungibleMt | RespectAwardMt>;
 
-  // TODO: should have a function to get latest awards and getAwardsOf should return latest awards and should limit amount of awards returned.
+  getAward: (tokenId: TokenId) => Promise<RespectAwardMt>;
 
-  /**
-   * @param opts - options. default: { burned: true }
-   */
-  getAward: (tokenId: TokenId, opts?: GetTokenOpts) => Promise<RespectAwardMt>;
+  getAwards: (spec?: GetAwardsSpec) => Promise<RespectAwardMt[]>;
+
   getRespectMetadata: () => Promise<RespectFungibleMt>;
-  /**
-   * @param opts - options. default: { burned: false }
-   */
-  getAwardsOf: (account: EthAddress, opts?: GetTokenOpts) => Promise<RespectAwardMt[]>;
 }
 
 export class ProposalNotFound extends Error {

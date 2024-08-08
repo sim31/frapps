@@ -2,8 +2,8 @@ import { EndpointsFactory, ServeStatic, BuiltinLogger, createResultHandler } fro
 import { z } from "zod";
 import { Routing } from "express-zod-api";
 import {
-  GetTokenOpts,
   zGetProposalsSpec,
+  zGetAwardsSpec,
   zORNodePropStatus,
   zProposal,
   zProposalFull,
@@ -13,7 +13,7 @@ import { resultHandler } from "./resultHandler.js";
 import { getOrnode } from "./mongoOrnode.js";
 import { stringify } from "ts-utils";
 import { join } from "path";
-import { zRespectAwardMt, zRespectFungibleMt, zTokenId, TokenId, zFungibleTokenId, zGetTokenOpts } from "ortypes/respect1155.js";
+import { zRespectAwardMt, zRespectFungibleMt, zTokenId, TokenId, zFungibleTokenId, zRespectAwardPrettyMt, zRespectAwardMtToPretty } from "ortypes/respect1155.js";
 import { Erc1155Mt, zErc1155Mt } from "ortypes/erc1155.js";
 
 const factory = new EndpointsFactory(resultHandler);
@@ -70,9 +70,9 @@ const getProposals = factory.build({
   }
 });
 
-async function handleGetToken(tokenId: TokenId, opts?: GetTokenOpts) {
+async function handleGetToken(tokenId: TokenId) {
   const n = await getOrnode();
-  const token = await n.getToken(tokenId, opts);
+  const token = await n.getToken(tokenId);
   return token;
 }
 
@@ -80,26 +80,24 @@ const getTokenPost = factory.build({
   method: "post",
   input: z.object({
     tokenId: z.union([zFungibleTokenId, zTokenId]),
-    opts: zGetTokenOpts.default({ burned: true })
   }),
   output: z.union([zRespectFungibleMt, zRespectAwardMt]),
   handler: async ({ input, options, logger }) => {
     logger.debug(`getToken ${stringify(input)}. options: ${stringify(options)}`);
-    return await handleGetToken(input.tokenId, input.opts);
+    return await handleGetToken(input.tokenId);
   }
 });
 
 const getAward = factory.build({
   method: "post",
   input: z.object({
-    tokenId: zTokenId,
-    opts: zGetTokenOpts.default({ burned: true })
+    tokenId: zTokenId
   }),
   output: zRespectAwardMt,
   handler: async ({input, options, logger}) => {
     logger.debug(`getAward ${stringify(input)}. options: ${stringify(options)}`);
     const n = await getOrnode();
-    const token = await n.getAward(input.tokenId, input.opts);
+    const token = await n.getAward(input.tokenId);
     return token;
   }
 });
@@ -121,26 +119,30 @@ const getToken = factory.build({
   input: z.object({
     tokenId: z.union([zFungibleTokenId, zTokenId]),
   }),
-  output: z.union([zRespectFungibleMt, zRespectAwardMt]),
+  output: z.union([zRespectFungibleMt, zRespectAwardPrettyMt, zRespectAwardMt]),
   handler: async ({ input, options, logger }) => {
     logger.debug(`token/${input.tokenId}  ${stringify(input)}. options: ${stringify(options)}`);
-    return await handleGetToken(input.tokenId, { burned: true });
+    const token = await handleGetToken(input.tokenId);
+    if (!('decimals' in token)) {
+      return zRespectAwardMtToPretty.parse(token);
+    } else {
+      return token;
+    }
   }
-})
+});
 
-const getAwardsOf = factory.build({
+const getAwards = factory.build({
   method: "post",
   input: z.object({
-    account: zEthAddress,
-    opts: zGetTokenOpts.default({ burned: false })
+    spec: zGetAwardsSpec
   }),
   output: z.object({
     awards: zRespectAwardMt.array()
   }),
   handler: async ({input, options, logger}) => {
-    logger.debug(`getAwardsOf ${stringify(input)}. options: ${stringify(options)}`);
+    logger.debug(`getAwards ${stringify(input)}}`);
     const n = await getOrnode();
-    const tokens = await n.getAwardsOf(input.account, input.opts);
+    const tokens = await n.getAwards(input.spec);
     return { awards: tokens };
   }
 });
@@ -157,7 +159,7 @@ export const routing: Routing = {
     token: {
       ":tokenId": getToken
     },
-    getAwardsOf
+    getAwards
   },
   public: new ServeStatic("./public", {
     dotfiles: "deny",

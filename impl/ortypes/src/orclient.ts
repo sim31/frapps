@@ -6,8 +6,6 @@ import { zBytes, zEthAddress, zTxHash, zUint } from "./eth.js";
 import { zTimestamp } from "./common.js";
 import { ErrorType } from "ethers-decode-error";
 
-export { zGetTokenOpts, GetTokenOpts } from "./respect1155.js";
-
 export const zProposalMetadata = z.object({
   propTitle: z.string().optional(),
   propDescription: z.string().optional()
@@ -205,6 +203,14 @@ export const zGetProposalsSpec = z.object({
  * Some description
  */
 export type GetProposalsSpec = z.infer<typeof zGetProposalsSpec>;
+
+export const zGetAwardsSpec = z.object({
+  before: z.date().optional(),
+  limit: z.number().int().gt(0).optional(),
+  recipient: zEthAddress.optional(),
+  burned: z.boolean().optional()
+});
+export type GetAwardsSpec = z.infer<typeof zGetAwardsSpec>;
 
 export function isPropMsgFull(prop: Proposal): prop is ProposalMsgFull {
   return prop.addr !== undefined && prop.cdata !== undefined && prop.memo !== undefined;

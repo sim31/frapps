@@ -3,13 +3,8 @@ import { solidityPackedKeccak256 } from "ethers";
 import { PropId, zExecStatus, zPropId, zProposedMsg, zStage, zVoteStatus } from "./orec.js";
 import { zGroupNum, zPropType } from "./fractal.js";
 import { propId } from "orec/utils";
-import { zBytesLikeToBytes, zTxHash } from "./eth.js";
+import { zBytesLikeToBytes, zEthAddress, zTxHash } from "./eth.js";
 import { zTimestamp } from "./common.js";
-
-export {
-  zGetTokenOpts,
-  GetTokenOpts,
-} from "./respect1155.js";
 
 export const zPropContent = zProposedMsg;
 export type PropContent = z.infer<typeof zPropContent>;
@@ -221,6 +216,14 @@ export const zGetProposalsSpec = z.object({
   limit: z.number().int().gt(0).optional(),
 });
 export type GetProposalsSpec = z.infer<typeof zGetProposalsSpec>;
+
+export const zGetAwardsSpec = z.object({
+  before: zTimestamp.optional(),
+  limit: z.number().int().gt(0).optional(),
+  recipient: zEthAddress.optional(),
+  burned: z.boolean().optional()
+});
+export type GetAwardsSpec = z.infer<typeof zGetAwardsSpec>;
 
 export function idOfRespectBreakoutAttach(attachment: RespectBreakoutAttachment) {
   const a: Required<RespectBreakoutAttachment> = {

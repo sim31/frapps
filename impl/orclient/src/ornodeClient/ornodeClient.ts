@@ -422,7 +422,7 @@ type PostV1GetProposalResponse = {
 
 type PostV1GetProposalsInput = {
     spec: {
-        untilTime?: number | undefined;
+        before?: number | undefined;
         limit?: number | undefined;
     };
 };
@@ -677,9 +677,6 @@ type GetV1GetPeriodNumResponse = {
 
 type PostV1GetTokenInput = {
     tokenId: "0x0000000000000000000000000000000000000000000000000000000000000000" | string;
-    opts?: {
-        burned?: boolean;
-    };
 };
 
 type PostV1GetTokenResponse = {
@@ -698,7 +695,7 @@ type PostV1GetTokenResponse = {
             tokenId: string;
             recipient: any;
             mintType: number;
-            mintDateTime?: string | undefined;
+            mintTs?: number | undefined;
             mintTxHash?: string | undefined;
             denomination: number;
             periodNumber: number;
@@ -710,6 +707,7 @@ type PostV1GetTokenResponse = {
                 burnTxHash?: string | undefined;
                 burnReason?: string | undefined;
             } | null) | undefined;
+            mintProposalId?: string | undefined;
         };
     };
 } | {
@@ -722,9 +720,6 @@ type PostV1GetTokenResponse = {
 
 type PostV1GetAwardInput = {
     tokenId: string;
-    opts?: {
-        burned?: boolean;
-    };
 };
 
 type PostV1GetAwardResponse = {
@@ -737,7 +732,7 @@ type PostV1GetAwardResponse = {
             tokenId: string;
             recipient: any;
             mintType: number;
-            mintDateTime?: string | undefined;
+            mintTs?: number | undefined;
             mintTxHash?: string | undefined;
             denomination: number;
             periodNumber: number;
@@ -749,6 +744,7 @@ type PostV1GetAwardResponse = {
                 burnTxHash?: string | undefined;
                 burnReason?: string | undefined;
             } | null) | undefined;
+            mintProposalId?: string | undefined;
         };
     };
 } | {
@@ -798,7 +794,6 @@ type GetV1TokenTokenIdResponse = {
             tokenId: string;
             recipient: any;
             mintType: number;
-            mintDateTime?: string | undefined;
             mintTxHash?: string | undefined;
             denomination: number;
             periodNumber: number;
@@ -810,6 +805,30 @@ type GetV1TokenTokenIdResponse = {
                 burnTxHash?: string | undefined;
                 burnReason?: string | undefined;
             } | null) | undefined;
+            mintProposalId?: string | undefined;
+            mintDateTime?: string | undefined;
+        };
+    } | {
+        name: string;
+        description?: string | undefined;
+        image?: string | undefined;
+        properties: {
+            tokenId: string;
+            recipient: any;
+            mintType: number;
+            mintTs?: number | undefined;
+            mintTxHash?: string | undefined;
+            denomination: number;
+            periodNumber: number;
+            groupNum?: number | undefined;
+            level?: number | undefined;
+            reason?: string | undefined;
+            title?: string | undefined;
+            burn?: ({
+                burnTxHash?: string | undefined;
+                burnReason?: string | undefined;
+            } | null) | undefined;
+            mintProposalId?: string | undefined;
         };
     };
 } | {
@@ -820,14 +839,16 @@ type GetV1TokenTokenIdResponse = {
     };
 };
 
-type PostV1GetAwardsOfInput = {
-    account: string;
-    opts?: {
-        burned?: boolean;
+type PostV1GetAwardsInput = {
+    spec: {
+        before?: any | undefined;
+        limit?: number | undefined;
+        recipient?: string | undefined;
+        burned?: boolean | undefined;
     };
 };
 
-type PostV1GetAwardsOfResponse = {
+type PostV1GetAwardsResponse = {
     status: "success";
     data: {
         awards: {
@@ -838,7 +859,7 @@ type PostV1GetAwardsOfResponse = {
                 tokenId: string;
                 recipient: any;
                 mintType: number;
-                mintDateTime?: string | undefined;
+                mintTs?: number | undefined;
                 mintTxHash?: string | undefined;
                 denomination: number;
                 periodNumber: number;
@@ -850,6 +871,7 @@ type PostV1GetAwardsOfResponse = {
                     burnTxHash?: string | undefined;
                     burnReason?: string | undefined;
                 } | null) | undefined;
+                mintProposalId?: string | undefined;
             };
         }[];
     };
@@ -861,7 +883,7 @@ type PostV1GetAwardsOfResponse = {
     };
 };
 
-export type Path = "/v1/putProposal" | "/v1/getProposal" | "/v1/getProposals" | "/v1/getPeriodNum" | "/v1/getToken" | "/v1/getAward" | "/v1/getRespectMetadata" | "/v1/token/:tokenId" | "/v1/getAwardsOf";
+export type Path = "/v1/putProposal" | "/v1/getProposal" | "/v1/getProposals" | "/v1/getPeriodNum" | "/v1/getToken" | "/v1/getAward" | "/v1/getRespectMetadata" | "/v1/token/:tokenId" | "/v1/getAwards";
 
 export type Method = "get" | "post" | "put" | "delete" | "patch";
 
@@ -876,7 +898,7 @@ export interface Input extends Record<MethodPath, any> {
     "post /v1/getAward": PostV1GetAwardInput;
     "post /v1/getRespectMetadata": PostV1GetRespectMetadataInput;
     "get /v1/token/:tokenId": GetV1TokenTokenIdInput;
-    "post /v1/getAwardsOf": PostV1GetAwardsOfInput;
+    "post /v1/getAwards": PostV1GetAwardsInput;
 }
 
 export interface Response extends Record<MethodPath, any> {
@@ -888,12 +910,12 @@ export interface Response extends Record<MethodPath, any> {
     "post /v1/getAward": PostV1GetAwardResponse;
     "post /v1/getRespectMetadata": PostV1GetRespectMetadataResponse;
     "get /v1/token/:tokenId": GetV1TokenTokenIdResponse;
-    "post /v1/getAwardsOf": PostV1GetAwardsOfResponse;
+    "post /v1/getAwards": PostV1GetAwardsResponse;
 }
 
-export const jsonEndpoints = { "post /v1/putProposal": true, "post /v1/getProposal": true, "post /v1/getProposals": true, "get /v1/getPeriodNum": true, "post /v1/getToken": true, "post /v1/getAward": true, "post /v1/getRespectMetadata": true, "get /v1/token/:tokenId": true, "post /v1/getAwardsOf": true };
+export const jsonEndpoints = { "post /v1/putProposal": true, "post /v1/getProposal": true, "post /v1/getProposals": true, "get /v1/getPeriodNum": true, "post /v1/getToken": true, "post /v1/getAward": true, "post /v1/getRespectMetadata": true, "get /v1/token/:tokenId": true, "post /v1/getAwards": true };
 
-export const endpointTags = { "post /v1/putProposal": [], "post /v1/getProposal": [], "post /v1/getProposals": [], "get /v1/getPeriodNum": [], "post /v1/getToken": [], "post /v1/getAward": [], "post /v1/getRespectMetadata": [], "get /v1/token/:tokenId": [], "post /v1/getAwardsOf": [] };
+export const endpointTags = { "post /v1/putProposal": [], "post /v1/getProposal": [], "post /v1/getProposals": [], "get /v1/getPeriodNum": [], "post /v1/getToken": [], "post /v1/getAward": [], "post /v1/getRespectMetadata": [], "get /v1/token/:tokenId": [], "post /v1/getAwards": [] };
 
 export type Provider = <M extends Method, P extends Path>(method: M, path: P, params: Input[`${M} ${P}`]) => Promise<Response[`${M} ${P}`]>;
 

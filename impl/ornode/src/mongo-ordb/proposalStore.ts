@@ -4,19 +4,23 @@ import { IProposalStore, GetProposalsSpec, Proposal, zProposal } from "../ordb/i
 import { withoutId } from "./utils.js";
 import { withoutUndefined, stringify } from "ts-utils";
 
-export type Config = {
+export type ProposalStoreConfig = {
   defaultDocLimit: number;
 }
 
-export const defaultConfig: Config = {
+export const defaultConfig: ProposalStoreConfig = {
   defaultDocLimit: 50
 };
 
 export class ProposalStore implements IProposalStore {
   private readonly db: Db;
-  private _cfg: Config;
+  private _cfg: ProposalStoreConfig;
 
-  constructor(mongoClient: MongoClient, dbName: string, config: Config = defaultConfig) {
+  constructor(
+    mongoClient: MongoClient,
+    dbName: string,
+    config: ProposalStoreConfig = defaultConfig
+  ) {
     this.db = mongoClient.db(dbName);
     this._cfg = config;
   }

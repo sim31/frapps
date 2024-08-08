@@ -1,5 +1,6 @@
 import { EthAddress } from "ortypes";
-import { GetTokenOpts, TokenId, BurnData, zRespectAwardMt as zNRespectAwardMt } from "ortypes/respect1155.js"
+import { GetAwardsSpec } from "ortypes/ornode.js";
+import { TokenId, BurnData, zRespectAwardMt as zNRespectAwardMt } from "ortypes/respect1155.js"
 import { z } from "zod";
 
 export * from "ortypes/respect1155.js";
@@ -8,9 +9,9 @@ export const zRespectAwardMt = zNRespectAwardMt;
 export type RespectAwardMt = z.infer<typeof zRespectAwardMt>;
 
 export interface IAwardStore {
-  getAward: (id: TokenId, opts?: GetTokenOpts) => Promise<RespectAwardMt | null>
+  getAward: (id: TokenId) => Promise<RespectAwardMt | null>
 
-  getAwardsOf: (recipient: EthAddress, opts?: GetTokenOpts) => Promise<RespectAwardMt[]>
+  getAwards(spec?: GetAwardsSpec): Promise<RespectAwardMt[]>;
 
   createAwards: (awards: RespectAwardMt[]) => Promise<void>
 

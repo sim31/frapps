@@ -1,5 +1,5 @@
 import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt, toBeHex } from "ethers";
-import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp, VoteType, Vote, GetTokenOpts, GetProposalsSpec } from "ortypes/orclient.js";
+import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp, VoteType, Vote, GetProposalsSpec, GetAwardsSpec } from "ortypes/orclient.js";
 import { TxFailed } from "./errors.js";
 import { ORContext, ConfigWithOrnode } from "ortypes/orContext.js";
 import { NodeToClientTransformer, zNVoteToClient } from "ortypes/transformers/nodeToClientTransformer.js";
@@ -88,7 +88,7 @@ export class ORClient {
    * Returns a list of proposals ordered from latest to oldest
    * 
    * @param spec - specification for query:
-   * * `before` - oldest creation date for proposal. If specified, only proposals which were created up to this date will be returned;
+   * * `before` - newest creation date for proposal. If specified, only proposals which were created up to this date will be returned;
    * * `limit` - maximum number of proposals to return. If not specified, it's up to ornode implementation.
    * * `execStatFilter` - list of ExecutionStatus values. Proposals which have execution status other than any of values in this list, will be filtered out. If undefined, then no filtering based on execution status is done.
    * * `voteStatFilter` - list of VoteStatus values. Proposals which have vote status other than any of values specified in the list will be filtered out (not returned). If undefined - no filtering based on vote status is done.
@@ -410,28 +410,24 @@ export class ORClient {
    * Get metadata of specific token. The token can be fungible Respect token or Respect award token (NTT).
    * 
    * @param tokenId - id of a token.
-   * @param opts - additional options for retrieval function. default: { burned: true }.
    * 
    * @remarks
    * If `tokenId` is an id of a burned token, this function might return a metadata for token which is burned onchain.
-   * Pass `{ burned: false }` as `opts` parameter to change this behaviour.
    */
-  async getToken(tokenId: TokenId, opts?: GetTokenOpts): Promise<Erc1155Mt> {
-    return await this._ctx.ornode.getToken(tokenId, opts);
+  async getToken(tokenId: TokenId): Promise<Erc1155Mt> {
+    return await this._ctx.ornode.getToken(tokenId);
   }
 
   /**
    * Get metadata of specific Respect award NTT.
    * 
    * @param tokenId - id of a token.
-   * @param opts - additional options for retrieval function. default: { burned: true }.
    * 
    * @remarks
    * If `tokenId` is an id of a burned token, this function might return a metadata for token which is burned onchain.
-   * Pass `{ burned: false }` as `opts` parameter to change this behaviour.
    */
-  async getAward(tokenId: TokenId, opts?: GetTokenOpts): Promise<RespectAwardMt> {
-    return await this._ctx.ornode.getAward(tokenId, opts);
+  async getAward(tokenId: TokenId): Promise<RespectAwardMt> {
+    return await this._ctx.ornode.getAward(tokenId);
   }
 
   /**
@@ -441,20 +437,29 @@ export class ORClient {
     return await this._ctx.ornode.getRespectMetadata();
   }
 
-  // TODO: getAwards function where account would be as filter (as opts)
-  // and opts would additionally have limit parameter
   /**
-   * Get metadata of Respect awards for specific account.
+   * Get metadata of Respect award NTTs, sorted from latest to oldest.
    * 
-   * @param account - account which received the awards
-   * @param opts - additional options for retrieval function. default: { burned: false }.
+   * @param spec - specification for a query
+   * * `before` - newest mint date for a token. If specified, only tokens which were created up to this date will be returned;
+   * * `limit` - maximum number of tokens to return. If not specified, it's up to ornode implementation.
+   * * `recipient` - recipient of the awards. If specified only awards which belong to this account are returned.
+   * * `burned` - whether to return burned tokens or not. Default: false.
+   * 
+   * @returns list of token metadata objects sorted by mint datetime from latest to oldest.
    * 
    * @remarks
-   * By default this function does not return metadata for tokens which are burned onchain.
-   * Pass `{ burned: true }` as `opts` parameter to change this behaviour.
+   * * By default this function does not return burned awards. Set `burned` in the spec to true to change this behaviour.
+   * 
+   * @example
+   * await c.getAwards() // Return latest awards unfiltered
+   * await c.getAwards({ before: new Date("2024-08-30T11:42:59.000Z"), limit: 50 }) // Return up to 50 awards that happened before the specified date
+   * await c.getAwards({ recipient: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" }) // Get latest awards belonging to specified accounts
    */
-  async getAwardsOf(account: EthAddress, opts?: GetTokenOpts): Promise<RespectAwardMt[]> {
-    return await this._ctx.ornode.getAwardsOf(account, opts);
+  async getAwards(spec?: GetAwardsSpec): Promise<RespectAwardMt[]> {
+    const nspec = this._clientToNode.transformGetAwardsSpec(spec ?? {});
+    const awards = await this._ctx.ornode.getAwards(nspec);
+    return awards;
   }
 
   private _encodeMemo(memo?: string): Bytes {

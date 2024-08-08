@@ -1,28 +1,39 @@
 import { MongoClient, Db, ObjectId } from "mongodb";
 import { EthAddress } from "ortypes";
 import { stringify, withoutUndefined } from "ts-utils";
-import { IAwardStore, RespectAwardMt, TokenId, GetTokenOpts, zRespectAwardMt, BurnData } from "../ordb/iawardStore.js";
+import { IAwardStore, RespectAwardMt, TokenId, zRespectAwardMt, BurnData } from "../ordb/iawardStore.js";
 import { withoutId } from "./utils.js";
+import { GetAwardsSpec } from "ortypes/ornode.js";
+
+export type AwardStoreConfig = {
+  defaultDocLimit: number;
+}
+
+const defaultConfig: AwardStoreConfig = {
+  defaultDocLimit: 50
+};
 
 export class AwardStore implements IAwardStore {
   private readonly db: Db;
+  private _cfg: AwardStoreConfig;
 
-  constructor(mongoClient: MongoClient, dbName: string) {
+  constructor(
+    mongoClient: MongoClient,
+    dbName: string,
+    config: AwardStoreConfig = defaultConfig
+  ) {
     this.db = mongoClient.db(dbName);
+    this._cfg = config;
   }
 
   private get awards() {
     return this.db.collection<RespectAwardMt>("awards");
   }
 
-  async getAward(id: TokenId, opts: GetTokenOpts = { burned: true }): Promise<RespectAwardMt | null> {
-    const filter = opts.burned === false
-      ? { 
-        "properties.tokenId": id,
-        "properties.burn": null
-      } : {
-        "properties.tokenId": id,
-      };
+  async getAward(id: TokenId): Promise<RespectAwardMt | null> {
+    const filter = {
+      "properties.tokenId": id,
+    };
     const doc = await this.awards.findOne(filter);
     if (doc !== null) {
       console.debug("Retrieved award _id: ", doc._id, ", id: ", id);
@@ -33,21 +44,47 @@ export class AwardStore implements IAwardStore {
     }
   }
 
-  async getAwardsOf(recipient: EthAddress, opts: GetTokenOpts = { burned: false }): Promise<RespectAwardMt[]> {
-    const filter = opts.burned === false
-      ? { 
-        "properties.recipient": recipient,
-        "properties.burn": null
-      } : {
-        "properties.recipient": recipient
-      };
-    const cursor = await this.awards.find(filter);
+  async getAwards(spec?: GetAwardsSpec): Promise<RespectAwardMt[]> {
+    const filter: any = {};
+
+    const burned = spec?.burned || false;
+    if (!burned) {
+      filter['properties.burn'] = null;
+    }
+    if (spec?.before !== undefined) {
+      filter['properties.mintTs'] = { $lte: spec.before };
+    }
+    if (spec?.recipient !== undefined) {
+      filter['properties.recipient'] = spec.recipient;
+    }
+
+    const cursor = await this.awards.find(filter)
+      .sort({ "properties.mintTs": -1 })
+      .limit(spec?.limit ?? this._cfg.defaultDocLimit);
+
     const awards = cursor.map(entity => zRespectAwardMt.parse(withoutId(entity)));
 
     const rval = await awards.toArray();
-    console.debug("Found docs for spec. Spec: ", stringify(opts), ". Count: ", rval.length);
+    console.debug("Found docs for spec. Spec: ", stringify(spec), ". Count: ", rval.length);
+
     return rval;
   }
+
+  // async getAwardsOf(recipient: EthAddress, opts: GetTokenOpts = { burned: false }): Promise<RespectAwardMt[]> {
+  //   const filter = opts.burned === false
+  //     ? { 
+  //       "properties.recipient": recipient,
+  //       "properties.burn": null
+  //     } : {
+  //       "properties.recipient": recipient
+  //     };
+  //   const cursor = await this.awards.find(filter);
+  //   const awards = cursor.map(entity => zRespectAwardMt.parse(withoutId(entity)));
+
+  //   const rval = await awards.toArray();
+  //   console.debug("Found docs for spec. Spec: ", stringify(opts), ". Count: ", rval.length);
+  //   return rval;
+  // }
 
   async createAwards(awards: RespectAwardMt[]): Promise<void> {
     const _awards = awards.map(award => zRespectAwardMt.parse(withoutUndefined(award)));

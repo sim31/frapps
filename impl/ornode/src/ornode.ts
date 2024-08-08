@@ -21,13 +21,14 @@ import {
   TxHash,
   zBytesLikeToBytes,
   zBreakoutMintRequest,
-  zEthAddress
+  zEthAddress,
+  Timestamp
 } from "ortypes"
 import { TokenMtCfg } from "./config.js"
 import { IOrdb } from "./ordb/iordb.js";
 import { ORContext } from "ortypes";
 import { Proposal } from "./ordb/iproposalStore.js";
-import { GetProposalsSpec, ORNodePropStatus, ProposalFull, ProposalValid, zORNodePropStatus, zProposalValid } from "ortypes/ornode.js";
+import { GetAwardsSpec, GetProposalsSpec, ORNodePropStatus, ProposalFull, ProposalValid, zORNodePropStatus, zProposalValid } from "ortypes/ornode.js";
 import { TickEvent } from "./ordb/itickStore.js";
 import { string, z } from "zod";
 import {
@@ -36,7 +37,6 @@ import {
   unpackTokenId,
   TransferSingleEvent,
   TypedEventLog as RTypedEventLog,
-  GetTokenOpts,
   RespectFungibleMt,
   zMintRespectArgs,
   zTokenIdNum,
@@ -171,8 +171,8 @@ export class ORNode implements IORNode {
     }
   }
 
-  async getProposals(spec: GetProposalsSpec): Promise<Proposal[]> {
-    return await this._db.proposals.getProposals(spec);
+  async getProposals(spec?: GetProposalsSpec): Promise<Proposal[]> {
+    return await this._db.proposals.getProposals(spec ?? {});
   }
 
   // TODO:
@@ -184,12 +184,11 @@ export class ORNode implements IORNode {
 
   async getAward(
     tokenId: TokenId,
-    opts?: GetTokenOpts
   ): Promise<RespectAwardMt> {
     if (toBigInt(tokenId) === this._ctx.fungibleId) {
       throw new Error(`Invalid request: ${tokenId} is an id of a fungible token`);
     }
-    const award = await this._db.awards.getAward(tokenId, opts);
+    const award = await this._db.awards.getAward(tokenId);
     if (award === null) {
       throw new TokenNotFound(tokenId);
     }
@@ -202,21 +201,19 @@ export class ORNode implements IORNode {
   }
 
   async getToken(
-    tokenId: TokenId,
-    opts?: GetTokenOpts
+    tokenId: TokenId
   ): Promise<RespectFungibleMt | RespectAwardMt> {
     if (toBigInt(tokenId) === this._ctx.fungibleId) {
       return await this.getRespectMetadata();
     } else {
-      return await this.getAward(tokenId, opts);
+      return await this.getAward(tokenId);
     }
   }
 
-  async getAwardsOf(
-    account: EthAddress,
-    opts?: GetTokenOpts
+  async getAwards(
+    spec?: GetAwardsSpec
   ): Promise<RespectAwardMt[]> {
-    const awards = await this._db.awards.getAwardsOf(account, opts);
+    const awards = await this._db.awards.getAwards(spec);
     return awards;
   }
 
@@ -348,22 +345,20 @@ export class ORNode implements IORNode {
         }
       }
 
-      let ts: string | undefined;
+      let ts: Timestamp;
       const getTs = async () => {
         if (ts === undefined) {
           const block = await receipt.getBlock();
-          ts = new Date(block.timestamp * 1000).toISOString();
-          return ts;
-        } else {
-          return ts;
+          ts = block.timestamp;
         }
+        return ts;
       }
 
       if (propType === 'respectBreakout') {
         for (const award of awards) {
           award.properties = {
             ...award.properties,
-            mintDateTime: await getTs(),
+            mintTs: await getTs(),
             mintTxHash: txHash,
             groupNum: prop?.attachment?.groupNum
           }
@@ -372,7 +367,7 @@ export class ORNode implements IORNode {
         for (const award of awards) {
           award.properties = {
             ...award.properties,
-            mintDateTime: await getTs(),
+            mintTs: await getTs(),
             reason: prop?.attachment?.mintReason,
             title: prop?.attachment?.mintTitle
           }

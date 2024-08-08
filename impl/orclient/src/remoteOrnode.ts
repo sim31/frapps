@@ -1,5 +1,5 @@
 import { EthAddress, IORNode, PropId, ProposalInvalid, ProposalNotCreated, ProposalNotFound } from "ortypes";
-import { GetProposalsSpec, GetTokenOpts, ORNodePropStatus, Proposal, ProposalFull, zErrorType } from "ortypes/ornode.js";
+import { GetProposalsSpec, GetAwardsSpec, ORNodePropStatus, Proposal, ProposalFull, zErrorType } from "ortypes/ornode.js";
 import { OrnodeClient, createOrnodeClient } from "./ornodeClient/index.js";
 import { Input, Method, Path, Response } from "./ornodeClient/ornodeClient.js"
 import { stringify } from "ts-utils";
@@ -62,8 +62,8 @@ export class RemoteOrnode implements IORNode {
     return data;
   }
 
-  async getProposals(spec: GetProposalsSpec): Promise<Proposal[]> {
-    const data = await this._makeOrnodeRequest("post", "/v1/getProposals", { spec });
+  async getProposals(spec?: GetProposalsSpec): Promise<Proposal[]> {
+    const data = await this._makeOrnodeRequest("post", "/v1/getProposals", { spec: spec ?? {} });
     return data.proposals;
   }
 
@@ -73,18 +73,16 @@ export class RemoteOrnode implements IORNode {
   }
 
   async getToken(
-    tokenId: TokenId,
-    opts?: GetTokenOpts
+    tokenId: TokenId
   ): Promise<RespectFungibleMt | RespectAwardMt> {
-    const data = await this._makeOrnodeRequest("post", "/v1/getToken", { tokenId, opts });
+    const data = await this._makeOrnodeRequest("post", "/v1/getToken", { tokenId });
     return data;
   }
 
   async getAward(
     tokenId: TokenId,
-    opts?: GetTokenOpts
   ): Promise<RespectAwardMt> {
-    const data = await this._makeOrnodeRequest("post", "/v1/getAward", { tokenId, opts });
+    const data = await this._makeOrnodeRequest("post", "/v1/getAward", { tokenId });
     return data;
   }
 
@@ -93,11 +91,10 @@ export class RemoteOrnode implements IORNode {
     return data;
   }
 
-  async getAwardsOf(
-    account: EthAddress,
-    opts?: GetTokenOpts
+  async getAwards(
+    spec?: GetAwardsSpec
   ): Promise<RespectAwardMt[]> {
-    const data = await this._makeOrnodeRequest("post", "/v1/getAwardsOf", { account, opts });
+    const data = await this._makeOrnodeRequest("post", "/v1/getAwards", { spec: spec ?? {} });
     return data.awards;
   }
 

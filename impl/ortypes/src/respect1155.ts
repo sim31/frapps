@@ -6,6 +6,7 @@ import { zBigNumberish, zBytes32, zBytesLike, zEthAddress, zTxHash } from "./eth
 import { z } from "zod";
 import { preprocessResultOrObj } from "./utils.js";
 import { zErc1155Mt } from "./erc1155.js";
+import { zTimestamp } from "./common.js";
 
 export {
   TransferBatchEvent,
@@ -136,31 +137,49 @@ export const zBurnData = z.object({
 });
 export type BurnData = z.infer<typeof zBurnData>;
 
+export const zRespectAwardProps = z.object({
+  tokenId: zTokenId,
+  recipient: zEthAddress,
+  mintType: zMintType,
+  mintTs: zTimestamp.optional(),
+  mintTxHash: zTxHash.optional(),
+  denomination: z.number().int().gte(0),
+  periodNumber: zPeriodNum,
+  groupNum: zGroupNum.optional(),
+  level: zRankNum.optional(),
+  reason: z.string().optional(),
+  title: z.string().optional(),
+  burn: zBurnData.nullable().optional(),
+  mintProposalId: zBytes32.optional()
+});
+
+export const zRespectAwardPropsPretty = zRespectAwardProps
+  .omit({ mintTs: true })
+  .extend({ mintDateTime: z.string().datetime().optional() });
+
 export const zRespectAwardMt = zErc1155Mt
   .omit({ decimals: true })
   .required({ name: true })
   .extend({
-    properties: z.object({
-      tokenId: zTokenId,
-      recipient: zEthAddress,
-      mintType: zMintType,
-      mintDateTime: z.string().datetime().optional(),
-      mintTxHash: zTxHash.optional(),
-      denomination: z.number().int().gte(0),
-      periodNumber: zPeriodNum,
-      groupNum: zGroupNum.optional(),
-      level: zRankNum.optional(),
-      reason: z.string().optional(),
-      title: z.string().optional(),
-      burn: zBurnData.nullable().optional(),
-      mintProposalId: zBytes32.optional()
-    })
-});
+    properties: zRespectAwardProps
+  });
 export type RespectAwardMt = z.infer<typeof zRespectAwardMt>;
 
-export const zGetTokenOpts = z.object({
-  burned: z.boolean().default(false)
-})
-export type GetTokenOpts = z.infer<typeof zGetTokenOpts>;
+export const zRespectAwardPrettyMt = zRespectAwardMt.extend({
+  properties: zRespectAwardPropsPretty
+});
+export type RespectAwardPrettyMt = z.infer<typeof zRespectAwardPrettyMt>;
+
+export const zRespectAwardMtToPretty = zRespectAwardMt.transform(val => {
+  const mintTs = val.properties.mintTs;
+  const pretty: RespectAwardPrettyMt = {
+    ...val,
+    properties: {
+      ...val.properties,
+      mintDateTime: mintTs !== undefined ? new Date(mintTs * 1000).toISOString() : undefined
+    }
+  }
+  return pretty;
+}).pipe(zRespectAwardPrettyMt);
 
 export * from "respect1155-sc/utils/tokenId.js";
