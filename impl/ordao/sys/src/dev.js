@@ -10,7 +10,11 @@ async function main() {
 
   shelljs.exec("npm run dev-deployment"); // Synchronous
 
-  shelljs.exec("npm run dev-servers");
+  if (process.argv[2] === "--no-vite") {
+    shelljs.exec("npm run dev-servers-no-vite");
+  } else {
+    shelljs.exec("npm run dev-servers");
+  }
 }
 
 main();
