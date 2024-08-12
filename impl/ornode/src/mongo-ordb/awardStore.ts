@@ -52,7 +52,7 @@ export class AwardStore implements IAwardStore {
       filter['properties.burn'] = null;
     }
     if (spec?.before !== undefined) {
-      filter['properties.mintTs'] = { $lte: spec.before };
+      filter['properties.mintTs'] = { $lt: spec.before };
     }
     if (spec?.recipient !== undefined) {
       filter['properties.recipient'] = spec.recipient;

@@ -841,7 +841,7 @@ type GetV1TokenTokenIdResponse = {
 
 type PostV1GetAwardsInput = {
     spec: {
-        before?: any | undefined;
+        before?: number | undefined;
         limit?: number | undefined;
         recipient?: string | undefined;
         burned?: boolean | undefined;
@@ -883,7 +883,39 @@ type PostV1GetAwardsResponse = {
     };
 };
 
-export type Path = "/v1/putProposal" | "/v1/getProposal" | "/v1/getProposals" | "/v1/getPeriodNum" | "/v1/getToken" | "/v1/getAward" | "/v1/getRespectMetadata" | "/v1/token/:tokenId" | "/v1/getAwards";
+type PostV1GetVotesInput = {
+    spec: {
+        before?: number | undefined;
+        limit?: number | undefined;
+        propFilter?: string[] | undefined;
+        voterFilter?: string[] | undefined;
+        minWeight?: number | undefined;
+        voteType?: ("None" | "Yes" | "No") | undefined;
+    };
+};
+
+type PostV1GetVotesResponse = {
+    status: "success";
+    data: {
+        votes: {
+            ts?: number | undefined;
+            txHash?: string | undefined;
+            proposalId: string;
+            voter: any;
+            weight: number;
+            vote: "None" | "Yes" | "No";
+            memo?: string | undefined;
+        }[];
+    };
+} | {
+    status: "error";
+    error: {
+        message: string;
+        name?: string;
+    };
+};
+
+export type Path = "/v1/putProposal" | "/v1/getProposal" | "/v1/getProposals" | "/v1/getPeriodNum" | "/v1/getToken" | "/v1/getAward" | "/v1/getRespectMetadata" | "/v1/token/:tokenId" | "/v1/getAwards" | "/v1/getVotes";
 
 export type Method = "get" | "post" | "put" | "delete" | "patch";
 
@@ -899,6 +931,7 @@ export interface Input extends Record<MethodPath, any> {
     "post /v1/getRespectMetadata": PostV1GetRespectMetadataInput;
     "get /v1/token/:tokenId": GetV1TokenTokenIdInput;
     "post /v1/getAwards": PostV1GetAwardsInput;
+    "post /v1/getVotes": PostV1GetVotesInput;
 }
 
 export interface Response extends Record<MethodPath, any> {
@@ -911,11 +944,12 @@ export interface Response extends Record<MethodPath, any> {
     "post /v1/getRespectMetadata": PostV1GetRespectMetadataResponse;
     "get /v1/token/:tokenId": GetV1TokenTokenIdResponse;
     "post /v1/getAwards": PostV1GetAwardsResponse;
+    "post /v1/getVotes": PostV1GetVotesResponse;
 }
 
-export const jsonEndpoints = { "post /v1/putProposal": true, "post /v1/getProposal": true, "post /v1/getProposals": true, "get /v1/getPeriodNum": true, "post /v1/getToken": true, "post /v1/getAward": true, "post /v1/getRespectMetadata": true, "get /v1/token/:tokenId": true, "post /v1/getAwards": true };
+export const jsonEndpoints = { "post /v1/putProposal": true, "post /v1/getProposal": true, "post /v1/getProposals": true, "get /v1/getPeriodNum": true, "post /v1/getToken": true, "post /v1/getAward": true, "post /v1/getRespectMetadata": true, "get /v1/token/:tokenId": true, "post /v1/getAwards": true, "post /v1/getVotes": true };
 
-export const endpointTags = { "post /v1/putProposal": [], "post /v1/getProposal": [], "post /v1/getProposals": [], "get /v1/getPeriodNum": [], "post /v1/getToken": [], "post /v1/getAward": [], "post /v1/getRespectMetadata": [], "get /v1/token/:tokenId": [], "post /v1/getAwards": [] };
+export const endpointTags = { "post /v1/putProposal": [], "post /v1/getProposal": [], "post /v1/getProposals": [], "get /v1/getPeriodNum": [], "post /v1/getToken": [], "post /v1/getAward": [], "post /v1/getRespectMetadata": [], "get /v1/token/:tokenId": [], "post /v1/getAwards": [], "post /v1/getVotes": [] };
 
 export type Provider = <M extends Method, P extends Path>(method: M, path: P, params: Input[`${M} ${P}`]) => Promise<Response[`${M} ${P}`]>;
 

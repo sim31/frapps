@@ -8,6 +8,8 @@ import {
   zErrorType,
   GetAwardsSpec,
   GetProposalsSpec,
+  GetVotesSpec,
+  Vote,
 } from "./ornode.js";
 import { RespectAwardMt, RespectFungibleMt } from "./respect1155.js";
 import { Erc1155Mt, TokenId } from "./erc1155.js";
@@ -34,6 +36,8 @@ export interface IORNode {
   getAward: (tokenId: TokenId) => Promise<RespectAwardMt>;
 
   getAwards: (spec?: GetAwardsSpec) => Promise<RespectAwardMt[]>;
+
+  getVotes: (spec?: GetVotesSpec) => Promise<Vote[]>;
 
   getRespectMetadata: () => Promise<RespectFungibleMt>;
 }

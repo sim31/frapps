@@ -7,6 +7,8 @@ import {
   zORNodePropStatus,
   zProposal,
   zProposalFull,
+  zGetVotesSpec,
+  zVote,
 } from "ortypes/ornode.js";
 import { zEthAddress, zPropId } from "ortypes";
 import { resultHandler } from "./resultHandler.js";
@@ -147,6 +149,22 @@ const getAwards = factory.build({
   }
 });
 
+const getVotes = factory.build({
+  method: "post",
+  input: z.object({
+    spec: zGetVotesSpec
+  }),
+  output: z.object({
+    votes: zVote.array()
+  }),
+  handler: async ({input, options, logger}) => {
+    logger.debug(`getVotes ${stringify(input)}}`);
+    const n = await getOrnode();
+    const votes = await n.getVotes(input.spec);
+    return { votes };
+  }
+});
+
 export const routing: Routing = {
   v1: {
     putProposal,
@@ -159,7 +177,8 @@ export const routing: Routing = {
     token: {
       ":tokenId": getToken
     },
-    getAwards
+    getAwards,
+    getVotes
   },
   public: new ServeStatic("./public", {
     dotfiles: "deny",

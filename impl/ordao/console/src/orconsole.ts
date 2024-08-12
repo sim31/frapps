@@ -35,9 +35,7 @@ function _init() {
     if (prop !== undefined) {
       prop['help'] = () => {
         window.location.hash = fname;
-        if (window.location.pathname !== _docPath) {
-          window.location.pathname = _docPath;
-        }
+        window.location.pathname = _docPath;
       }
     }
   }

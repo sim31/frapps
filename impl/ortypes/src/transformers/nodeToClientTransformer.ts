@@ -40,6 +40,8 @@ import {
   zPropAttachmentBase,
   zCustomCallAttachment,
   zTickAttachment,
+  zVote as zNVote,
+  Vote as NVote,
 } from "../ornode.js";
 import {
   zEthAddress,
@@ -61,14 +63,14 @@ import {
   zCustomSignalType,
   zSignalArgs,
   zTickSignalType,
-  Vote as NVote,
   VoteType as NVoteType,
   zVoteType as zNVoteType,
-  zVote as zNVote,
   Stage as NStage,
   VoteStatus as NVoteStatus,
   ExecStatus as NExecStatus,
-  OnchainProp
+  OnchainProp,
+  voteTypeMap,
+  zVoteTypeToStr
 } from "../orec.js";
 
 type ORContext = OrigORContext<ConfigWithOrnode>;
@@ -363,23 +365,26 @@ function mkzNProposalToDecodedProp(orctx: ORContext) {
   }).pipe(zDecodedProposal);
 }
 
-export const orecToClientVTMap: Record<NVoteType, VoteType> = {
-  [NVoteType.Yes]: "Yes",
-  [NVoteType.No]: "No",
-  [NVoteType.None]: "None"
-}
+export const orecToClientVTMap: Record<NVoteType, VoteType> = voteTypeMap;
 
-export const zNVoteTypeToClient = zNVoteType.transform((vt) => {
-  return orecToClientVTMap[vt];
-}).pipe(zVoteType);
+export const zNVoteTypeToClient = zVoteTypeToStr;
 
 export const zNVoteToClient = zNVote.transform(val => {
-  const v: Vote = {
-    voteType: zNVoteTypeToClient.parse(val.vtype),
-    weight: Number(val.weight)
+  const vote: Vote = {
+    ...val,
+    date: val.ts ? new Date(val.ts * 1000) : undefined,
+    weight: Number(val.weight),
   }
-  return v;
-}).pipe(zVote)
+  return vote;
+}).pipe(zVote);
+
+// export const zNVoteToClient = zNVote.transform(val => {
+//   const v: Vote = {
+//     voteType: zNVoteTypeToClient.parse(val.vtype),
+//     weight: Number(val.weight)
+//   }
+//   return v;
+// }).pipe(zVote)
 
 export class NodeToClientTransformer {
   private _ctx: ORContext;
@@ -454,9 +459,5 @@ export class NodeToClientTransformer {
       }
     }
     return rProp;
-  }
-
-  transformVote(vote: NVote): Vote {
-    return zNVoteToClient.parse(vote);
   }
 }

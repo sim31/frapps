@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { solidityPackedKeccak256 } from "ethers";
-import { PropId, zExecStatus, zPropId, zProposedMsg, zStage, zVoteStatus } from "./orec.js";
+import { PropId, VoteType, zExecStatus, zPropId, zProposedMsg, zStage, zValidVoteTypeStr, zVoteStatus, zVoteType, zVoteTypeStr } from "./orec.js";
 import { zGroupNum, zPropType } from "./fractal.js";
 import { propId } from "orec/utils";
 import { zBytesLikeToBytes, zEthAddress, zTxHash } from "./eth.js";
@@ -62,6 +62,20 @@ export const zPropAttachment = z.union([
   zCustomCallAttachment
 ]);
 export type PropAttachment = z.infer<typeof zPropAttachment>;
+
+export const zVoteWeight = z.coerce.number().int().gte(0);
+export type VoteWeight = z.infer<typeof zVoteWeight>;
+
+export const zVote = z.object({
+  ts: zTimestamp.optional(),
+  txHash: zTxHash.optional(),
+  proposalId: zPropId,
+  voter: zEthAddress,
+  weight: zVoteWeight,
+  vote: zVoteTypeStr,
+  memo: z.string().optional()
+});
+export type Vote = z.infer<typeof zVote>;
 
 function propIdMatchesContent(prop: ProposalBaseFull): boolean {
   const pid = propId(prop.content);
@@ -210,6 +224,16 @@ export const zErrorType = z.enum([
   "TokenNotFound"
 ]);
 export type ErrorType = z.infer<typeof zErrorType>;
+
+export const zGetVotesSpec = z.object({
+  before: zTimestamp.optional(),
+  limit: z.number().int().gt(0).optional(),
+  propFilter: z.array(zPropId).optional(),
+  voterFilter: z.array(zEthAddress).optional(),
+  minWeight: zVoteWeight.optional(),
+  voteType: zValidVoteTypeStr.optional()
+});
+export type GetVotesSpec = z.infer<typeof zGetVotesSpec>;
 
 export const zGetProposalsSpec = z.object({
   before: zTimestamp.optional(),

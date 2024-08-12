@@ -22,13 +22,23 @@ import {
   zBytesLikeToBytes,
   zBreakoutMintRequest,
   zEthAddress,
-  Timestamp
+  Timestamp,
+  WeightedVoteInEvent,
+  VoteStruct,
+  VoteStructOut,
+  zVoteType,
+  EmptyVoteInEvent,
+  VoteType,
+  VoteTypeStr,
+  zVoteTypeToStr,
+  zBytes,
+  zBytesToVoteMemo,
 } from "ortypes"
 import { TokenMtCfg } from "./config.js"
 import { IOrdb } from "./ordb/iordb.js";
 import { ORContext } from "ortypes";
 import { Proposal } from "./ordb/iproposalStore.js";
-import { GetAwardsSpec, GetProposalsSpec, ORNodePropStatus, ProposalFull, ProposalValid, zORNodePropStatus, zProposalValid } from "ortypes/ornode.js";
+import { GetAwardsSpec, GetProposalsSpec, GetVotesSpec, ORNodePropStatus, ProposalFull, ProposalValid, zORNodePropStatus, zProposalValid, Vote, VoteWeight, zVoteWeight } from "ortypes/ornode.js";
 import { TickEvent } from "./ordb/itickStore.js";
 import { string, z } from "zod";
 import {
@@ -210,6 +220,10 @@ export class ORNode implements IORNode {
     }
   }
 
+  async getVotes(spec?: GetVotesSpec): Promise<Vote[]> {
+    return await this._db.votes.getVotes(spec ?? {});
+  }
+
   async getAwards(
     spec?: GetAwardsSpec
   ): Promise<RespectAwardMt[]> {
@@ -224,6 +238,75 @@ export class ORNode implements IORNode {
     orec.on(orec.getEvent("Executed"), this._propExecHandler);
     orec.on(orec.getEvent("ExecutionFailed"), this._propExecFailedHandler);
     orec.on(orec.getEvent("Signal"), this._signalEventHandler);
+    orec.on(orec.getEvent("WeightedVoteIn"), this._weightedVoteHandler);
+    orec.on(orec.getEvent("EmptyVoteIn"), this._emptyVoteHandler);
+  }
+
+  private _weightedVoteHandler: TypedListener<WeightedVoteInEvent.Event> =
+    async (
+      propId: PropId,
+      voter: EthAddress,
+      vote: VoteStructOut,
+      event: TypedEventLog<WeightedVoteInEvent.Event>
+    ) => {
+      console.debug("WeightedVoteIn event. PropId: ", propId, "event: ", stringify(event));
+
+      await this._handleVoteEvent(
+        propId, voter, zVoteTypeToStr.parse(vote.vtype), zVoteWeight.parse(vote.weight), event
+      );
+    }
+
+  private _emptyVoteHandler: TypedListener<EmptyVoteInEvent.Event> =
+    async (
+      propId: PropId,
+      voter: EthAddress,
+      vtype: bigint,
+      event: TypedEventLog<EmptyVoteInEvent.Event>
+    ) => {
+      console.debug("WeightedVoteIn event. PropId: ", propId, "event: ", stringify(event));
+
+      await this._handleVoteEvent(
+        propId, voter, zVoteTypeToStr.parse(vtype), 0, event
+      );
+    }
+
+  private async _handleVoteEvent(
+    propId: PropId,
+    voter: EthAddress,
+    voteType: VoteTypeStr,
+    weight: VoteWeight,
+    event: any
+  ) {
+    const v: Vote = {
+      proposalId: propId,
+      weight,
+      voter,
+      vote: voteType
+    }
+
+    const { txHash } = this._parseEventObject(event);
+    if (txHash === undefined) {
+      console.error("Was not able to retrieve tx hash in handler for event: ", stringify(event));
+    } else {
+      const receipt = await this._ctx.runner.provider?.getTransactionReceipt(txHash);
+      if (receipt === undefined || receipt === null) {
+        console.error("Not able to get tx needed in vote handler")
+      } else {
+        const b = await receipt.getBlock();
+        v.ts = b.timestamp;
+
+        // Get memo from transaction
+        const tx = await receipt.getTransaction();
+        const data = zBytesLikeToBytes.parse(tx.data);
+        const ptx = this._ctx.orec.interface.parseTransaction({ data });
+        z.literal('vote').parse(ptx?.name);
+        const memoStr = zBytesToVoteMemo.parse(ptx?.args[2]);
+        v.memo = memoStr;
+      }
+      v.txHash = txHash;
+    }
+
+    await this._db.votes.createVote(v);
   }
 
   private _propCreatedHandler: TypedListener<ProposalCreatedEvent.Event> =

@@ -1,11 +1,11 @@
 import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt, toBeHex } from "ethers";
-import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp, VoteType, Vote, GetProposalsSpec, GetAwardsSpec, ExecError } from "ortypes/orclient.js";
+import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp, VoteType, Vote, GetProposalsSpec, GetAwardsSpec, ExecError, GetVotesSpec } from "ortypes/orclient.js";
 import { TxFailed } from "./errors.js";
 import { ORContext, ConfigWithOrnode } from "ortypes/orContext.js";
 import { NodeToClientTransformer, zNVoteToClient } from "ortypes/transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "ortypes/transformers/clientToNodeTransformer.js";
 import { ProposalFull as NProp, ORNodePropStatus } from "ortypes/ornode.js";
-import { Bytes, EthAddress, PropId, ProposalNotCreated, ProposalState, TxHash, zVote as zNVote, DecodedError, ExecutedEvent, ExecutionFailedEvent, zPropId, zBytes } from "ortypes";
+import { Bytes, EthAddress, PropId, ProposalNotCreated, ProposalState, TxHash, zVote as zNVote, DecodedError, ExecutedEvent, ExecutionFailedEvent, zPropId, zBytes, encodeVoteMemo } from "ortypes";
 import { Method, Path, Input, Response } from "./ornodeClient/ornodeClient.js";
 import { sleep, stringify } from "ts-utils";
 import { resultArrayToObj } from "ortypes/utils.js";
@@ -100,7 +100,7 @@ export class ORClient {
    * Returns a list of proposals ordered from latest to oldest
    * 
    * @param spec - specification for query:
-   * * `before` - newest creation date for proposal. If specified, only proposals which were created up to this date will be returned;
+   * * `before` - newest possible creation date for proposal. If specified, only proposals which were created up to this date will be returned;
    * * `limit` - maximum number of proposals to return. If not specified, it's up to ornode implementation.
    * * `execStatFilter` - list of ExecutionStatus values. Proposals which have execution status other than any of values in this list, will be filtered out. If undefined, then no filtering based on execution status is done.
    * * `voteStatFilter` - list of VoteStatus values. Proposals which have vote status other than any of values specified in the list will be filtered out (not returned). If undefined - no filtering based on vote status is done.
@@ -170,7 +170,7 @@ export class ORClient {
     } else {
       req = pidOrReq as VoteRequest;
     }
-    const m = this._encodeMemo(req.memo);
+    const m = encodeVoteMemo(req.memo);
     const v = this._clientToNode.transformVoteType(req.vote);
     const orec = this._ctx.orec;
     const errMsg = `orec.vote(${req.propId}, ${v}, ${m})`
@@ -388,27 +388,14 @@ export class ORClient {
   }
 
   /**
-   * Get vote of an account on a proposal.
-   * 
-   * @param propId - proposal id
-   * @param voter - voter
-   */
-  async getVote(propId: PropId, voter: EthAddress): Promise<Vote> {
-    const vote = zNVote.parse(await this._ctx.orec.votes(propId, voter));
-    console.debug("vote: ", vote);
-    return this._nodeToClient.transformVote(vote);
-  }
-
-
-  /**
-   * Get old Respect an account has.
+   * Get amount of old Respect an account has.
    */
   async getOldRespectOf(account: EthAddress): Promise<bigint> {
     return await this._ctx.oldRespect.balanceOf(account);
   }
 
   /**
-   * Get Respect an account has
+   * Get amount of Respect an account has.
    */
   async getRespectOf(account: EthAddress): Promise<bigint> {
     return await this._ctx.newRespect.respectOf(account);
@@ -466,6 +453,31 @@ export class ORClient {
   }
 
   /**
+   * Get information on votes submitted on proposals. Votes returned are sorted from newest to oldest.
+   * 
+   * @param spec - specification for a query
+   * * `before` - newest possible date of a vote. If specified, only votes made up to this date will be returned.
+   * * `limit` - maximum number of objects to return. If not specified it is up to implementation of ornode.
+   * * `propFilter` - list of proposal ids. If specified, then only votes on proposals in this list are returned.
+   * * `voterFilter` - list of ethereum addresses. If specified, only votes from this list of accounts are returned.
+   * * `minWeight` - minimum vote weight. If specified, only votes which have equal or greater weight are returned.
+   * * `voteType` - Yes / No. If specified only votes of specified type are returned.
+   * 
+   * @example
+   * await c.getVotes({ 
+      voterFilter: [ "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", "0xcd3B766CCDd6AE721141F452C550Ca635964ce71" ],
+      propFilter: [ "0xcc55ee4f4b5d61a9b90b5a5d915d8e7edede19e26b1a68be043d837654313760" ],
+      limit: 10,
+      minWeight: 1
+    })
+   */
+  async getVotes(spec?: GetVotesSpec): Promise<Vote[]> {
+    const s = spec && this._clientToNode.transformGetVotesSpec(spec);
+    const votes = await this._ctx.ornode.getVotes(s);
+    return votes.map(v => zNVoteToClient.parse(v));
+  }
+
+  /**
    * Get metadata of Respect award NTTs, sorted from latest to oldest.
    * 
    * @param spec - specification for a query
@@ -488,10 +500,6 @@ export class ORClient {
     const nspec = this._clientToNode.transformGetAwardsSpec(spec ?? {});
     const awards = await this._ctx.ornode.getAwards(nspec);
     return awards;
-  }
-
-  private _encodeMemo(memo?: string): Bytes {
-    return memo !== undefined && memo != "" ? hexlify(toUtf8Bytes(memo)) : "0x";
   }
 
   private async _submitProposal(proposal: NProp, vote?: VoteWithProp): Promise<ProposeRes> {
@@ -544,7 +552,7 @@ export class ORClient {
       return this._ctx.orec.vote(
           proposal.id,
           v,
-          this._encodeMemo(vote.memo)
+          encodeVoteMemo(vote.memo)
       );
     } else {
       return this._ctx.orec.propose(proposal.id);

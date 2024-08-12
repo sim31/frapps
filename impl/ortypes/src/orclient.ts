@@ -21,6 +21,9 @@ export type DecodedPropBase = z.infer<typeof zDecodedPropBase>;
 export const zVoteType = z.enum(["None", "Yes", "No"])
 export type VoteType = z.infer<typeof zVoteType>;
 
+export const zValidVoteType = z.enum(["Yes", "No"]);
+export type ValidVoteType = z.infer<typeof zValidVoteType>;
+
 export const zStage = z.enum(["Voting", "Veto", "Execution", "Expired"]);
 export type Stage = z.infer<typeof zStage>;
 
@@ -30,6 +33,8 @@ export type VoteStatus = z.infer<typeof zVoteStatus>;
 export const zExecStatus = z.enum(["NotExecuted", "Executed", "ExecutionFailed"]);
 export type ExecStatus = z.infer<typeof zExecStatus>;
 
+export const zVoteWeight = z.number().int().gte(0);
+export type VoteWeight = z.infer<typeof zVoteWeight>;
 
 export const zVoteRequest = z.object({
   propId: zPropId,
@@ -39,8 +44,13 @@ export const zVoteRequest = z.object({
 export type VoteRequest = z.infer<typeof zVoteRequest>;
 
 export const zVote = z.object({
-  voteType: zVoteType,
-  weight: z.number().gte(0)
+  proposalId: zPropId,
+  voter: zEthAddress,
+  vote: zVoteType,
+  weight: zVoteWeight,
+  memo: z.string().optional(),
+  date: z.date().optional(),
+  txHash: zTxHash.optional(),
 })
 export type Vote = z.infer<typeof zVote>;
 
@@ -191,6 +201,16 @@ export const zProposalMsgFull = zProposal.required({
   memo: true,
 })
 export type ProposalMsgFull = z.infer<typeof zProposalMsgFull>;
+
+export const zGetVotesSpec = z.object({
+  before: z.date().optional(),
+  limit: z.number().int().gt(0).optional(),
+  propFilter: z.array(zPropId).optional(),
+  voterFilter: z.array(zEthAddress).optional(),
+  minWeight: zVoteWeight.optional(),
+  voteType: zValidVoteType.optional()
+});
+export type GetVotesSpec = z.infer<typeof zGetVotesSpec>;
 
 export const zGetProposalsSpec = z.object({
   before: z.date().optional(),

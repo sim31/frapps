@@ -18,11 +18,12 @@ import {
   GetProposalsSpec as CGetProposalsSpec,
   zGetProposalsSpec as zCGetProposalsSpec,
   zGetAwardsSpec as zCGetAwardsSpec,
-  GetAwardsSpec as CGetAwardsSpec
+  GetAwardsSpec as CGetAwardsSpec,
+  GetVotesSpec as CGetVotesSpec,
 } from "../orclient.js";
-import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, TickValid, idOfBurnRespectAttach, idOfCustomCallAttach, idOfCustomSignalAttach, idOfRespectAccountAttach, idOfRespectBreakoutAttach, zBurnRespect, zBurnRespectValid, zCustomCall, zCustomCallValid, zCustomSignal, zCustomSignalValid, zRespectAccount, zRespectAccountValid, zRespectBreakout, zRespectBreakoutValid, zTick, zTickValid, zGetProposalsSpec, GetProposalsSpec, zGetAwardsSpec, GetAwardsSpec } from "../ornode.js";
+import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, TickValid, idOfBurnRespectAttach, idOfCustomCallAttach, idOfCustomSignalAttach, idOfRespectAccountAttach, idOfRespectBreakoutAttach, zBurnRespect, zBurnRespectValid, zCustomCall, zCustomCallValid, zCustomSignal, zCustomSignalValid, zRespectAccount, zRespectAccountValid, zRespectBreakout, zRespectBreakoutValid, zTick, zTickValid, zGetProposalsSpec, GetProposalsSpec, zGetAwardsSpec, GetAwardsSpec, GetVotesSpec } from "../ornode.js";
 import { ConfigWithOrnode, ORContext as OrigORContext } from "../orContext.js";
-import { CustomSignalArgs, OrecFactory, zTickSignalType, zVoteType, VoteType } from "../orec.js";
+import { CustomSignalArgs, OrecFactory, zTickSignalType, zVoteType, VoteType, strToVtMap, zStrToVoteType } from "../orec.js";
 import { BurnRespectArgs, MintRequest, MintRespectArgs, MintRespectGroupArgs, Factory as Respect1155Factory, zBreakoutMintType, zMintRespectArgs, zUnspecifiedMintType } from "../respect1155.js";
 import { propId } from "orec/utils";
 import { addCustomIssue } from "../zErrorHandling.js";
@@ -48,15 +49,9 @@ export const zRankNumToValue = zRankNum.transform((rankNum, ctx) => {
   }
 }).pipe(zBigNumberish.gt(0n));
 
-export const clientToOrecVoteMap = {
-  Yes: VoteType.Yes,
-  No: VoteType.No,
-  None: VoteType.None
-}
+export const clientToOrecVoteMap = strToVtMap;
 
-export const zCVoteTypeToOrec = zCVoteType.transform((voteStr) => {
-  return clientToOrecVoteMap[voteStr];
-}).pipe(zVoteType);
+export const zCVoteTypeToOrec = zStrToVoteType;
 
 function mkzCRespectBreakoutToMintArgs(orctx: ORContext) {
   return zRespectBreakoutRequest.transform(async (val, ctx) => {
@@ -395,6 +390,13 @@ export class ClientToNodeTransformer {
       ...spec,
       before: spec.before !== undefined ? spec.before.valueOf() / 1000 : undefined
     };
+  }
+
+  transformGetVotesSpec(spec: CGetVotesSpec): GetVotesSpec {
+    return {
+      ...spec,
+      before: spec.before !== undefined ? spec.before.valueOf() / 1000 : undefined,
+    }
   }
 
   async transformRespectBreakout(req: RespectBreakoutRequest): Promise<RespectBreakout> {

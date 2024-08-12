@@ -47,7 +47,7 @@ export class ProposalStore implements IProposalStore {
     const filter: any = {};
 
     if (spec.before !== undefined) {
-      filter['createTs'] = { $lte: spec.before }
+      filter['createTs'] = { $lt: spec.before }
     }
 
     const docs = await this.proposals.find(filter)

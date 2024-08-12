@@ -66,8 +66,16 @@ contract Orec is Ownable {
         Message message;
     }
 
-    event EmptyVoteIn(PropId indexed propId, address indexed voter);
-    event WeightedVoteIn(PropId indexed propId, address indexed voter);
+    event EmptyVoteIn(
+        PropId indexed propId,
+        address indexed voter,
+        VoteType vtype
+    );
+    event WeightedVoteIn(
+        PropId indexed propId,
+        address indexed voter,
+        Vote vote
+    );
     event Executed(PropId indexed propId, bytes retVal);
     event ExecutionFailed(PropId indexed propId, bytes retVal);
     event ProposalCreated(PropId indexed propId);
@@ -389,9 +397,9 @@ contract Orec is Ownable {
         }
 
         if (newVote.weight == 0) {
-            emit EmptyVoteIn(propId, msg.sender);
+            emit EmptyVoteIn(propId, msg.sender, newVote.vtype);
         } else {
-            emit WeightedVoteIn(propId, msg.sender);
+            emit WeightedVoteIn(propId, msg.sender, newVote);
         }
     }
 

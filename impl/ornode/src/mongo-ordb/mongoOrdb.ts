@@ -4,6 +4,7 @@ import { AwardStore } from "./awardStore.js";
 import { ProposalStore } from "./proposalStore.js";
 import { Url } from "ortypes/common.js";
 import { TickStore } from "./tickStore.js";
+import { VoteStore } from "./voteStore.js";
 
 export interface Config {
   mongoUrl?: Url
@@ -18,14 +19,16 @@ export const configDefaults = {
 export class MongoOrdb implements IOrdb {
   private _awards: AwardStore;
   private _proposals: ProposalStore;
-  private _mongoClient: MongoClient;
   private _ticks: TickStore;
+  private _votes: VoteStore;
+  private _mongoClient: MongoClient;
   private _cfg: Config;
 
   private constructor(
     propStore: ProposalStore,
     awardStore: AwardStore,
     tickStore: TickStore,
+    voteStore: VoteStore,
     mongoClient: MongoClient,
     config: Config
   ) {
@@ -34,6 +37,7 @@ export class MongoOrdb implements IOrdb {
     this._awards = awardStore;
     this._proposals = propStore;
     this._ticks = tickStore;
+    this._votes = voteStore;
   }
 
   private static async _connectToDb(
@@ -42,7 +46,8 @@ export class MongoOrdb implements IOrdb {
     mgClient: MongoClient,
     propStore: ProposalStore,
     tickStore: TickStore,
-    awardStore: AwardStore
+    awardStore: AwardStore,
+    voteStore: VoteStore
   }> {
     const url = config.mongoUrl ?? configDefaults.mongoUrl;
     const dbName = config.dbName ?? configDefaults.dbName;
@@ -52,15 +57,23 @@ export class MongoOrdb implements IOrdb {
     const propStore = new ProposalStore(mgClient, dbName);
     const tickStore = new TickStore(mgClient, dbName);
     const awardStore = new AwardStore(mgClient, dbName);
+    const voteStore = new VoteStore(mgClient, dbName);
 
-    return { mgClient, propStore, tickStore, awardStore }
+    return { mgClient, propStore, tickStore, awardStore, voteStore }
   }
 
   static async create(config: Config = configDefaults): Promise<MongoOrdb> {
-    const { mgClient, propStore, tickStore, awardStore } =
+    const { mgClient, propStore, tickStore, awardStore, voteStore } =
       await MongoOrdb._connectToDb(config);
 
-    const ordb = new MongoOrdb(propStore, awardStore, tickStore, mgClient, config);
+    const ordb = new MongoOrdb(
+      propStore,
+      awardStore,
+      tickStore,
+      voteStore,
+      mgClient,
+      config
+    );
 
     return ordb;
   }
@@ -75,5 +88,9 @@ export class MongoOrdb implements IOrdb {
 
   get ticks() {
     return this._ticks;
+  }
+
+  get votes() {
+    return this._votes;
   }
 }
