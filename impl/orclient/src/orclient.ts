@@ -1,7 +1,7 @@
 import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt, toBeHex } from "ethers";
 import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp, VoteType, Vote, GetProposalsSpec, GetAwardsSpec, ExecError, GetVotesSpec } from "ortypes/orclient.js";
 import { TxFailed } from "./errors.js";
-import { ORContext, ConfigWithOrnode } from "ortypes/orContext.js";
+import { ORContext, ConfigWithOrnode, OnchainPropNotFound } from "ortypes/orContext.js";
 import { NodeToClientTransformer, zNVoteToClient } from "ortypes/transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "ortypes/transformers/clientToNodeTransformer.js";
 import { ProposalFull as NProp, ORNodePropStatus } from "ortypes/ornode.js";
@@ -115,7 +115,22 @@ export class ORClient {
     const nprops = await this._ctx.ornode.getProposals(nspec);
     const props: Proposal[] = [];
     for (const nprop of nprops) {
-      const tprop = await this._nodeToClient.transformProp(nprop);
+      let tprop: Proposal;
+      try {
+        tprop = await this._nodeToClient.transformProp(nprop);
+      } catch (err: any) {
+        // Sometimes ornode might store proposals which from our point of view are not onchain yet (it receives events quicker for some reason sometimes).
+        // So if it is a fresh proposal and ornode returns it even though
+        // it is not onchain then it is not a problem.
+        // But if ornode returns an old proposal which is not onchain - then something is wrong with ornode.
+        if (err.name === 'OnchainPropNotFound') {
+          const now = Date.now() / 1000;
+          if (nprop.createTs !== undefined && now - nprop.createTs < 20) {
+            continue;
+          }
+        }
+        throw err;
+      }
 
       const passExecStatFilter =
         spec?.execStatFilter === undefined ||

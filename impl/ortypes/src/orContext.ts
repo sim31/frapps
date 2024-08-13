@@ -12,6 +12,16 @@ import { expect } from "chai";
 import { testVersion } from "orec/utils";
 import { ErrorDecoder, DecodedError } from 'ethers-decode-error'
 
+export class OnchainPropNotFound extends Error {
+  name: string = "OnchainPropNotFound"
+
+  constructor(propId: PropId) {
+    const msg = `Proposal with id ${propId} does not exist`;
+    super(msg);
+  }
+}
+
+
 export interface State {
   orec: Orec,
   newRespect: Respect1155,
@@ -211,7 +221,11 @@ export class ORContext<CT extends Config> {
   }
 
   async getProposalFromChain(id: PropId): Promise<OnchainProp> {
-    const propState = zProposalState.parse(await this._st.orec.proposals(id));
+    const pstate = await this._st.orec.proposals(id)
+    if (pstate.createTime === 0n) {
+      throw new OnchainPropNotFound(id);
+    }
+    const propState = zProposalState.parse(pstate);
     const stage = zStage.parse(await this._st.orec.getStage(id));
     const voteStatus = zVoteStatus.parse(await this._st.orec.getVoteStatus(id));
 
