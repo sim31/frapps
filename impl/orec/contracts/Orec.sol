@@ -9,7 +9,7 @@ import {IERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./IRespect.sol";
 
 // Uncomment this line to use console.log
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /**
  * @title Optimistic Respect-based executive contract
@@ -366,9 +366,11 @@ contract Orec is Ownable {
             }
             EnumerableSet.Bytes32Set storage voteSet = _liveVotes[msg.sender];
             _updateLiveVotes(voteSet);
+            // console.log("Amount of live votes: ", voteSet.length());
             if (voteSet.length() >= maxLiveVotes) {
                 revert MaxLiveYesVotesExceeded();
             }
+            voteSet.add(PropId.unwrap(propId));
 
             uint256 w = voteWeightOf(msg.sender);
             newVote = Vote(VoteType.Yes, w);
@@ -423,7 +425,7 @@ contract Orec is Ownable {
         for (uint i = 0; i < len; i++) {
             PropId propId = PropId.wrap(voteSet.at(i));
             ProposalState storage prop = proposals[propId];
-            if (_isExpired(prop)) {
+            if (!_proposalExists(prop) || _isExpired(prop)) {
                 toRemove[removeCount] = propId;
                 removeCount += 1;
             }
