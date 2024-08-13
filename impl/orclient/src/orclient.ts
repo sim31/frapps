@@ -233,20 +233,6 @@ export class ORClient {
   }
 
   /**
-   * Remove proposal from chain.
-   * 
-   * @param propId - id of proposal to remove.
-   * 
-   * @remarks This simply calls remove method of Orec smart contract. This contract only allows removing if proposal is expired.
-   */
-  async removeProposal(propId: PropId): Promise<OnchainActionRes> {
-    const txPromise = this._ctx.orec.remove(propId);
-    const errMsg = `orec.remove(${propId})`;
-    const receipt = await this._handleTxPromise(txPromise, this._cfg.otherConfirms, errMsg);
-    return { txReceipt: receipt };
-  }
-
-  /**
    * Create a proposal to award respect game participants of a single breakout room, based on results of that breakout room.
    * @param request - breakout room results, plus optional metadata.
    * @param vote - vote to submit with the result. Default: `{ vote: "Yes" }`.
