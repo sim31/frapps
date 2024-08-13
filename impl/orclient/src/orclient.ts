@@ -127,6 +127,9 @@ export class ORClient {
           const now = Date.now() / 1000;
           if (nprop.createTs !== undefined && now - nprop.createTs < 20) {
             continue;
+          } else if (nprop.removed) {
+            // TODO: we might want to return removed proposals for history
+            continue;
           }
         }
         throw err;
@@ -227,6 +230,20 @@ export class ORClient {
     } else {
       throw new Error("Don't have proposal content to execute");
     }
+  }
+
+  /**
+   * Remove proposal from chain.
+   * 
+   * @param propId - id of proposal to remove.
+   * 
+   * @remarks This simply calls remove method of Orec smart contract. This contract only allows removing if proposal is expired.
+   */
+  async removeProposal(propId: PropId): Promise<OnchainActionRes> {
+    const txPromise = this._ctx.orec.remove(propId);
+    const errMsg = `orec.remove(${propId})`;
+    const receipt = await this._handleTxPromise(txPromise, this._cfg.otherConfirms, errMsg);
+    return { txReceipt: receipt };
   }
 
   /**

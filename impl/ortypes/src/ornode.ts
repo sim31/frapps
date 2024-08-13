@@ -115,7 +115,9 @@ export const zProposalBase = z.object({
   attachment: zPropAttachment.optional(),
   createTs: zTimestamp.optional().describe("Unix timestamp. Should match onchain createTime of proposal"),
   createTxHash: zTxHash.optional().describe("Hash of transaction which created this proposal"),
-  executeTxHash: zTxHash.optional().describe("Hash of transaction which executed this proposal")
+  executeTxHash: zTxHash.optional().describe("Hash of transaction which executed this proposal"),
+  removeTxHash: zTxHash.optional().describe("Hash of transaction which removed this proposal from chain"),
+  removed: z.boolean().optional(),
 })
 export type ProposalBase = z.infer<typeof zProposalBase>;
 

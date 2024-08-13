@@ -182,9 +182,10 @@ export const zUnknownExecError = z.object({
 });
 
 export const zOnchainProp = zNOnchainProp.extend({
+  // Overriding with orclient types
   status: zExecStatus,
   voteStatus: zVoteStatus,
-  stage: zStage,
+  stage: zStage, 
   execError: zExecError.optional()
 });
 

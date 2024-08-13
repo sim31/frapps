@@ -1,4 +1,4 @@
-import { PropId } from "ortypes";
+import { PropId, TxHash } from "ortypes";
 import { GetProposalsSpec, zProposalBase } from "ortypes/ornode.js";
 import { z } from "zod";
 

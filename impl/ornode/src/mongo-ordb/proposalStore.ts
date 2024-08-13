@@ -1,5 +1,5 @@
 import { MongoClient, Db, ObjectId } from "mongodb";
-import { PropId } from "ortypes";
+import { PropId, TxHash } from "ortypes";
 import { IProposalStore, GetProposalsSpec, Proposal, zProposal } from "../ordb/iproposalStore.js";
 import { withoutId } from "./utils.js";
 import { withoutUndefined, stringify } from "ts-utils";
@@ -49,6 +49,9 @@ export class ProposalStore implements IProposalStore {
     if (spec.before !== undefined) {
       filter['createTs'] = { $lt: spec.before }
     }
+
+    // TODO: we might want to return removed proposals for history
+    filter['removed'] = { $in: [null, false] }
 
     const docs = await this.proposals.find(filter)
       .sort({ createTs: -1 })

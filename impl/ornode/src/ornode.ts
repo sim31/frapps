@@ -33,6 +33,7 @@ import {
   zVoteTypeToStr,
   zBytes,
   zBytesToVoteMemo,
+  ProposalRemovedEvent,
 } from "ortypes"
 import { TokenMtCfg } from "./config.js"
 import { IOrdb } from "./ordb/iordb.js";
@@ -240,8 +241,32 @@ export class ORNode implements IORNode {
     orec.on(orec.getEvent("Signal"), this._signalEventHandler);
     orec.on(orec.getEvent("WeightedVoteIn"), this._weightedVoteHandler);
     orec.on(orec.getEvent("EmptyVoteIn"), this._emptyVoteHandler);
+    orec.on(orec.getEvent("ProposalRemoved"), this._proposalRemovedHandler);
   }
 
+  private _proposalRemovedHandler: TypedListener<ProposalRemovedEvent.Event> =
+    async (
+      propId: PropId,
+      event: TypedEventLog<ProposalRemovedEvent.Event>
+    ) => {
+      console.debug("ProposalRemoved event. PropId: ", propId, "event: ", stringify(event));
+
+      const { txHash } = this._parseEventObject(event);
+      if (txHash === undefined) {
+        console.error("Was not able to retrieve tx hash in handler for event: ", stringify(event));
+
+        await this._db.proposals.updateProposal(
+          propId,
+          { removed: true }
+        );
+      } else {
+        await this._db.proposals.updateProposal(
+          propId,
+          { removed: true, removeTxHash: txHash }
+        );
+      }
+  }
+      
   private _weightedVoteHandler: TypedListener<WeightedVoteInEvent.Event> =
     async (
       propId: PropId,
