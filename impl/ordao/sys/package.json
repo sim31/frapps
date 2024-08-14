@@ -71,7 +71,6 @@
     "dev": "node src/dev.js",
     "dev-no-vite": "node src/dev.js --no-vite",
     "setup": "npm install && npm run setup-orec && npm run setup-respect1155 && npm run setup-ts-utils && npm run setup-ortypes && npm run setup-orclient && npm run setup-ornode && npm run setup-gui"
-
   },
   "keywords": [],
   "author": "sim31",
@@ -86,6 +85,7 @@
     "jsonfile": "^6.1.0",
     "shelljs": "^0.8.5",
     "tree-kill": "^1.2.2",
+    "typedoc": "^0.26.5",
     "typescript": "^5.4.5"
   },
   "dependencies": {

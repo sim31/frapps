@@ -1,4 +1,4 @@
-# Optimistic Respsect-based DAO
+# Optimistic Respect-based DAO
 A prototype app for a fractal that uses [Optimistic Respect-based executive contract](../concepts/OREC.md) and non-fungible Respect token ([Respect1155](../respect1155/sc/) to be specific).
 
 Subdirectories:

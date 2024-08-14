@@ -159,9 +159,9 @@ export class ORContext<CT extends Config> {
     return ctx;
   }
 
-  callTest() {
-    testVersion();
-  }
+  // callTest() {
+  //   testVersion();
+  // }
 
   switchSigner(signer: Signer) {
     this._st.orec = this._st.orec.connect(signer);

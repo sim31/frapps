@@ -1,7 +1,10 @@
 import { Signer, hexlify, toUtf8Bytes, ContractTransactionResponse, ContractTransactionReceipt, toBeHex } from "ethers";
 import { BurnRespectRequest, CustomCallRequest, CustomSignalRequest, Proposal, RespectAccountRequest, RespectBreakoutRequest, TickRequest, VoteRequest, VoteWithProp, VoteWithPropRequest, zVoteWithProp, VoteType, Vote, GetProposalsSpec, GetAwardsSpec, ExecError, GetVotesSpec } from "ortypes/orclient.js";
 import { TxFailed } from "./errors.js";
-import { ORContext, ConfigWithOrnode, OnchainPropNotFound } from "ortypes/orContext.js";
+import {
+  ORContext as ORContextOrig,
+  ConfigWithOrnode,
+} from "ortypes/orContext.js";
 import { NodeToClientTransformer, zNVoteToClient } from "ortypes/transformers/nodeToClientTransformer.js";
 import { ClientToNodeTransformer } from "ortypes/transformers/clientToNodeTransformer.js";
 import { ProposalFull as NProp, ORNodePropStatus } from "ortypes/ornode.js";
@@ -12,6 +15,9 @@ import { resultArrayToObj } from "ortypes/utils.js";
 import { RespectAwardMt, RespectFungibleMt, TokenId } from "ortypes/respect1155.js";
 import { Erc1155Mt } from "ortypes/erc1155.js";
 import { z } from "zod";
+
+// Re-define so that ORContext docs are included
+export class ORContext extends ORContextOrig<ConfigWithOrnode> {}
 
 export function isPropCreated(propState: ProposalState) {
   return propState.createTime > 0n;
@@ -49,13 +55,19 @@ export type ExecRes = OnchainActionRes & {
   execError?: ExecError
 };
 
+/**
+ * Docs...
+ * AAA
+ * BBB
+ * CCC
+ */
 export class ORClient {
-  private _ctx: ORContext<ConfigWithOrnode>;
+  private _ctx: ORContext;
   private _nodeToClient: NodeToClientTransformer;
   private _clientToNode: ClientToNodeTransformer;
   private _cfg: Config;
 
-  constructor(context: ORContext<ConfigWithOrnode>, cfg: Config = defaultConfig) {
+  constructor(context: ORContext, cfg: Config = defaultConfig) {
     this._ctx = context;
     this._nodeToClient = new NodeToClientTransformer(this._ctx);
     this._clientToNode = new ClientToNodeTransformer(this._ctx);
@@ -78,7 +90,7 @@ export class ORClient {
    * * Contract runner;
    * * Used endpoints (for ORNode and Ethereum RPC API)
    */
-  get context(): ORContext<ConfigWithOrnode> {
+  get context(): ORContext {
     return this._ctx;
   }
 
@@ -168,7 +180,7 @@ export class ORClient {
   async vote(propId: PropId, vote: VoteType, memo?: string): Promise<OnchainActionRes>;
   /**
    * Vote on a proposal.
-   * @param request - parameters for a vote as an object. See {@link ORConsole#vote}.
+   * @param request - parameters for a vote as an object. See {@link ORClient#vote}.
    * @returns hash of submitted transaction
    * 
    * @remarks Note that memo string with go with calldata of transaction, so longer string will cost more.
@@ -358,7 +370,7 @@ export class ORClient {
   }
 
   /**
-   * Create a proposal to issue a tick signal. Tick signals increment the period / meeting number returned by orclient (see {@link ORConsole#getPeriodNum}).
+   * Create a proposal to issue a tick signal. Tick signals increment the period / meeting number returned by orclient (see {@link ORClient#getPeriodNum}).
    * 
    * @param req - optional metadata to submit with a tick signal
    * @param vote - vote to submit with the result. Default: `{ vote: "Yes" }`.
@@ -420,7 +432,7 @@ export class ORClient {
   }
 
   /**
-   * Get period number (incremented using ticks see {@link ORConsole#proposeTick}).
+   * Get period number (incremented using ticks see {@link ORClient#proposeTick}).
    */
   async getPeriodNum(): Promise<number> {
     return await this._ctx.ornode.getPeriodNum();

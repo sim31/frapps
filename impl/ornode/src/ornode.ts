@@ -188,7 +188,7 @@ export class ORNode implements IORNode {
 
   // TODO:
   async getPeriodNum(): Promise<number> {
-    this._ctx.callTest();
+    // this._ctx.callTest();
     const tickNum = await this._db.ticks.tickCount();
     return tickNum;
   }

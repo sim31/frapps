@@ -1,9 +1,5 @@
-import { ORClient, defaultConfig, Config } from "orclient/index.js";
-import { ORContext as ORContextOrig, ConfigWithOrnode } from "ortypes/orContext.js";
+import { ORClient, ORContext, defaultConfig, Config } from "orclient/index.js";
 import { stringify } from "ts-utils";
-
-// Re-define so that ORContext docs are included
-export class ORContext extends ORContextOrig<ConfigWithOrnode> {}
 
 function _getPublicFunctions(): string[] {
   return Object.getOwnPropertyNames(ORClient.prototype)
@@ -12,7 +8,7 @@ function _getPublicFunctions(): string[] {
 
 const _methods = _getPublicFunctions();
 
-const _docPath = "/classes/ORConsole.html";
+const _docPath = "/classes/ORClient.html";
 
 // TODO: add intro to documentation and about how to use the console.
 export class ORConsole extends ORClient {
@@ -21,11 +17,6 @@ export class ORConsole extends ORClient {
     super(context, cfg);
 
     console.log("methods: ", stringify(_methods));
-  }
-
-  // Re-defining so that ORContext docs are included
-  get context(): ORContext {
-    return super.context;
   }
 }
 
