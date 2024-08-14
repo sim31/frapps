@@ -56,10 +56,7 @@ export type ExecRes = OnchainActionRes & {
 };
 
 /**
- * Docs...
- * AAA
- * BBB
- * CCC
+ * Client for ORDAO system.
  */
 export class ORClient {
   private _ctx: ORContext;

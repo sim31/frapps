@@ -9,6 +9,15 @@ function _getPublicFunctions(): string[] {
 const _methods = _getPublicFunctions();
 
 const _docPath = "/classes/ORClient.html";
+const _indexPath = "/index.html";
+
+function _printHelp() {
+  console.log("Available methods: ", _methods);
+  console.log("Use c.<method>.help() to get further help on any of the methods.")
+  console.log("Example: c.proposeRespectTo.help()")
+  console.log("         c.vote.help()")
+}
+
 
 // TODO: add intro to documentation and about how to use the console.
 export class ORConsole extends ORClient {
@@ -16,8 +25,11 @@ export class ORConsole extends ORClient {
   constructor(context: ORContext, cfg: Config = defaultConfig) {
     super(context, cfg);
 
-    console.log("methods: ", stringify(_methods));
+    if (window.location.pathname === _indexPath) {
+      _printHelp();
+    }
   }
+
 }
 
 function _init() {
@@ -32,10 +44,9 @@ function _init() {
   }
 
   (ORClient.prototype as any)['help'] = () => {
-    console.log("Available methods: ", _methods);
-    console.log("Use c.<method>.help() to get further help on any of the methods.")
-    console.log("Example: c.proposeRespectTo.help()")
-    console.log("         c.vote.help()")
+    window.location.hash = "";
+    window.location.pathname = _indexPath;
+    _printHelp();
   }
 }
 
