@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { solidityPackedKeccak256 } from "ethers";
-import { PropId, VoteType, zExecStatus, zPropId, zProposedMsg, zStage, zValidVoteTypeStr, zVoteStatus, zVoteType, zVoteTypeStr } from "./orec.js";
+import { PropId, VoteType, zExecStatus, zExecStatusStr, zPropId, zProposedMsg, zStage, zValidVoteTypeStr, zVoteStatus, zVoteType, zVoteTypeStr } from "./orec.js";
 import { zGroupNum, zPropType } from "./fractal.js";
 import { propId } from "orec/utils";
 import { zBytesLikeToBytes, zEthAddress, zTxHash } from "./eth.js";
@@ -116,14 +116,18 @@ export const zProposalBase = z.object({
   createTs: zTimestamp.optional().describe("Unix timestamp. Should match onchain createTime of proposal"),
   createTxHash: zTxHash.optional().describe("Hash of transaction which created this proposal"),
   executeTxHash: zTxHash.optional().describe("Hash of transaction which executed this proposal"),
-  removeTxHash: zTxHash.optional().describe("Hash of transaction which removed this proposal from chain"),
-  removed: z.boolean().optional(),
-})
+  status: zExecStatusStr.optional()
+});
 export type ProposalBase = z.infer<typeof zProposalBase>;
+
+export const zStoredProposalBase = zProposalBase.required({
+  createTs: true,
+  status: true
+})
 
 export const zProposalBaseFull = zProposalBase.required({
   content: true,
-  attachment: true
+  attachment: true,
 });
 export type ProposalBaseFull = z.infer<typeof zProposalBaseFull>;
 
@@ -202,6 +206,17 @@ export const zProposal = z.union([
 ]);
 export type Proposal = z.infer<typeof zProposal>;
 
+export const zStoredProposal = z.union([
+  zStoredProposalBase,
+  zRespectBreakout.required({ status: true, createTs: true }),
+  zRespectAccount.required({ status: true, createTs: true }),
+  zBurnRespect.required({ status: true, createTs: true }),
+  zCustomSignal.required({ status: true, createTs: true }),
+  zTick.required({ status: true, createTs: true }),
+  zCustomCall.required({ status: true, createTs: true })
+]);
+export type StoredProposal = z.infer<typeof zStoredProposal>;
+
 export const zProposalFull = z.union([
   zProposalBaseFull,
   zRespectBreakout,
@@ -234,13 +249,14 @@ export const zGetVotesSpec = z.object({
   voterFilter: z.array(zEthAddress).optional(),
   minWeight: zVoteWeight.optional(),
   voteType: zValidVoteTypeStr.optional()
-});
+}).strict();
 export type GetVotesSpec = z.infer<typeof zGetVotesSpec>;
 
 export const zGetProposalsSpec = z.object({
   before: zTimestamp.optional(),
   limit: z.number().int().gt(0).optional(),
-});
+  execStatusFilter: z.array(zExecStatusStr).optional()
+}).strict();
 export type GetProposalsSpec = z.infer<typeof zGetProposalsSpec>;
 
 export const zGetAwardsSpec = z.object({
@@ -248,7 +264,7 @@ export const zGetAwardsSpec = z.object({
   limit: z.number().int().gt(0).optional(),
   recipient: zEthAddress.optional(),
   burned: z.boolean().optional()
-});
+}).strict();
 export type GetAwardsSpec = z.infer<typeof zGetAwardsSpec>;
 
 export function idOfRespectBreakoutAttach(attachment: RespectBreakoutAttachment) {

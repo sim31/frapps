@@ -50,8 +50,9 @@ export class ProposalStore implements IProposalStore {
       filter['createTs'] = { $lt: spec.before }
     }
 
-    // TODO: we might want to return removed proposals for history
-    filter['removed'] = { $in: [null, false] }
+    if (spec.execStatusFilter !== undefined && spec.execStatusFilter.length > 0) {
+      filter['status'] = { $in: spec.execStatusFilter }
+    }
 
     const docs = await this.proposals.find(filter)
       .sort({ createTs: -1 })

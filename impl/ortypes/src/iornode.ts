@@ -5,6 +5,7 @@ import {
   ORNodePropStatus,
   Proposal,
   ProposalFull,
+  StoredProposal,
   zErrorType,
   GetAwardsSpec,
   GetProposalsSpec,
@@ -26,8 +27,8 @@ export interface IORNode {
   /**
    * Should return only proposals which have been submitted onchain
    */
-  getProposal: (id: PropId) => Promise<Proposal>;
-  getProposals: (spec?: GetProposalsSpec) => Promise<Proposal[]>
+  getProposal: (id: PropId) => Promise<StoredProposal>;
+  getProposals: (spec?: GetProposalsSpec) => Promise<StoredProposal[]>
 
   getPeriodNum: () => Promise<number>;
 

@@ -1,5 +1,5 @@
 import { ContractRunner, Provider as EthProvider, JsonRpcProvider, Provider, Result, Signer } from "ethers";
-import { OrecContract as Orec, OrecFactory } from "./orec.js";
+import { ExecStatus, OrecContract as Orec, OrecFactory } from "./orec.js";
 import { EthAddress, isEthAddr, zEthNonZeroAddress } from "./eth.js";
 import { IORNode } from "./iornode.js";
 import { Contract as FractalRespect, Factory as FractalRespectFactory } from "./fractalRespect.js";
@@ -221,24 +221,34 @@ export class ORContext<CT extends Config> {
   }
 
   async getProposalFromChain(id: PropId): Promise<OnchainProp> {
+    const prop = await this.tryGetPropFromChain(id);
+    if (prop === undefined) {
+      throw new OnchainPropNotFound(id);
+    } else {
+      return prop;
+    }
+  }
+
+  async tryGetPropFromChain(id: PropId): Promise<OnchainProp | undefined> {
     const pstate = await this._st.orec.proposals(id)
     if (pstate.createTime === 0n) {
-      throw new OnchainPropNotFound(id);
-    }
-    const propState = zProposalState.parse(pstate);
-    const stage = zStage.parse(await this._st.orec.getStage(id));
-    const voteStatus = zVoteStatus.parse(await this._st.orec.getVoteStatus(id));
+      return undefined;
+    } else {
+      const propState = zProposalState.parse(pstate);
+      const stage = zStage.parse(await this._st.orec.getStage(id));
+      const voteStatus = zVoteStatus.parse(await this._st.orec.getVoteStatus(id));
 
-    const r: OnchainProp = {
-      id: id,
-      createTime: new Date(Number(propState.createTime) * 1000),
-      yesWeight: propState.yesWeight,
-      noWeight: propState.noWeight,
-      status: propState.status,
-      stage,
-      voteStatus,
-    }
+      const r: OnchainProp = {
+        id: id,
+        createTime: new Date(Number(propState.createTime) * 1000),
+        yesWeight: propState.yesWeight,
+        noWeight: propState.noWeight,
+        stage,
+        voteStatus,
+      }
 
-    return r;
+      return r;
+
+      }
   }
 }

@@ -136,17 +136,11 @@ export class ORClient {
           const now = Date.now() / 1000;
           if (nprop.createTs !== undefined && now - nprop.createTs < 20) {
             continue;
-          } else if (nprop.removed) {
-            // TODO: we might want to return removed proposals for history
-            continue;
           }
         }
         throw err;
       }
 
-      const passExecStatFilter =
-        spec?.execStatFilter === undefined ||
-        spec.execStatFilter.includes(tprop.status);
       const passStageFilter = 
         spec?.stageFilter === undefined ||
         spec.stageFilter.includes(tprop.stage);
@@ -154,7 +148,7 @@ export class ORClient {
         spec?.voteStatFilter === undefined ||
         spec.voteStatFilter.includes(tprop.voteStatus);
 
-      if (passExecStatFilter && passStageFilter && passVoteStatFilter) {
+      if (passStageFilter && passVoteStatFilter) {
         props.push(tprop);
       }
     }
@@ -536,7 +530,7 @@ export class ORClient {
     console.debug("submitting to ornode");
     const status = await this._submitPropToOrnode(proposal);
     console.debug("Submitted proposal id: ", proposal.id, "status: ", status);
-    const cprop = await this._nodeToClient.transformProp(proposal);
+    const cprop = await this.getProposal(proposal.id);
     return {
       proposal: cprop,
       status,

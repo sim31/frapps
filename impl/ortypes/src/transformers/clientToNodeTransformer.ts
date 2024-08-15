@@ -19,9 +19,10 @@ import {
   zGetProposalsSpec as zCGetProposalsSpec,
   zGetAwardsSpec as zCGetAwardsSpec,
   GetAwardsSpec as CGetAwardsSpec,
+  zGetVotesSpec as zCGetVotesSpec,
   GetVotesSpec as CGetVotesSpec,
 } from "../orclient.js";
-import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, TickValid, idOfBurnRespectAttach, idOfCustomCallAttach, idOfCustomSignalAttach, idOfRespectAccountAttach, idOfRespectBreakoutAttach, zBurnRespect, zBurnRespectValid, zCustomCall, zCustomCallValid, zCustomSignal, zCustomSignalValid, zRespectAccount, zRespectAccountValid, zRespectBreakout, zRespectBreakoutValid, zTick, zTickValid, zGetProposalsSpec, GetProposalsSpec, zGetAwardsSpec, GetAwardsSpec, GetVotesSpec } from "../ornode.js";
+import { BurnRespect, BurnRespectAttachment, CustomCall, CustomCallAttachment, CustomSignal, CustomSignalAttachment, PropContent, Proposal, RespectAccount, RespectAccountAttachment, RespectBreakout, RespectBreakoutAttachment, Tick, TickAttachment, TickValid, idOfBurnRespectAttach, idOfCustomCallAttach, idOfCustomSignalAttach, idOfRespectAccountAttach, idOfRespectBreakoutAttach, zBurnRespect, zBurnRespectValid, zCustomCall, zCustomCallValid, zCustomSignal, zCustomSignalValid, zRespectAccount, zRespectAccountValid, zRespectBreakout, zRespectBreakoutValid, zTick, zTickValid, zGetProposalsSpec, GetProposalsSpec, zGetAwardsSpec, GetAwardsSpec, GetVotesSpec, zGetVotesSpec } from "../ornode.js";
 import { ConfigWithOrnode, ORContext as OrigORContext } from "../orContext.js";
 import { CustomSignalArgs, OrecFactory, zTickSignalType, zVoteType, VoteType, strToVtMap, zStrToVoteType } from "../orec.js";
 import { BurnRespectArgs, MintRequest, MintRespectArgs, MintRespectGroupArgs, Factory as Respect1155Factory, zBreakoutMintType, zMintRespectArgs, zUnspecifiedMintType } from "../respect1155.js";
@@ -352,6 +353,32 @@ function mkzCCustomCallReqToProposal(orctx: ORContext) {
   }).pipe(zCustomCallValid);
 }
 
+// zCGetProposalSepc is strict, so this checks that no unknown fields are specified
+export const zCGetProposalsSpecToNodeSpec = zCGetProposalsSpec.transform(spec => {
+  const r: GetProposalsSpec = {
+    before: spec.before !== undefined ? spec.before.valueOf() / 1000 : undefined,
+    limit: spec.limit,
+    execStatusFilter: spec.execStatFilter
+  }
+  return r;
+}).pipe(zGetProposalsSpec);
+
+export const zCGetAwardsSpecToNodeSpec = zCGetAwardsSpec.transform(spec => {
+  const r: GetAwardsSpec = {
+    ...spec,
+    before: spec.before !== undefined ? spec.before.valueOf() / 1000 : undefined
+  }
+  return r;
+}).pipe(zGetAwardsSpec);
+
+export const zCGetVotesSpecToNodeSpec = zCGetVotesSpec.transform(spec => {
+  const r: GetVotesSpec = {
+    ...spec,
+    before: spec.before !== undefined ? spec.before.valueOf() / 1000 : undefined,
+  }
+  return r;
+}).pipe(zGetVotesSpec); 
+
 // const zCGetProposalsSpecToNode = zCGetProposalsSpec.transform(spec => {
 //   const nspec: GetProposalsSpec = {
 //     untilTime: spec.untilTime
@@ -379,24 +406,15 @@ export class ClientToNodeTransformer {
   }
 
   transformGetProposalsSpec(spec: CGetProposalsSpec): GetProposalsSpec {
-    return {
-      before: spec.before !== undefined ? spec.before.valueOf() / 1000 : undefined,
-      limit: spec.limit
-    };
+    return zCGetProposalsSpecToNodeSpec.parse(spec);
   }
 
   transformGetAwardsSpec(spec: CGetAwardsSpec): GetAwardsSpec {
-    return {
-      ...spec,
-      before: spec.before !== undefined ? spec.before.valueOf() / 1000 : undefined
-    };
+    return zCGetAwardsSpecToNodeSpec.parse(spec);
   }
 
   transformGetVotesSpec(spec: CGetVotesSpec): GetVotesSpec {
-    return {
-      ...spec,
-      before: spec.before !== undefined ? spec.before.valueOf() / 1000 : undefined,
-    }
+    return zCGetVotesSpecToNodeSpec.parse(spec);
   }
 
   async transformRespectBreakout(req: RespectBreakoutRequest): Promise<RespectBreakout> {

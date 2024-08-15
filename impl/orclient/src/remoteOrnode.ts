@@ -1,5 +1,5 @@
 import { EthAddress, IORNode, PropId, ProposalInvalid, ProposalNotCreated, ProposalNotFound } from "ortypes";
-import { GetProposalsSpec, GetAwardsSpec, ORNodePropStatus, Proposal, ProposalFull, zErrorType, Vote, GetVotesSpec } from "ortypes/ornode.js";
+import { GetProposalsSpec, GetAwardsSpec, ORNodePropStatus, StoredProposal as Proposal, ProposalFull, zErrorType, Vote, GetVotesSpec } from "ortypes/ornode.js";
 import { OrnodeClient, createOrnodeClient } from "./ornodeClient/index.js";
 import { Input, Method, Path, Response } from "./ornodeClient/ornodeClient.js"
 import { stringify } from "ts-utils";

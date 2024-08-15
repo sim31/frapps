@@ -5,7 +5,7 @@ import {
   zGetProposalsSpec,
   zGetAwardsSpec,
   zORNodePropStatus,
-  zProposal,
+  zStoredProposal,
   zProposalFull,
   zGetVotesSpec,
   zVote,
@@ -50,7 +50,7 @@ const getPeriodNum = factory.build({
 const getProposal = factory.build({
   method: "post",
   input: z.object({ propId: zPropId }),
-  output: zProposal,
+  output: zStoredProposal,
   handler: async ({input, options, logger}) => {
     logger.debug(`getProposal ${stringify(input)}. options: ${stringify(options)}`);
     const n = await getOrnode();
@@ -62,7 +62,7 @@ const getProposals = factory.build({
   method: "post",
   input: z.object({ spec: zGetProposalsSpec }),
   output: z.object({
-    proposals: z.array(zProposal)
+    proposals: z.array(zStoredProposal)
   }),
   handler: async ({input, options, logger}) => {
     logger.debug(`getProposals ${stringify(input)}. options: ${stringify(options)}`);

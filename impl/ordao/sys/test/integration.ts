@@ -1,7 +1,6 @@
 import chai, { expect } from "chai";
 import { time, mine } from "@nomicfoundation/hardhat-toolbox/network-helpers.js";
 import { BreakoutResult, DecodedProposal, RespectBreakout, Proposal, RespectAccountRequest, RespectAccount, Tick, CustomSignal, ProposalMsgFull, PropOfPropType, isPropMsgFull, zProposalMsgFull, toPropMsgFull, CustomSignalRequest, RespectBreakoutRequest, VoteRequest, VoteWithProp } from "ortypes/orclient.js";
-import { execStatusMap } from "ortypes/transformers/nodeToClientTransformer.js";
 import { TxFailed, ORClient, RemoteOrnode, defaultConfig } from "orclient";
 import { EthAddress, ExecStatus, PropType, Stage, VoteStatus, VoteType, zProposedMsg } from "ortypes";
 import hre from "hardhat";
@@ -152,7 +151,6 @@ describe("orclient", function() {
     expect(onchainProp.createTime).to.be.equal(prop.createTime);
     expect(onchainProp.yesWeight).to.be.equal(prop.yesWeight);
     expect(onchainProp.noWeight).to.be.equal(prop.noWeight);
-    expect(onchainProp.status).to.be.equal("NotExecuted");
   }
 
   async function expectAproxNow(date: Date, maxDiffSec = 60) {
@@ -254,7 +252,6 @@ describe("orclient", function() {
         await expectAproxNow(prop.createTime);
         expect(onChainProp.yesWeight).to.be.equal(prop.yesWeight).to.be.equal(0);
         expect(onChainProp.noWeight).to.be.equal(prop.noWeight).to.be.equal(0);
-        expect(onChainProp.status).to.be.equal(ExecStatus.NotExecuted);
         expect(prop.status).to.be.equal("NotExecuted");
       }
     });
@@ -323,14 +320,18 @@ describe("orclient", function() {
   });
 
   describe("proposing a tick (to increment meeting number)", function() {
+    let cl2: ORClient;
+    before("connect through a new signer to avoid hitting maxLiveVotes", async function() {
+      cl2 = cl.connect(signers[8]);
+    })
     before("create proposal by calling proposeTick", async function() {
-      tickProps.push((await confirm(cl.proposeTick())).proposal);
-      tickProps.push((await confirm(cl.proposeTick({ data: "0x11" }))).proposal);
+      tickProps.push((await confirm(cl2.proposeTick())).proposal);
+      tickProps.push((await confirm(cl2.proposeTick({ data: "0x11" }))).proposal);
     });
 
     it("should return period number of 0 before the tick is executed", async function() {
-      expect(await cl.getPeriodNum()).to.be.equal(0);
-      expect(await cl.getNextMeetingNum()).to.be.equal(1);
+      expect(await cl2.getPeriodNum()).to.be.equal(0);
+      expect(await cl2.getNextMeetingNum()).to.be.equal(1);
     });
 
     it("should have returned expected tick proposals", async function() {
@@ -362,9 +363,13 @@ describe("orclient", function() {
       data: "0x02",
       link: "https://someaddr2.io"
     }; 
+    let cl2: ORClient;
+    before("connect through a new signer to avoid hitting maxLiveVotes", async function() {
+      cl2 = cl.connect(signers[8]);
+    })
     before("create proposal by calling proposeSignal", async function() {
-      signalProps.push((await confirm(cl.proposeCustomSignal(sreq1))).proposal);
-      signalProps.push((await confirm(cl.proposeCustomSignal(sreq2))).proposal);
+      signalProps.push((await confirm(cl2.proposeCustomSignal(sreq1))).proposal);
+      signalProps.push((await confirm(cl2.proposeCustomSignal(sreq2))).proposal);
     });
 
     it("should have returned expected signal proposals", async function() {
@@ -616,7 +621,7 @@ describe("orclient", function() {
 
       await expect(voter.vote(resultProps[0].id, "No")).to.not.be.rejected;
 
-      const newNoWeight = resProp.noWeight + await oldRespect.balanceOf(signers[14].address);
+      const newNoWeight = (resProp.noWeight ?? 0n) + await oldRespect.balanceOf(signers[14].address);
 
       const updatedResProp = await cl.getProposal(resultProps[0].id);
       expect(updatedResProp.noWeight).to.be.equal(newNoWeight);

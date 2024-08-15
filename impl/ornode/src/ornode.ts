@@ -33,7 +33,8 @@ import {
   zVoteTypeToStr,
   zBytes,
   zBytesToVoteMemo,
-  ProposalRemovedEvent,
+  ExecStatus,
+  zExecStatusStr,
 } from "ortypes"
 import { TokenMtCfg } from "./config.js"
 import { IOrdb } from "./ordb/iordb.js";
@@ -162,8 +163,7 @@ export class ORNode implements IORNode {
       return zORNodePropStatus.Enum.ProposalExists;
     } else {
       // IMPORTANT: Ignoring createTs, createTxHash, executeTxHash on purpose - this we are tracking here ourselves and zProposalValid currently does not check if those values are valid.
-      const updated: Proposal = {
-        ...exProp,
+      const updated: Partial<Proposal> = {
         content: proposal.content,
         attachment: proposal.attachment
       };
@@ -241,32 +241,8 @@ export class ORNode implements IORNode {
     orec.on(orec.getEvent("Signal"), this._signalEventHandler);
     orec.on(orec.getEvent("WeightedVoteIn"), this._weightedVoteHandler);
     orec.on(orec.getEvent("EmptyVoteIn"), this._emptyVoteHandler);
-    orec.on(orec.getEvent("ProposalRemoved"), this._proposalRemovedHandler);
   }
 
-  private _proposalRemovedHandler: TypedListener<ProposalRemovedEvent.Event> =
-    async (
-      propId: PropId,
-      event: TypedEventLog<ProposalRemovedEvent.Event>
-    ) => {
-      console.debug("ProposalRemoved event. PropId: ", propId, "event: ", stringify(event));
-
-      const { txHash } = this._parseEventObject(event);
-      if (txHash === undefined) {
-        console.error("Was not able to retrieve tx hash in handler for event: ", stringify(event));
-
-        await this._db.proposals.updateProposal(
-          propId,
-          { removed: true }
-        );
-      } else {
-        await this._db.proposals.updateProposal(
-          propId,
-          { removed: true, removeTxHash: txHash }
-        );
-      }
-  }
-      
   private _weightedVoteHandler: TypedListener<WeightedVoteInEvent.Event> =
     async (
       propId: PropId,
@@ -350,7 +326,8 @@ export class ORNode implements IORNode {
         const prop: Proposal = {
           id: propId,
           createTs: Number(createTime),
-          createTxHash: txHash
+          createTxHash: txHash,
+          status: "NotExecuted"
         };
         await this._db.proposals.createProposal(prop);
       } catch (error) {
@@ -507,7 +484,13 @@ export class ORNode implements IORNode {
     ) => {
       console.debug("Exec event. PropId: ", propId, ", event: ", event);
       const { txHash } = this._parseEventObject(event);
-      await this._onExec(event.eventName, propId, retVal, txHash);
+      await this._onExec(
+        event.eventName,
+        propId,
+        retVal,
+        "Executed",
+        txHash
+      );
 
       await this._handleTokenEvents(propId, retVal, event, txHash);
     }
@@ -520,7 +503,13 @@ export class ORNode implements IORNode {
     ) => {
       console.debug("ExecutionFailed event. PropId: ", propId, ", event: ", event);
       const { txHash } = this._parseEventObject(event);
-      await this._onExec(event.eventName, propId, retVal, txHash);
+      await this._onExec(
+        event.eventName,
+        propId,
+        retVal,
+        "ExecutionFailed",
+        txHash
+      );
     }
 
   private _signalEventHandler: TypedListener<SignalEvent.Event> =
@@ -627,12 +616,13 @@ export class ORNode implements IORNode {
     eventName: string,
     propId: PropId,
     retVal: string,
+    status: "Executed" | "ExecutionFailed",
     txHash?: string
   ) {
     try {
       await this._db.proposals.updateProposal(
         propId,
-        { executeTxHash: txHash }
+        { executeTxHash: txHash, status }
       )
     } catch (err) {
       console.error("Error in _onExec ", eventName, ". Error: ", err);

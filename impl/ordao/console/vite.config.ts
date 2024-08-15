@@ -20,7 +20,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         docsIndex: resolve(__dirname, 'public/index.html'),
-        orconsole: resolve(__dirname, "public/classes/ORClient.html"),
+        orconsole: resolve(__dirname, "public/classes/ORClient.html")
       },
     },
   }

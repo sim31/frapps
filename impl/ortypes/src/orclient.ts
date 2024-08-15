@@ -182,17 +182,19 @@ export const zUnknownExecError = z.object({
 });
 
 export const zOnchainProp = zNOnchainProp.extend({
-  // Overriding with orclient types
-  status: zExecStatus,
   voteStatus: zVoteStatus,
   stage: zStage, 
-  execError: zExecError.optional()
+  execError: zExecError.optional(),
 });
 
 export const zProposal = zOnchainProp.merge(zProposedMsgBase.partial()).extend({
+  status: zExecStatus,
   decoded: zDecodedProposal.optional(),
   createTxHash: zTxHash.optional().describe("Hash of transaction which created this proposal"),
   executeTxHash: zTxHash.optional().describe("Hash of transaction which executed this proposal")
+}).partial({
+  noWeight: true,
+  yesWeight: true,
 });
 export type Proposal = z.infer<typeof zProposal>;
 
@@ -210,7 +212,7 @@ export const zGetVotesSpec = z.object({
   voterFilter: z.array(zEthAddress).optional(),
   minWeight: zVoteWeight.optional(),
   voteType: zValidVoteType.optional()
-});
+}).strict();
 export type GetVotesSpec = z.infer<typeof zGetVotesSpec>;
 
 export const zGetProposalsSpec = z.object({
@@ -219,7 +221,7 @@ export const zGetProposalsSpec = z.object({
   execStatFilter: z.array(zExecStatus).optional(),
   voteStatFilter: z.array(zVoteStatus).optional(),
   stageFilter: z.array(zStage).optional()
-});
+}).strict();
 /**
  * Some description
  */
@@ -230,7 +232,7 @@ export const zGetAwardsSpec = z.object({
   limit: z.number().int().gt(0).optional(),
   recipient: zEthAddress.optional(),
   burned: z.boolean().optional()
-});
+}).strict();
 export type GetAwardsSpec = z.infer<typeof zGetAwardsSpec>;
 
 export function isPropMsgFull(prop: Proposal): prop is ProposalMsgFull {

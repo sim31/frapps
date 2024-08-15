@@ -995,6 +995,8 @@ describe("Orec", function () {
 
       const prop = buildMintProp(accounts[16].address, 100);
       await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+
+      // TODO: should not allow adding more yes votes, when live proposals are in exec stage
     });
 
     it("should allow voting yes again after max_live_votes limit was reached once proposals voted on have expired", async function() {

@@ -28,10 +28,10 @@ import {
   ExecError,
 } from "../orclient.js";
 import {
-  zProposal as zNProposal,
+  zStoredProposal as zNProposal,
   zRespectBreakout as zNRespectBreakout,
   zRespectAccount as zNRespectAccount,
-  Proposal as NProposal,
+  StoredProposal as NProposal,
   zProposalValid as zNProposalFull,
   zRespectBreakoutAttachment,
   zRespectAccountAttachment,
@@ -51,7 +51,7 @@ import {
   zBigIntToBytes32,
 } from "../eth.js";
 import { z } from "zod";
-import { ConfigWithOrnode, ORContext as OrigORContext } from "../orContext.js";
+import { ConfigWithOrnode, ORContext as OrigORContext, OnchainPropNotFound } from "../orContext.js";
 import { addCustomIssue } from "../zErrorHandling.js";
 import { Optional } from "utility-types";
 import { MeetingNum, Factory as Respect1155Factory, zBurnRespectArgs, zMeetingNum, zMintRespectArgs, zTokenIdData } from "../respect1155.js";
@@ -87,12 +87,6 @@ export const voteStatusMap: Record<NVoteStatus, VoteStatus> = {
   [NVoteStatus.Failing]: "Failing",
   [NVoteStatus.Passed]: "Passed",
   [NVoteStatus.Passing]: "Passing"
-}
-
-export const execStatusMap: Record<NExecStatus, ExecStatus> = {
-  [NExecStatus.Executed]: "Executed",
-  [NExecStatus.ExecutionFailed]: "ExecutionFailed",
-  [NExecStatus.NotExecuted]: "NotExecuted"
 }
 
 export const zNAttachmentToMetadata = zPropAttachmentBase.transform((val, ctx) => {
@@ -397,10 +391,9 @@ export class NodeToClientTransformer {
   }
 
   async getExecStatus(
-    nodeProp: NProposal,
-    onchainProp: OnchainProp
+    nodeProp: NProposal
   ): Promise<{ status: ExecStatus, execError?: ExecError}> {
-    const status = execStatusMap[onchainProp.status];
+    const status = nodeProp.status;
     const returnVal = { status };
     if (
       status === "ExecutionFailed" &&
@@ -438,22 +431,39 @@ export class NodeToClientTransformer {
 
   async transformProp(nodeProp: NProposal): Promise<Proposal> {
     const propId = nodeProp.id;
-    const onchainProp = await this._ctx.getProposalFromChain(propId);
-    const { status, execError } = await this.getExecStatus(nodeProp, onchainProp)
-    const rProp: Proposal = {
-      ...onchainProp,
-      status: status,
-      execError,
-      stage: stageMap[onchainProp.stage],
-      voteStatus: voteStatusMap[onchainProp.voteStatus],
-    };
+    const onchainProp = await this._ctx.tryGetPropFromChain(propId);
+    const { status, execError } = await this.getExecStatus(nodeProp)
+    let rProp: Proposal;
+    if (onchainProp === undefined) {
+      if (status === "NotExecuted") {
+        throw new OnchainPropNotFound(nodeProp.id);
+      }
+      rProp = {
+        id: nodeProp.id,
+        status,
+        execError,
+        voteStatus: "Passed",   // If execution happened, it was passed
+        stage: "Expired",       // If execution happened it is expired
+        createTime: new Date(nodeProp.createTs)
+      };
+      
+    } else {
+      rProp = {
+        ...onchainProp,
+        status: status,
+        execError,
+        stage: stageMap[onchainProp.stage],
+        voteStatus: voteStatusMap[onchainProp.voteStatus],
+      };
+    }
+
+    rProp.createTxHash = nodeProp.createTxHash;
+    rProp.executeTxHash = nodeProp.executeTxHash;
 
     if (nodeProp.content !== undefined) {
       rProp.addr = nodeProp.content.addr;
       rProp.cdata = nodeProp.content.cdata;
       rProp.memo = nodeProp.content.memo;
-      rProp.createTxHash = nodeProp.createTxHash;
-      rProp.executeTxHash = nodeProp.executeTxHash;
       if (nodeProp.attachment !== undefined) {
         rProp.decoded = await this._zNProposalToDecodedProp.parseAsync(nodeProp);
       }

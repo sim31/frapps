@@ -49,6 +49,7 @@ type PostV1PutProposalInput = {
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
+        status?: ("NotExecuted" | "Executed" | "ExecutionFailed") | undefined;
     } | {
         id: string;
         content: {
@@ -69,6 +70,7 @@ type PostV1PutProposalInput = {
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
+        status?: ("NotExecuted" | "Executed" | "ExecutionFailed") | undefined;
     } | {
         id: string;
         content: {
@@ -90,6 +92,7 @@ type PostV1PutProposalInput = {
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
+        status?: ("NotExecuted" | "Executed" | "ExecutionFailed") | undefined;
     } | {
         id: string;
         content: {
@@ -110,6 +113,7 @@ type PostV1PutProposalInput = {
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
+        status?: ("NotExecuted" | "Executed" | "ExecutionFailed") | undefined;
     } | {
         id: string;
         content: {
@@ -130,6 +134,7 @@ type PostV1PutProposalInput = {
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
+        status?: ("NotExecuted" | "Executed" | "ExecutionFailed") | undefined;
     } | {
         id: string;
         content: {
@@ -150,6 +155,7 @@ type PostV1PutProposalInput = {
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
+        status?: ("NotExecuted" | "Executed" | "ExecutionFailed") | undefined;
     } | {
         id: string;
         content: {
@@ -169,6 +175,7 @@ type PostV1PutProposalInput = {
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
+        status?: ("NotExecuted" | "Executed" | "ExecutionFailed") | undefined;
     };
 };
 
@@ -235,62 +242,12 @@ type PostV1GetProposalResponse = {
             propDescription?: string | undefined;
             salt?: string | undefined;
         }) | undefined;
-        /** Unix timestamp. Should match onchain createTime of proposal */
-        createTs?: number | undefined;
+        createTs: number;
         /** Hash of transaction which created this proposal */
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
-    } | {
-        id: string;
-        content: {
-            addr: any;
-            cdata: string | any;
-            memo: string | any;
-        };
-        attachment: {
-            propType: "respectBreakout";
-            propTitle?: string | undefined;
-            propDescription?: string | undefined;
-            salt?: string | undefined;
-            groupNum: number;
-        } | {
-            propType: "respectAccount";
-            propTitle?: string | undefined;
-            propDescription?: string | undefined;
-            salt?: string | undefined;
-            mintReason: string;
-            mintTitle: string;
-        } | {
-            propType: "burnRespect";
-            propTitle?: string | undefined;
-            propDescription?: string | undefined;
-            salt?: string | undefined;
-            burnReason: string;
-        } | {
-            propType: "customSignal";
-            propTitle?: string | undefined;
-            propDescription?: string | undefined;
-            salt?: string | undefined;
-            link?: string | undefined;
-        } | {
-            propType: "tick";
-            propTitle?: string | undefined;
-            propDescription?: string | undefined;
-            salt?: string | undefined;
-            link?: string | undefined;
-        } | {
-            propType: "customCall";
-            propTitle?: string | undefined;
-            propDescription?: string | undefined;
-            salt?: string | undefined;
-        };
-        /** Unix timestamp. Should match onchain createTime of proposal */
-        createTs?: number | undefined;
-        /** Hash of transaction which created this proposal */
-        createTxHash?: string | undefined;
-        /** Hash of transaction which executed this proposal */
-        executeTxHash?: string | undefined;
+        status: "NotExecuted" | "Executed" | "ExecutionFailed";
     } | {
         id: string;
         content: {
@@ -305,12 +262,12 @@ type PostV1GetProposalResponse = {
             salt?: string | undefined;
             groupNum: number;
         };
-        /** Unix timestamp. Should match onchain createTime of proposal */
-        createTs?: number | undefined;
+        createTs: number;
         /** Hash of transaction which created this proposal */
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
+        status: "NotExecuted" | "Executed" | "ExecutionFailed";
     } | {
         id: string;
         content: {
@@ -326,12 +283,12 @@ type PostV1GetProposalResponse = {
             mintReason: string;
             mintTitle: string;
         };
-        /** Unix timestamp. Should match onchain createTime of proposal */
-        createTs?: number | undefined;
+        createTs: number;
         /** Hash of transaction which created this proposal */
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
+        status: "NotExecuted" | "Executed" | "ExecutionFailed";
     } | {
         id: string;
         content: {
@@ -346,12 +303,12 @@ type PostV1GetProposalResponse = {
             salt?: string | undefined;
             burnReason: string;
         };
-        /** Unix timestamp. Should match onchain createTime of proposal */
-        createTs?: number | undefined;
+        createTs: number;
         /** Hash of transaction which created this proposal */
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
+        status: "NotExecuted" | "Executed" | "ExecutionFailed";
     } | {
         id: string;
         content: {
@@ -366,12 +323,12 @@ type PostV1GetProposalResponse = {
             salt?: string | undefined;
             link?: string | undefined;
         };
-        /** Unix timestamp. Should match onchain createTime of proposal */
-        createTs?: number | undefined;
+        createTs: number;
         /** Hash of transaction which created this proposal */
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
+        status: "NotExecuted" | "Executed" | "ExecutionFailed";
     } | {
         id: string;
         content: {
@@ -386,12 +343,12 @@ type PostV1GetProposalResponse = {
             salt?: string | undefined;
             link?: string | undefined;
         };
-        /** Unix timestamp. Should match onchain createTime of proposal */
-        createTs?: number | undefined;
+        createTs: number;
         /** Hash of transaction which created this proposal */
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
+        status: "NotExecuted" | "Executed" | "ExecutionFailed";
     } | {
         id: string;
         content: {
@@ -405,12 +362,12 @@ type PostV1GetProposalResponse = {
             propDescription?: string | undefined;
             salt?: string | undefined;
         };
-        /** Unix timestamp. Should match onchain createTime of proposal */
-        createTs?: number | undefined;
+        createTs: number;
         /** Hash of transaction which created this proposal */
         createTxHash?: string | undefined;
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
+        status: "NotExecuted" | "Executed" | "ExecutionFailed";
     };
 } | {
     status: "error";
@@ -474,62 +431,12 @@ type PostV1GetProposalsResponse = {
                 propDescription?: string | undefined;
                 salt?: string | undefined;
             }) | undefined;
-            /** Unix timestamp. Should match onchain createTime of proposal */
-            createTs?: number | undefined;
+            createTs: number;
             /** Hash of transaction which created this proposal */
             createTxHash?: string | undefined;
             /** Hash of transaction which executed this proposal */
             executeTxHash?: string | undefined;
-        } | {
-            id: string;
-            content: {
-                addr: any;
-                cdata: string | any;
-                memo: string | any;
-            };
-            attachment: {
-                propType: "respectBreakout";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                groupNum: number;
-            } | {
-                propType: "respectAccount";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                mintReason: string;
-                mintTitle: string;
-            } | {
-                propType: "burnRespect";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                burnReason: string;
-            } | {
-                propType: "customSignal";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                link?: string | undefined;
-            } | {
-                propType: "tick";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                link?: string | undefined;
-            } | {
-                propType: "customCall";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-            };
-            /** Unix timestamp. Should match onchain createTime of proposal */
-            createTs?: number | undefined;
-            /** Hash of transaction which created this proposal */
-            createTxHash?: string | undefined;
-            /** Hash of transaction which executed this proposal */
-            executeTxHash?: string | undefined;
+            status: "NotExecuted" | "Executed" | "ExecutionFailed";
         } | {
             id: string;
             content: {
@@ -544,12 +451,12 @@ type PostV1GetProposalsResponse = {
                 salt?: string | undefined;
                 groupNum: number;
             };
-            /** Unix timestamp. Should match onchain createTime of proposal */
-            createTs?: number | undefined;
+            createTs: number;
             /** Hash of transaction which created this proposal */
             createTxHash?: string | undefined;
             /** Hash of transaction which executed this proposal */
             executeTxHash?: string | undefined;
+            status: "NotExecuted" | "Executed" | "ExecutionFailed";
         } | {
             id: string;
             content: {
@@ -565,12 +472,12 @@ type PostV1GetProposalsResponse = {
                 mintReason: string;
                 mintTitle: string;
             };
-            /** Unix timestamp. Should match onchain createTime of proposal */
-            createTs?: number | undefined;
+            createTs: number;
             /** Hash of transaction which created this proposal */
             createTxHash?: string | undefined;
             /** Hash of transaction which executed this proposal */
             executeTxHash?: string | undefined;
+            status: "NotExecuted" | "Executed" | "ExecutionFailed";
         } | {
             id: string;
             content: {
@@ -585,12 +492,12 @@ type PostV1GetProposalsResponse = {
                 salt?: string | undefined;
                 burnReason: string;
             };
-            /** Unix timestamp. Should match onchain createTime of proposal */
-            createTs?: number | undefined;
+            createTs: number;
             /** Hash of transaction which created this proposal */
             createTxHash?: string | undefined;
             /** Hash of transaction which executed this proposal */
             executeTxHash?: string | undefined;
+            status: "NotExecuted" | "Executed" | "ExecutionFailed";
         } | {
             id: string;
             content: {
@@ -605,12 +512,12 @@ type PostV1GetProposalsResponse = {
                 salt?: string | undefined;
                 link?: string | undefined;
             };
-            /** Unix timestamp. Should match onchain createTime of proposal */
-            createTs?: number | undefined;
+            createTs: number;
             /** Hash of transaction which created this proposal */
             createTxHash?: string | undefined;
             /** Hash of transaction which executed this proposal */
             executeTxHash?: string | undefined;
+            status: "NotExecuted" | "Executed" | "ExecutionFailed";
         } | {
             id: string;
             content: {
@@ -625,12 +532,12 @@ type PostV1GetProposalsResponse = {
                 salt?: string | undefined;
                 link?: string | undefined;
             };
-            /** Unix timestamp. Should match onchain createTime of proposal */
-            createTs?: number | undefined;
+            createTs: number;
             /** Hash of transaction which created this proposal */
             createTxHash?: string | undefined;
             /** Hash of transaction which executed this proposal */
             executeTxHash?: string | undefined;
+            status: "NotExecuted" | "Executed" | "ExecutionFailed";
         } | {
             id: string;
             content: {
@@ -644,12 +551,12 @@ type PostV1GetProposalsResponse = {
                 propDescription?: string | undefined;
                 salt?: string | undefined;
             };
-            /** Unix timestamp. Should match onchain createTime of proposal */
-            createTs?: number | undefined;
+            createTs: number;
             /** Hash of transaction which created this proposal */
             createTxHash?: string | undefined;
             /** Hash of transaction which executed this proposal */
             executeTxHash?: string | undefined;
+            status: "NotExecuted" | "Executed" | "ExecutionFailed";
         })[];
     };
 } | {
@@ -890,7 +797,7 @@ type PostV1GetVotesInput = {
         propFilter?: string[] | undefined;
         voterFilter?: string[] | undefined;
         minWeight?: number | undefined;
-        voteType?: ("None" | "Yes" | "No") | undefined;
+        voteType?: ("Yes" | "No") | undefined;
     };
 };
 

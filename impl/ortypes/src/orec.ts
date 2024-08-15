@@ -18,7 +18,6 @@ export {
   ExecutionFailedEvent,
   EmptyVoteInEvent,
   WeightedVoteInEvent,
-  ProposalRemovedEvent,
   SignalEvent
 } from "orec/typechain-types/contracts/Orec.js";
 export * from "orec/typechain-types/common.js";
@@ -52,6 +51,20 @@ export enum ExecStatus {
 }
 const zExecStatusEnum = z.nativeEnum(ExecStatus);
 export const zExecStatus = z.preprocess(val => zUint8.parse(val), zExecStatusEnum);
+
+export const zExecStatusStr = z.enum(["NotExecuted", "Executed", "ExecutionFailed"]);
+export type ExecStatusStr = z.infer<typeof zExecStatusStr>;
+
+export const execStatusMap: Record<ExecStatus, ExecStatusStr> = {
+  [ExecStatus.Executed]: "Executed",
+  [ExecStatus.ExecutionFailed]: "ExecutionFailed",
+  [ExecStatus.NotExecuted]: "NotExecuted"
+}
+
+export const zExecStatusToStr = zExecStatus.transform((s) => {
+  return execStatusMap[s];
+}).pipe(zExecStatusStr);
+
 
 export const zPropId = zBytes32;
 export type PropId = z.infer<typeof zPropId>;
@@ -134,7 +147,7 @@ export const zVoteWeight = z.coerce.bigint().gte(0n);
 export type VoteWeight = z.infer<typeof zVoteWeight>;
 
 export type CVote = Omit<
-  Awaited<ReturnType<Orec["votes"]>>,
+  Awaited<ReturnType<Orec["getLiveVote"]>>,
   keyof [bigint, bigint]
 >
 export const zVoteBase = z.object({
@@ -170,7 +183,6 @@ export const zPropStateBase = z.object({
   createTime: z.bigint().gt(0n),
   yesWeight: z.bigint(),
   noWeight: z.bigint(),
-  status: zExecStatus
 });
 export const zProposalState = preprocessResultOrObj(zPropStateBase);
 export type ProposalState = z.infer<typeof zProposalState>;
@@ -180,7 +192,6 @@ const zPropStateVerify = zProposalState.refine(val => {
     createTime: val.createTime,
     yesWeight: val.yesWeight,
     noWeight: val.noWeight,
-    status: BigInt(val.status)
   };
   return true;
 }, "Zod type does not match type from contract interface")

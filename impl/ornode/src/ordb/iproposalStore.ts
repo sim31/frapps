@@ -1,12 +1,10 @@
 import { PropId, TxHash } from "ortypes";
-import { GetProposalsSpec, zProposalBase } from "ortypes/ornode.js";
+import { GetProposalsSpec, zStoredProposal } from "ortypes/ornode.js";
 import { z } from "zod";
 
 export * from "ortypes/ornode.js";
 
-export const zProposal = zProposalBase.required({
-  createTs: true
-});
+export const zProposal = zStoredProposal;
 export type Proposal = z.infer<typeof zProposal>;
 
 export interface IProposalStore {
