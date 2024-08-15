@@ -3,9 +3,10 @@ pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./IRespect.sol";
 
 // Uncomment this line to use console.log
@@ -14,18 +15,16 @@ import "./IRespect.sol";
 /**
  * @title Optimistic Respect-based executive contract
  * @notice `respectContract` is expected to be a token contract which has
- * relatively stable distribution (it does not change at all (historical
- * distribution) or it at least does not change when voting on proposals is
- * happening). Otherwise, if for example, new respect is distributed 
- * while the vote on OREC proposal is happening, then some accounts
- * might end up voting with weights determined by the old distribution while
- * some might have weights determined by the new distribution (depending on
- * when they vote).
+ * relatively stable distribution (it does not change too much when voting on proposals is happening). This contract does not know when respect
+ * on someone gets updated.
  */
 contract Orec is Ownable {
     /// PropId = keccak256(Message)
     type PropId is bytes32;
-    using EnumerableSet for EnumerableSet.Bytes32Set;
+    type VoteWeight is uint128;
+    uint128 private constant _maxVoteWeight = type(uint128).max - 1;
+
+    using EnumerableMap for EnumerableMap.Bytes32ToBytes32Map;
 
     enum VoteType { None, Yes, No }
     enum ExecStatus { NotExecuted, Executed, ExecutionFailed }
@@ -34,7 +33,7 @@ contract Orec is Ownable {
 
     struct Vote {
         VoteType vtype;
-        uint256 weight;
+        VoteWeight weight;
     }
 
     enum RespectAPIType { IRespect, ERC20 }
@@ -108,11 +107,7 @@ contract Orec is Ownable {
 
     mapping (PropId => ProposalState) public proposals;
 
-    mapping (PropId => mapping (address => Vote)) public votes; 
-
-    mapping (address => PropId[]) public liveVotes;
-
-    mapping (address => EnumerableSet.Bytes32Set) private _liveVotes;
+    mapping (address => EnumerableMap.Bytes32ToBytes32Map) private _liveVotes;
 
     constructor(
         IERC165 respectContract_,
@@ -344,73 +339,128 @@ contract Orec is Ownable {
                || prop.status == ExecStatus.ExecutionFailed;
     }
 
+    function _votesEqual(Vote memory v1, Vote memory v2) internal pure returns (bool) {
+        return v1.vtype == v2.vtype &&
+               VoteWeight.unwrap(v1.weight) == VoteWeight.unwrap(v2.weight);
+    }
+
     function _vote(
         ProposalState storage p,
         PropId propId,
         VoteType voteType
     ) internal {
-        Vote storage currentVote = votes[propId][msg.sender];
-        Vote memory newVote;
+        EnumerableMap.Bytes32ToBytes32Map storage votesOfAcc = _liveVotes[msg.sender];        
+        Vote memory currentVote = _getVote(votesOfAcc, propId);
 
-        // TODO: is this really needed
-        if (currentVote.vtype == VoteType.No) {
+        Vote memory newVote = Vote(voteType, voteWeightOf(msg.sender));
+
+        if (_votesEqual(currentVote, newVote)) {
             revert AlreadyVoted(currentVote.vtype, voteType);
         }
 
-        if (voteType == VoteType.Yes) {
+        // Remove non-live votes, count yes votes on other proposals
+        uint liveYesCount = _updateLiveVotes(votesOfAcc, propId);
+
+        // Timing checks
+        if (newVote.vtype == VoteType.Yes) {
             if (!_isVotePeriod(p)) {
                 revert VotePeriodOver();
             }
-            if (currentVote.vtype == VoteType.Yes) {
-                revert AlreadyVoted(currentVote.vtype, voteType);
-            }
-            EnumerableSet.Bytes32Set storage voteSet = _liveVotes[msg.sender];
-            _updateLiveVotes(voteSet);
-            // console.log("Amount of live votes: ", voteSet.length());
-            if (voteSet.length() >= maxLiveVotes) {
+            if (liveYesCount >= maxLiveVotes) {
                 revert MaxLiveYesVotesExceeded();
             }
-            voteSet.add(PropId.unwrap(propId));
-
-            uint256 w = voteWeightOf(msg.sender);
-            newVote = Vote(VoteType.Yes, w);
-
-            // console.log("Voting yes. Account: ", msg.sender, ", weight: ", w);
-
-            p.yesWeight += w;
-            votes[propId][msg.sender] = newVote;
-        } else if (voteType == VoteType.No) {
+        } else if (newVote.vtype == VoteType.No) {
             if (!_isVoteActive(p)) {
                 revert ProposalVoteInactive();
             }
-            // console.log("Voting no. Account: ", msg.sender);
-            if (currentVote.vtype == VoteType.Yes) {
-                newVote = Vote(VoteType.No, currentVote.weight);
-                p.yesWeight -= uint256(currentVote.weight);
-                p.noWeight += uint256(currentVote.weight);
-            } else {
-                uint256 weight = voteWeightOf(msg.sender);
-                newVote = Vote(VoteType.No, weight);
-                p.noWeight += weight;
-            }
-            votes[propId][msg.sender] = newVote;
         } else {
             revert InvalidVote();
         }
 
-        if (newVote.weight == 0) {
+        // Update vote
+        _setVote(votesOfAcc, propId, p, currentVote, newVote);
+
+        // Emit events
+        if (VoteWeight.unwrap(newVote.weight) == 0) {
             emit EmptyVoteIn(propId, msg.sender, newVote.vtype);
         } else {
             emit WeightedVoteIn(propId, msg.sender, newVote);
         }
     }
 
-    function updateLiveVotes(address account) public {
-        EnumerableSet.Bytes32Set storage voteSet = _liveVotes[account];
-        _updateLiveVotes(voteSet);
+    /**
+     * Return current vote of voter on currently live proposal (identified by propId).
+     */
+    function getLiveVote(PropId propId, address voter) public view returns (Vote memory) {
+        EnumerableMap.Bytes32ToBytes32Map storage voteMap = _liveVotes[voter];
+        return _getVote(voteMap, propId);
     }
 
-    function voteWeightOf(address account) public view returns (uint256) {
+    function _getVote(
+        EnumerableMap.Bytes32ToBytes32Map storage voteMap,
+        PropId propId
+    ) internal view returns (Vote memory) {
+        (bool success, bytes32 value) = voteMap.tryGet(PropId.unwrap(propId));
+        if (!success) {
+            return Vote(VoteType.None, VoteWeight.wrap(0));
+        } else {
+            return _bytes32ToVote(value);
+        }
+    }
+
+    function _setVote(
+        EnumerableMap.Bytes32ToBytes32Map storage voteMap,
+        PropId propId,
+        ProposalState storage p,
+        Vote memory oldVote,
+        Vote memory newVote
+    ) internal {
+        // Subtract old vote
+        if (oldVote.vtype == VoteType.Yes) {
+            p.yesWeight -= VoteWeight.unwrap(oldVote.weight);
+        } else if (oldVote.vtype == VoteType.No) {
+            p.noWeight -= VoteWeight.unwrap(oldVote.weight);
+        }
+
+        // Add new vote
+        if (newVote.vtype == VoteType.Yes) {
+            p.yesWeight += VoteWeight.unwrap(newVote.weight);
+        } else if (newVote.vtype == VoteType.No) {
+            p.noWeight += VoteWeight.unwrap(newVote.weight);
+        }
+
+        // Set vote in vote map
+        voteMap.set(
+            PropId.unwrap(propId),
+            _voteToBytes32(newVote)
+        );
+    }
+
+    /**
+     * First least-significant 16 bytes is vote weight.
+     * 17th byte is vote type.
+     */
+    function _bytes32ToVote(bytes32 value) private pure returns (Vote memory) {
+        // https://docs.soliditylang.org/en/v0.8.24/types.html#conversions-between-elementary-types
+        uint128 w = uint128(uint256(value));
+        assert(w <= _maxVoteWeight);
+        VoteType vt = VoteType(uint8(uint256(value) >> 128));
+        assert(vt == VoteType.Yes || vt == VoteType.No);
+        return Vote(vt, VoteWeight.wrap(w));
+    }
+    function _voteToBytes32(Vote memory v) private pure returns (bytes32) {
+        uint128 weight = VoteWeight.unwrap(v.weight);
+        uint256 b = (uint256(v.vtype) << 128) | (uint256(weight));
+        return bytes32(b);
+    }
+
+    function voteWeightOf(address account) public view returns (VoteWeight) {
+        uint256 respect = respectOf(account);
+        uint128 w = uint128(Math.min(respect, _maxVoteWeight));
+        return VoteWeight.wrap(w);
+    }
+
+    function respectOf(address account) public view returns (uint256) {
         if (_respectAPType == RespectAPIType.IRespect) {
             return (IRespect(respectContract)).respectOf(account);
         } else {
@@ -418,22 +468,35 @@ contract Orec is Ownable {
         }
     }
 
-    function _updateLiveVotes(EnumerableSet.Bytes32Set storage voteSet) internal {
-        uint len = voteSet.length();
+    /// @return liveYesCount - number of live yes votes
+    function _updateLiveVotes(
+        EnumerableMap.Bytes32ToBytes32Map storage voteMap,
+        PropId currentProp
+    ) internal returns (uint) {
+        uint len = voteMap.length();
         PropId[] memory toRemove = new PropId[](len);
         uint removeCount = 0;
+        uint liveYesCount = 0;
         for (uint i = 0; i < len; i++) {
-            PropId propId = PropId.wrap(voteSet.at(i));
+            (bytes32 key, bytes32 value) = voteMap.at(i);
+            PropId propId = PropId.wrap(key);
             ProposalState storage prop = proposals[propId];
             if (!_proposalExists(prop) || _isExpired(prop)) {
                 toRemove[removeCount] = propId;
                 removeCount += 1;
+            } else {
+                Vote memory v = _bytes32ToVote(value);
+                if (v.vtype == VoteType.Yes && PropId.unwrap(propId) != PropId.unwrap(currentProp)) {
+                    liveYesCount += 1;
+                }
             }
         }
 
         for (uint i = 0; i < removeCount; i++) {
-            voteSet.remove(PropId.unwrap(toRemove[i]));
+            voteMap.remove(PropId.unwrap(toRemove[i]));
         }
+
+        return liveYesCount;
     }
 
     function _getProposal(PropId propId) internal view returns (ProposalState storage) {

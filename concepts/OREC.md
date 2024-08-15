@@ -24,7 +24,7 @@ It is optimistic because it trusts a minority of contributors who take the initi
 3. After `voting_period` from proposal creation, anyone can vote `NO`, but no one can vote `YES` on a proposal. This lasts for `veto_period`;
 4. Every vote is weighted by the amount of Respect a voter has according to `respect_contract` at the time of the vote;
 5. Proposal is said to be passed if all of these conditions hold:
-   1. `voting_period + veto_period` has passed since proposal creation;
+   1. `voting_period + veto_period` time has passed since proposal creation;
    2. At least `prop_weight_threshold` of Respect is voting `YES`;
    3. `yes_weight > 2 * no_weight`, where `yes_weight` is amount of Respect voting `YES` and `no_weight` is amount of Respect voting `NO`;
 6. Only passed proposals can be executed. Execution can be trigerred only once and anyone can trigger it;
