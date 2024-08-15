@@ -27,7 +27,6 @@ contract Orec is Ownable {
     using EnumerableMap for EnumerableMap.Bytes32ToBytes32Map;
 
     enum VoteType { None, Yes, No }
-    enum ExecStatus { NotExecuted, Executed, ExecutionFailed }
     enum Stage { Voting, Veto, Execution, Expired }
     enum VoteStatus { Passing, Failing, Passed, Failed }
 
@@ -56,7 +55,6 @@ contract Orec is Ownable {
         uint256 createTime;
         uint256 yesWeight;
         uint256 noWeight;
-        ExecStatus status;
     }
 
     struct Proposal {
@@ -78,7 +76,6 @@ contract Orec is Ownable {
     event Executed(PropId indexed propId, bytes retVal);
     event ExecutionFailed(PropId indexed propId, bytes retVal);
     event ProposalCreated(PropId indexed propId);
-    event ProposalRemoved(PropId indexed propId);
     event Signal(uint8 indexed signalType, bytes data);
 
     error VoteEnded();
@@ -151,37 +148,27 @@ contract Orec is Ownable {
         if (_getVoteStatus(prop) != VoteStatus.Passed) {
             revert ProposalNotPassed();
         }
-        if (prop.status != ExecStatus.NotExecuted) {
-            revert ProposalAlreadyExecuted();
-        }
-
         (bool success, bytes memory retVal) = message.addr.call(message.cdata);
 
         if (success) {
             emit Executed(pId, retVal);
-            prop.status = ExecStatus.Executed;
         } else {
             emit ExecutionFailed(pId, retVal);
-            prop.status = ExecStatus.ExecutionFailed;
         }
+
+        delete proposals[pId];
 
         return success;
-    }
-
-    function remove(PropId propId) public {
-        ProposalState storage prop = _getProposal(propId);
-
-        if (!_isExpired(prop)) {
-            revert ProposalNotExpired();
-        }
-
-        delete proposals[propId];
-        emit ProposalRemoved(propId);
     }
 
     function proposalExists(PropId propId) public view returns (bool) {
         ProposalState storage p = proposals[propId];
         return _proposalExists(p);
+    }
+
+    function isLive(PropId propId) public view returns (bool) {
+        ProposalState storage p = proposals[propId];
+        return _isLive(p);
     }
 
     function isVotePeriod(PropId propId) public view returns (bool) {
@@ -205,11 +192,10 @@ contract Orec is Ownable {
         if (vstatus == VoteStatus.Failed) {
             return Stage.Expired;
         } else if (vstatus == VoteStatus.Passed) {
-            if (p.status == ExecStatus.Executed || p.status == ExecStatus.ExecutionFailed) {
-                return Stage.Expired;
-            } else {
-                return Stage.Execution;
-            }
+            // If proposal is passed then it must be in execution stage,
+            // because we don't store proposals for which execute has been called
+            // (so stage cannot be expired here).
+            return Stage.Execution;
         } else if (_isVotePeriod(p)) {
             return Stage.Voting;
         } else {
@@ -226,11 +212,6 @@ contract Orec is Ownable {
     function isVoteActive(PropId propId) public view returns (bool) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
         return _isVoteActive(p);
-    }
-
-    function isExpired(PropId propId) public view returns (bool) {
-        ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
-        return _isExpired(p);
     }
 
     function setRespectContract(IERC165 respect) public onlyOwner {
@@ -288,7 +269,7 @@ contract Orec is Ownable {
     }
 
     function _propose(PropId propId, ProposalState storage p) private {
-        assert(p.yesWeight == 0 && p.noWeight == 0 && p.status == ExecStatus.NotExecuted);
+        assert(p.yesWeight == 0 && p.noWeight == 0);
         p.createTime = block.timestamp;
         emit ProposalCreated(propId);
 }
@@ -326,17 +307,10 @@ contract Orec is Ownable {
     }
 
     function _isLive(ProposalState storage prop) internal view returns (bool) {
-        return !_isExpired(prop);
-    }
-
-    function _isExpired(ProposalState storage prop) internal view returns (bool) {
-        return _isExpired(prop, _getVoteStatus(prop));
-    }
-
-    function _isExpired(ProposalState storage prop, VoteStatus vstatus) internal view returns (bool) {
-        return vstatus == VoteStatus.Failed
-               || prop.status == ExecStatus.Executed
-               || prop.status == ExecStatus.ExecutionFailed;
+        // If it is executed then it won't be stored.
+        // So if proposal exists and it is not failed then proposal is live.
+        bool exists = _proposalExists(prop);
+        return exists && _getVoteStatus(prop) != VoteStatus.Failed;
     }
 
     function _votesEqual(Vote memory v1, Vote memory v2) internal pure returns (bool) {
@@ -481,7 +455,7 @@ contract Orec is Ownable {
             (bytes32 key, bytes32 value) = voteMap.at(i);
             PropId propId = PropId.wrap(key);
             ProposalState storage prop = proposals[propId];
-            if (!_proposalExists(prop) || _isExpired(prop)) {
+            if (!_isLive(prop)) {
                 toRemove[removeCount] = propId;
                 removeCount += 1;
             } else {
