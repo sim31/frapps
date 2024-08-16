@@ -14,14 +14,24 @@ import "./IRespect.sol";
 
 /**
  * @title Optimistic Respect-based executive contract
- * @notice `respectContract` is expected to be a token contract which has
- * relatively stable distribution (it does not change too much when voting on proposals is happening). This contract does not know when respect
- * on someone gets updated.
+ * @notice This is a contract that executes transactions on behalf of a DAO, that has a non-transferrable reputation token (which we call “Respect” here).
+ * It is optimistic because it trusts a minority of contributors who take the initiative to act on behalf of a DAO even if they hold a small amount of Respect.
+ * The security comes from a time delay during which other contributors can easily block a transaction,
+ * if they collectively have a significant enough amount of Respect relative to what the initiators have.
+ * 
+ * @dev `respectContract` is expected to be a token contract which has
+ * relatively stable distribution (it does not change too much when voting on proposals is happening).
+ * This contract does not know when respect of someone gets updated and it does not try
+ * to make voting power distribution among accounts to always accurately reflect most recent respect distribution.
+ * That's why it is best to use non-transferrable token contract as `respectContract`.
+ * Ideally `respectContract` would be some old Respect distribution created over a long period of time.
  */
 contract Orec is Ownable {
     /// PropId = keccak256(Message)
     type PropId is bytes32;
     type VoteWeight is uint128;
+    /// @dev Caping weight of individual vote. Even though respect balances could be bigger amounts,
+    /// they are unlikely to be reached. And this enables some storage optimizations.
     uint128 private constant _maxVoteWeight = type(uint128).max - 1;
 
     using EnumerableMap for EnumerableMap.Bytes32ToBytes32Map;
@@ -35,6 +45,7 @@ contract Orec is Ownable {
         VoteWeight weight;
     }
 
+    /// Types of respect token interface supported
     enum RespectAPIType { IRespect, ERC20 }
 
     struct Message {
@@ -92,18 +103,21 @@ contract Orec is Ownable {
     error MaxLiveYesVotesExceeded();
     error UnsupportedRespectContract();
 
-    uint64 public voteLen = 1 days;
-    uint64 public vetoLen = 6 days;
-    uint256 public minWeight = 256;
+    /// Length of a voting period
+    uint64 public voteLen;
+    /// Length of a veto period
+    uint64 public vetoLen;
+    /// Minimum vote weight that proposal has to acquire before it can become passing
+    uint256 public minWeight;
 
+    /// Contract for Respect token which determines vote weights of accounts
     address public respectContract;
     RespectAPIType internal _respectAPType;
 
-    /// It's actually max live *yes* votes
-    uint8 public maxLiveVotes;
+    /// Maximum number of yes votes on live proposals. This is security mechanism for preventing proposal spam attacks.
+    uint8 public maxLiveYesVotes;
 
     mapping (PropId => ProposalState) public proposals;
-
     mapping (address => EnumerableMap.Bytes32ToBytes32Map) private _liveVotes;
 
     constructor(
@@ -117,10 +131,10 @@ contract Orec is Ownable {
         voteLen = voteLenSeconds_;
         vetoLen = vetoLenSeconds_;
         minWeight = minWeight_;
-        maxLiveVotes = maxLiveYesVotes_;
+        maxLiveYesVotes = maxLiveYesVotes_;
     }
 
-    /// Vote for proposal. Creates it if it doesn't exist
+    /// Vote for proposal. Creates it if it doesn't exist.
     function vote(PropId propId, VoteType voteType, bytes calldata) public {
         ProposalState storage p = proposals[propId];
 
@@ -140,6 +154,10 @@ contract Orec is Ownable {
         _propose(propId, p);
     }
 
+    /**
+     * Execute a passed proposal
+     * @dev If modifying take care to avoid reentrancy.
+     */
     function execute(Message calldata message) public returns (bool) {
         PropId pId = proposalId(message);
 
@@ -148,16 +166,16 @@ contract Orec is Ownable {
         if (_getVoteStatus(prop) != VoteStatus.Passed) {
             revert ProposalNotPassed();
         }
-        (bool success, bytes memory retVal) = message.addr.call(message.cdata);
 
+        // Delete proposal *before* executing it to avoid reentrancy.
+        delete proposals[pId];
+
+        (bool success, bytes memory retVal) = message.addr.call(message.cdata);
         if (success) {
             emit Executed(pId, retVal);
         } else {
             emit ExecutionFailed(pId, retVal);
         }
-
-        delete proposals[pId];
-
         return success;
     }
 
@@ -166,6 +184,7 @@ contract Orec is Ownable {
         return _proposalExists(p);
     }
 
+    /// Proposal is said to be expired if it is rejected or its execution has been triggered. Otherwise proposal is said to be *live*
     function isLive(PropId propId) public view returns (bool) {
         ProposalState storage p = proposals[propId];
         return _isLive(p);
@@ -232,7 +251,7 @@ contract Orec is Ownable {
     }
 
     function setMaxLiveVotes(uint8 newMaxLiveVotes) public onlyOwner {
-        maxLiveVotes = newMaxLiveVotes;
+        maxLiveYesVotes = newMaxLiveVotes;
     }
 
     function proposalId(Message calldata message) public pure returns (PropId) {
@@ -340,7 +359,7 @@ contract Orec is Ownable {
             if (!_isVotePeriod(p)) {
                 revert VotePeriodOver();
             }
-            if (liveYesCount >= maxLiveVotes) {
+            if (liveYesCount >= maxLiveYesVotes) {
                 revert MaxLiveYesVotesExceeded();
             }
         } else if (newVote.vtype == VoteType.No) {
@@ -348,6 +367,7 @@ contract Orec is Ownable {
                 revert ProposalVoteInactive();
             }
         } else {
+            // Not allowing VoteType.None votes
             revert InvalidVote();
         }
 
@@ -390,10 +410,12 @@ contract Orec is Ownable {
         Vote memory newVote
     ) internal {
         // Subtract old vote
-        if (oldVote.vtype == VoteType.Yes) {
-            p.yesWeight -= VoteWeight.unwrap(oldVote.weight);
-        } else if (oldVote.vtype == VoteType.No) {
-            p.noWeight -= VoteWeight.unwrap(oldVote.weight);
+        if (VoteWeight.unwrap(oldVote.weight) > 0) {
+            if (oldVote.vtype == VoteType.Yes) {
+                p.yesWeight -= VoteWeight.unwrap(oldVote.weight);
+            } else if (oldVote.vtype == VoteType.No) {
+                p.noWeight -= VoteWeight.unwrap(oldVote.weight);
+            }
         }
 
         // Add new vote
@@ -401,6 +423,9 @@ contract Orec is Ownable {
             p.yesWeight += VoteWeight.unwrap(newVote.weight);
         } else if (newVote.vtype == VoteType.No) {
             p.noWeight += VoteWeight.unwrap(newVote.weight);
+        } else {
+            // Not allowing VoteType.None votes
+            revert InvalidVote();
         }
 
         // Set vote in vote map
@@ -411,7 +436,7 @@ contract Orec is Ownable {
     }
 
     /**
-     * First least-significant 16 bytes is vote weight.
+     * @dev First least-significant 16 bytes is vote weight.
      * 17th byte is vote type.
      */
     function _bytes32ToVote(bytes32 value) private pure returns (Vote memory) {
