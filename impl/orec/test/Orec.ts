@@ -139,7 +139,10 @@ async function deployOrecWithRespAndProposals() {
   return r;
 }
 
-async function _deployOrecWithProposalsAndBalances(tokenType: TokenType) {
+async function _deployOrecWithProposalsAndBalances(
+  tokenType: TokenType,
+  transferOwnershipToOrec: boolean = true
+) {
   const vars = tokenType === "MintableToken"
     ? await loadFixture(deployOrecWithProposals)
     : await loadFixture(deployOrecWithRespAndProposals);
@@ -159,13 +162,19 @@ async function _deployOrecWithProposalsAndBalances(tokenType: TokenType) {
   await expect(token.mint(accounts[10], 5)).to.not.be.reverted;
 
   // At this point let orec do further mints and burns
-  await token.transferOwnership(orec);
+  if (transferOwnershipToOrec) {
+    await token.transferOwnership(orec);
+  }
 
   return vars;
 }
 
 async function deployOrecWithProposalsAndBalances() {
   return await _deployOrecWithProposalsAndBalances("MintableToken");
+}
+
+async function deployOrecWithProposalsAndBalancesNoTr() {
+  return await _deployOrecWithProposalsAndBalances("MintableToken", false);
 }
 
 async function deployOrecRespWithProposalsAndBalances() {
@@ -200,11 +209,17 @@ describe("Orec", function () {
     proposal: PropId | Orec.MessageStruct,
     voter: Signer,
     vtype: VoteType,
-    memo: string = ""
+    memo: string = "",
+    expectedErrorName?: string
   ) {
     const pid = isPropId(proposal) ? proposal : propId(proposal);
     const acc = orec.connect(voter);
-    await expect(acc.vote(pid, vtype, toUtf8Bytes(memo))).to.be.reverted;
+    if (expectedErrorName === undefined) {
+      await expect(acc.vote(pid, vtype, toUtf8Bytes(memo))).to.be.reverted
+    } else {
+      await expect(acc.vote(pid, vtype, toUtf8Bytes(memo)))
+        .to.be.revertedWithCustomError(orec, expectedErrorName);
+    }
   }
 
   async function expectDeleted(orec: Orec, propId: PropId) {
@@ -519,11 +534,103 @@ describe("Orec", function () {
       })
 
       // TODO:
-      it("should not allow voting again with the same weight");
-      it("should allow updating your yes vote with updated respect to bigger amount")
-      it("should allow updating your yes vote with updated respect to smaller amount")
-      it("should allow updating your no vote with updated respect to bigger amount")
-      it("should allow updating your no vote with updated respect to smaller amount")
+      it("should not allow voting again with the same weight", async function() {
+        const { orec, accounts, token, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+        const prop1 = buildMintProp(accounts[0].address, 10);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.Yes);
+        await expectVoteReverted(orec, token, prop1.id, accounts[6], VoteType.Yes, "", "AlreadyVoted");
+      });
+      it("should allow updating your yes vote with updated respect to bigger amount", async function() {
+        const { orec, accounts, token, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalancesNoTr);
+
+        expect(await token.balanceOf(accounts[6].address)).to.be.equal(89);
+
+        const prop1 = buildMintProp(accounts[0].address, 10);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.Yes);
+        const prop1State = await orec.proposals(prop1.id);
+        expect(prop1State.yesWeight).to.be.equal(89);
+
+        await token.mint(accounts[6].address, 10);
+        expect(await token.balanceOf(accounts[6].address)).to.be.equal(99);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.Yes);
+        const prop1State2 = await orec.proposals(prop1.id);
+        expect(prop1State2.yesWeight).to.be.equal(99);
+      });
+      it("should allow updating your yes vote with updated respect to smaller amount", async function() {
+        const { orec, accounts, token, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalancesNoTr);
+
+        expect(await token.balanceOf(accounts[6].address)).to.be.equal(89);
+
+        const prop1 = buildMintProp(accounts[0].address, 10);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.Yes);
+        const prop1State = await orec.proposals(prop1.id);
+        expect(prop1State.yesWeight).to.be.equal(89);
+
+        await token.burn(accounts[6].address, 10);
+        expect(await token.balanceOf(accounts[6].address)).to.be.equal(79);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.Yes);
+        const prop1State2 = await orec.proposals(prop1.id);
+        expect(prop1State2.yesWeight).to.be.equal(79);
+      })
+      it("should allow updating your no vote with updated respect to bigger amount", async function() {
+        const { orec, accounts, token, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalancesNoTr);
+
+        expect(await token.balanceOf(accounts[6].address)).to.be.equal(89);
+
+        const prop1 = buildMintProp(accounts[0].address, 10);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.No);
+        const prop1State = await orec.proposals(prop1.id);
+        expect(prop1State.noWeight).to.be.equal(89);
+
+        await token.mint(accounts[6].address, 10);
+        expect(await token.balanceOf(accounts[6].address)).to.be.equal(99);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.No);
+        const prop1State2 = await orec.proposals(prop1.id);
+        expect(prop1State2.noWeight).to.be.equal(99);
+
+      });
+      it("should allow updating your no vote with updated respect to smaller amount", async function() {
+        const { orec, accounts, token, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalancesNoTr);
+
+        expect(await token.balanceOf(accounts[6].address)).to.be.equal(89);
+
+        const prop1 = buildMintProp(accounts[0].address, 10);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.No);
+        const prop1State = await orec.proposals(prop1.id);
+        expect(prop1State.noWeight).to.be.equal(89);
+
+        await token.burn(accounts[6].address, 10);
+        expect(await token.balanceOf(accounts[6].address)).to.be.equal(79);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.No);
+        const prop1State2 = await orec.proposals(prop1.id);
+        expect(prop1State2.noWeight).to.be.equal(79);
+      })
+      it("should set new vote to updated respect balance when switching vote", async function() {
+        const { orec, accounts, token, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalancesNoTr);
+
+        expect(await token.balanceOf(accounts[6].address)).to.be.equal(89);
+
+        const prop1 = buildMintProp(accounts[0].address, 10);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.No);
+        const prop1State = await orec.proposals(prop1.id);
+        expect(prop1State.noWeight).to.be.equal(89);
+        expect(prop1State.yesWeight).to.be.equal(0);
+
+        await token.burn(accounts[6].address, 10);
+        expect(await token.balanceOf(accounts[6].address)).to.be.equal(79);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.Yes);
+        const prop1State2 = await orec.proposals(prop1.id);
+        expect(prop1State2.noWeight).to.be.equal(0);
+        expect(prop1State2.yesWeight).to.be.equal(79);
+
+        await token.mint(accounts[6].address, 100);
+        expect(await token.balanceOf(accounts[6].address)).to.be.equal(179);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.No);
+        const prop1State3 = await orec.proposals(prop1.id);
+        expect(prop1State3.noWeight).to.be.equal(179);
+        expect(prop1State3.yesWeight).to.be.equal(0);
+      });
     });
 
     describe("vetoTime (period: [createTime + voteLen, createTime + voteLen + vetoLen)", function() {
@@ -538,11 +645,11 @@ describe("Orec", function () {
         await time.increase(voteLen + 1n);
         expect(await orec.getStage(props[0].id)).to.be.equal(Stage.Veto);
 
-        await expectVoteReverted(orec, token, props[0].id, accounts[1], VoteType.Yes);
+        await expectVoteReverted(orec, token, props[0].id, accounts[1], VoteType.Yes, "", "VotePeriodOver");
 
         await time.increase(MIN_1);
 
-        await expectVoteReverted(orec, token, props[0].id, accounts[2], VoteType.Yes);
+        await expectVoteReverted(orec, token, props[0].id, accounts[2], VoteType.Yes, "", "VotePeriodOver");
       });
       it("should not allow voting with none vtype", async function() {
         const { orec, accounts, token, voteLen, proposals: props } = await loadFixture(deployOrecWithProposalsAndBalances);
@@ -636,18 +743,97 @@ describe("Orec", function () {
         await time.increase(voteLen + HOUR_1);
         expect(await orec.getStage(props[0].id)).to.be.equal(Stage.Veto);
 
-        await expectVoteReverted(orec,token, props[0].id, accounts[2], VoteType.Yes);
+        await expectVoteReverted(orec,token, props[0].id, accounts[2], VoteType.Yes, "", "VotePeriodOver");
 
         await expectVoteCounted(orec, token, props[0].id, accounts[0], VoteType.No);
         await time.increase(MIN_1);
-        await expectVoteReverted(orec, token, props[0].id, accounts[0], VoteType.Yes);
+        await expectVoteReverted(orec, token, props[0].id, accounts[0], VoteType.Yes, "", "VotePeriodOver");
 
         expect(await orec.getStage(props[0].id)).to.be.equal(Stage.Veto);
       })
 
-      it("should not allow voting no again with the same weight");
-      it("should allow updating your no vote with updated respect to bigger amount")
-      it("should allow updating your no vote with updated respect to smaller amount")
+      it("should not allow voting no again with the same weight", async function() {
+        const { orec, accounts, token, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalancesNoTr);
+
+        const prop1 = buildMintProp(accounts[0].address, 10);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.Yes);
+        await expectVoteCounted(orec, token, prop1.id, accounts[0], VoteType.No);
+
+        // Go to veto stage
+        await time.increase(DAY_1);
+        expect(await orec.getStage(prop1.id)).to.be.equal(Stage.Veto);
+
+        await expectVoteCounted(orec, token, prop1.id, accounts[1], VoteType.No);
+
+
+        await expectVoteReverted(orec, token, prop1.id, accounts[0], VoteType.No, "", "AlreadyVoted");
+        await expectVoteReverted(orec, token, prop1.id, accounts[1], VoteType.No, "", "AlreadyVoted");
+      });
+      it("should allow updating your no vote with updated respect to bigger amount", async function() {
+        const { orec, accounts, token, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalancesNoTr);
+
+        const prop1 = buildMintProp(accounts[0].address, 10);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.Yes);
+        await expectVoteCounted(orec, token, prop1.id, accounts[0], VoteType.No);
+
+        const prop1State1 = await orec.proposals(prop1.id);
+        expect(prop1State1.yesWeight).to.be.equal(89);
+        expect(prop1State1.noWeight).to.be.equal(5);
+
+        // Go to veto stage
+        await time.increase(DAY_1);
+        expect(await orec.getStage(prop1.id)).to.be.equal(Stage.Veto);
+
+        await expectVoteCounted(orec, token, prop1.id, accounts[1], VoteType.No);
+
+        const prop1State2 = await orec.proposals(prop1.id);
+        expect(prop1State2.yesWeight).to.be.equal(89);
+        expect(prop1State2.noWeight).to.be.equal(5 + 8);
+
+        // Update balances
+        await token.mint(accounts[0], 1);
+        await token.mint(accounts[1], 2);
+
+        await expectVoteCounted(orec, token, prop1.id, accounts[0], VoteType.No);
+        await expectVoteCounted(orec, token, prop1.id, accounts[1], VoteType.No);
+
+        const prop1State3 = await orec.proposals(prop1.id);
+        expect(prop1State3.yesWeight).to.be.equal(89);
+        expect(prop1State3.noWeight).to.be.equal(6 + 10);
+      })
+      it("should allow updating your no vote with updated respect to smaller amount", async function() {
+        const { orec, accounts, token, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalancesNoTr);
+
+        const prop1 = buildMintProp(accounts[0].address, 10);
+        await expectVoteCounted(orec, token, prop1.id, accounts[6], VoteType.Yes);
+        await expectVoteCounted(orec, token, prop1.id, accounts[0], VoteType.No);
+
+        const prop1State1 = await orec.proposals(prop1.id);
+        expect(prop1State1.yesWeight).to.be.equal(89);
+        expect(prop1State1.noWeight).to.be.equal(5);
+
+        // Go to veto stage
+        await time.increase(DAY_1);
+        expect(await orec.getStage(prop1.id)).to.be.equal(Stage.Veto);
+
+        await expectVoteCounted(orec, token, prop1.id, accounts[1], VoteType.No);
+
+        const prop1State2 = await orec.proposals(prop1.id);
+        expect(prop1State2.yesWeight).to.be.equal(89);
+        expect(prop1State2.noWeight).to.be.equal(5 + 8);
+
+        // Update balances
+        await token.burn(accounts[0], 1);
+        await token.burn(accounts[1], 2);
+
+        await expectVoteCounted(orec, token, prop1.id, accounts[0], VoteType.No);
+        await expectVoteCounted(orec, token, prop1.id, accounts[1], VoteType.No);
+
+        const prop1State3 = await orec.proposals(prop1.id);
+        expect(prop1State3.yesWeight).to.be.equal(89);
+        expect(prop1State3.noWeight).to.be.equal(4 + 6);
+
+      })
     });
 
     describe("executeTime (createTime+voteLen+vetoLen or later)", function() {
@@ -662,13 +848,13 @@ describe("Orec", function () {
 
         // Case when proposal is passed
         expect(await orec.getStage(props[0].id)).to.be.equal(Stage.Execution);
-        await expectVoteReverted(orec, token, props[0].id, accounts[2], VoteType.Yes);
+        await expectVoteReverted(orec, token, props[0].id, accounts[2], VoteType.Yes, "", "VotePeriodOver");
         // Case when proposal is rejected with no
         expect(await orec.getStage(props[1].id)).to.be.equal(Stage.Expired);
-        await expectVoteReverted(orec, token, props[1].id, accounts[1], VoteType.Yes);
+        await expectVoteReverted(orec, token, props[1].id, accounts[1], VoteType.Yes, "", "VotePeriodOver");
         // Case when proposal does not have any votes
         expect(await orec.getStage(props[2].id)).to.be.equal(Stage.Expired);
-        await expectVoteReverted(orec, token, props[2].id, accounts[3], VoteType.Yes);
+        await expectVoteReverted(orec, token, props[2].id, accounts[3], VoteType.Yes, "VotePeriodOver");
       });
       it("should not allow voting with none vtype", async function() {
         const { orec, accounts, token, voteLen, vetoLen, proposals: props } = await loadFixture(deployOrecWithProposalsAndBalances);
@@ -702,13 +888,13 @@ describe("Orec", function () {
 
         // Case when proposal is passed
         expect(await orec.getStage(props[0].id)).to.be.equal(Stage.Execution);
-        await expectVoteReverted(orec, token, props[0].id, accounts[2], VoteType.No);
+        await expectVoteReverted(orec, token, props[0].id, accounts[2], VoteType.No, "", "ProposalVoteInactive");
         // Case when proposal is rejected with no
         expect(await orec.getStage(props[1].id)).to.be.equal(Stage.Expired);
-        await expectVoteReverted(orec, token, props[1].id, accounts[1], VoteType.No);
+        await expectVoteReverted(orec, token, props[1].id, accounts[1], VoteType.No, "", "ProposalVoteInactive");
         // Case when proposal does not have any votes
         expect(await orec.getStage(props[2].id)).to.be.equal(Stage.Expired);
-        await expectVoteReverted(orec, token, props[2].id, accounts[3], VoteType.No);
+        await expectVoteReverted(orec, token, props[2].id, accounts[3], VoteType.No, "", "ProposalVoteInactive");
       });
     })
   });
@@ -998,7 +1184,7 @@ describe("Orec", function () {
       }
 
       const prop = buildMintProp(accounts[16].address, 100);
-      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
     });
 
     it("should not allow having more than max_live_votes of yes votes for respected accounts on proposals in voting stage", async function () {
@@ -1010,7 +1196,7 @@ describe("Orec", function () {
       }
 
       const prop = buildMintProp(accounts[16].address, 100);
-      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
     });
 
     it("should not allow having more than max_live_votes of yes votes for respected accounts on proposals when proposals are in veto stage", async function () {
@@ -1024,7 +1210,7 @@ describe("Orec", function () {
       }
 
       const prop = buildMintProp(accounts[16].address, 100);
-      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
 
       await time.increase(DAY_1 + 1n);
 
@@ -1032,7 +1218,7 @@ describe("Orec", function () {
         expect(await orec.getStage(prop.id)).to.be.equal(Stage.Veto);
       }
 
-      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
     });
 
     it("should not allow having more than max_live_votes of yes votes on proposals when proposals are in execution stage", async function () {
@@ -1047,8 +1233,8 @@ describe("Orec", function () {
       }
 
       const prop = buildMintProp(accounts[16].address, 100);
-      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
-      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
+      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
 
       await time.increase(DAY_1 + DAY_6 + 1n);
 
@@ -1056,8 +1242,8 @@ describe("Orec", function () {
         expect(await orec.getStage(prop.id)).to.be.equal(Stage.Execution);
       }
 
-      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
-      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
+      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
     });
 
     it("should allow voting yes again after max_live_votes limit was reached once proposals voted on have expired", async function() {
@@ -1080,8 +1266,8 @@ describe("Orec", function () {
       }
 
       const prop = buildMintProp(accounts[16].address, 100);
-      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
-      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
 
       await time.increase(DAY_1 + MIN_1);
 
@@ -1099,8 +1285,8 @@ describe("Orec", function () {
       }
 
       const prop2 = buildMintProp(accounts[16].address, 100);
-      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
-      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop2.id, accounts[16], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
+      await expectVoteReverted(orec, token, prop2.id, accounts[4], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
 
       await time.increase(DAY_1 + MIN_1);
 
@@ -1112,20 +1298,20 @@ describe("Orec", function () {
       await time.increase(HOUR_1);
 
       const prop3 = buildMintProp(accounts[15].address, 200);
-      await expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      await expectVoteCounted(orec, token, prop3.id, accounts[16], VoteType.Yes);
 
       const prop4 = buildMintProp(accounts[15].address, 100);
-      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop4.id, accounts[16], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
 
       await time.increase(DAY_1 + MIN_1);
 
-      for (let i = 0; i < MAX_LIVE_VOTES - 1; i++) {
+      for (let i = 0; i < MAX_LIVE_VOTES; i++) {
         const prop = buildMintProp(accounts[10].address, 100);
         await expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.Yes);
       }
 
       const prop5 = buildMintProp(accounts[9].address, 100);
-      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop5.id, accounts[16], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
     });
 
     it("should allow voting yes again after max_live_votes limit was reached once proposals voted on have expired *and* been executed", async function() {
@@ -1139,7 +1325,7 @@ describe("Orec", function () {
       }
 
       const prop = buildMintProp(accounts[16].address, 100);
-      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
 
       await time.increase(DAY_1 + DAY_6 + 1n);
 
@@ -1154,9 +1340,9 @@ describe("Orec", function () {
       }
 
       const prop2 = buildMintProp(accounts[16].address, 100);
-      await expectVoteReverted(orec, token, prop2.id, accounts[4], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop2.id, accounts[4], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
       // Try with non-respected account as well
-      await expectVoteReverted(orec, token, prop2.id, accounts[16], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop2.id, accounts[16], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
     });
 
     it("should allow voting no even though max_live_votes limit was reached", async function() {
@@ -1172,8 +1358,8 @@ describe("Orec", function () {
 
       const prop = buildMintProp(accounts[16].address, 100);
       // Yes fails
-      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
-      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
+      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
       // No succeeds
       await expectVoteCounted(orec, token, prop.id, accounts[4], VoteType.No);
       await expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.No);
@@ -1186,8 +1372,8 @@ describe("Orec", function () {
 
       const prop2 = buildMintProp(accounts[16].address, 100);
       // Yes fails
-      await expectVoteReverted(orec, token, prop2.id, accounts[4], VoteType.Yes);
-      await expectVoteReverted(orec, token, prop2.id, accounts[16], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop2.id, accounts[4], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
+      await expectVoteReverted(orec, token, prop2.id, accounts[16], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
       // No succeeds
       await expectVoteCounted(orec, token, prop2.id, accounts[4], VoteType.No);
       await expectVoteCounted(orec, token, prop2.id, accounts[16], VoteType.No);
@@ -1200,8 +1386,8 @@ describe("Orec", function () {
 
       const prop3 = buildMintProp(accounts[16].address, 100);
       // Yes fails
-      await expectVoteReverted(orec, token, prop3.id, accounts[4], VoteType.Yes);
-      await expectVoteReverted(orec, token, prop3.id, accounts[16], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop3.id, accounts[4], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
+      await expectVoteReverted(orec, token, prop3.id, accounts[16], VoteType.Yes, "", "MaxLiveYesVotesExceeded");
       // No succeeds
       await expectVoteCounted(orec, token, prop3.id, accounts[4], VoteType.No);
       await expectVoteCounted(orec, token, prop3.id, accounts[16], VoteType.No);
