@@ -644,6 +644,10 @@ describe("Orec", function () {
 
         expect(await orec.getStage(props[0].id)).to.be.equal(Stage.Veto);
       })
+
+      it("should not allow voting no again with the same weight");
+      it("should allow updating your no vote with updated respect to bigger amount")
+      it("should allow updating your no vote with updated respect to smaller amount")
     });
 
     describe("executeTime (createTime+voteLen+vetoLen or later)", function() {
@@ -985,7 +989,7 @@ describe("Orec", function () {
   });
 
   describe("Spam prevention", function() {
-    it("should not allow having more than max_live_votes of yes votes on live proposals", async function () {
+    it("should not allow having more than max_live_votes of yes votes for non-respected accounts on proposals in voting stage", async function () {
       const { token, accounts, orec, buildMintProp } = await loadFixture(deployOrecWithProposals);
 
       for (let i = 0; i < MAX_LIVE_VOTES; i++) {
@@ -995,30 +999,108 @@ describe("Orec", function () {
 
       const prop = buildMintProp(accounts[16].address, 100);
       await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+    });
 
-      // TODO: should not allow adding more yes votes, when live proposals are in exec stage
+    it("should not allow having more than max_live_votes of yes votes for respected accounts on proposals in voting stage", async function () {
+      const { token, accounts, orec, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      for (let i = 0; i < MAX_LIVE_VOTES; i++) {
+        const prop = buildMintProp(accounts[16].address, 100);
+        await expectVoteCounted(orec, token, prop.id, accounts[4], VoteType.Yes);
+      }
+
+      const prop = buildMintProp(accounts[16].address, 100);
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
+    });
+
+    it("should not allow having more than max_live_votes of yes votes for respected accounts on proposals when proposals are in veto stage", async function () {
+      const { token, accounts, orec, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      const props = new Array<ReturnType<typeof buildMintProp>>();
+      for (let i = 0; i < MAX_LIVE_VOTES; i++) {
+        const prop = buildMintProp(accounts[16].address, 100);
+        await expectVoteCounted(orec, token, prop.id, accounts[4], VoteType.Yes);
+        props.push(prop);
+      }
+
+      const prop = buildMintProp(accounts[16].address, 100);
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
+
+      await time.increase(DAY_1 + 1n);
+
+      for (const prop of props) {
+        expect(await orec.getStage(prop.id)).to.be.equal(Stage.Veto);
+      }
+
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
+    });
+
+    it("should not allow having more than max_live_votes of yes votes on proposals when proposals are in execution stage", async function () {
+      const { token, accounts, orec, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      const props = new Array<ReturnType<typeof buildMintProp>>();
+      for (let i = 0; i < MAX_LIVE_VOTES; i++) {
+        const prop = buildMintProp(accounts[16].address, 100);
+        await expectVoteCounted(orec, token, prop.id, accounts[4], VoteType.Yes);
+        await expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.Yes);
+        props.push(prop);
+      }
+
+      const prop = buildMintProp(accounts[16].address, 100);
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+
+      await time.increase(DAY_1 + DAY_6 + 1n);
+
+      for (const prop of props) {
+        expect(await orec.getStage(prop.id)).to.be.equal(Stage.Execution);
+      }
+
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
     });
 
     it("should allow voting yes again after max_live_votes limit was reached once proposals voted on have expired", async function() {
-      const { token, accounts, orec, buildMintProp } = await loadFixture(deployOrecWithProposals);
+      // No respected accounts
+      const { token, accounts, orec, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalances);
 
+      expect(await token.balanceOf(accounts[16].address)).to.be.equal(0);
+      expect(await token.balanceOf(accounts[4].address)).to.be.equal(34);
+      expect(await token.balanceOf(accounts[3].address)).to.be.equal(21);
+
+      const props = new Array<ReturnType<typeof buildMintProp>>();
       for (let i = 0; i < MAX_LIVE_VOTES; i++) {
         const prop = buildMintProp(accounts[16].address, 100);
         await expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.Yes);
+        // 34 Respect vote
+        await expectVoteCounted(orec, token, prop.id, accounts[4], VoteType.Yes);
+        // 21 Respect vote
+        await expectVoteCounted(orec, token, prop.id, accounts[3], VoteType.No);
+        props.push(prop);
       }
 
       const prop = buildMintProp(accounts[16].address, 100);
       await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
 
       await time.increase(DAY_1 + MIN_1);
+
+      for (const prop of props) {
+        expect(await orec.getVoteStatus(prop.id)).to.be.equal(VoteStatus.Failed);
+      }
 
       for (let i = 0; i < MAX_LIVE_VOTES; i++) {
         const prop = buildMintProp(accounts[16].address, 100);
         await expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.Yes);
+        // 34 Respect vote
+        await expectVoteCounted(orec, token, prop.id, accounts[4], VoteType.Yes);
+        // 21 Respect vote
+        await expectVoteCounted(orec, token, prop.id, accounts[3], VoteType.No);
       }
 
       const prop2 = buildMintProp(accounts[16].address, 100);
       await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
 
       await time.increase(DAY_1 + MIN_1);
 
@@ -1044,7 +1126,6 @@ describe("Orec", function () {
 
       const prop5 = buildMintProp(accounts[9].address, 100);
       await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
-
     });
 
     it("should allow voting yes again after max_live_votes limit was reached once proposals voted on have expired *and* been executed", async function() {
@@ -1069,14 +1150,62 @@ describe("Orec", function () {
       for (let i = 0; i < MAX_LIVE_VOTES; i++) {
         const prop = buildMintProp(accounts[16].address, 100);
         await expectVoteCounted(orec, token, prop.id, accounts[4], VoteType.Yes);
+        await expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.Yes);
       }
 
       const prop2 = buildMintProp(accounts[16].address, 100);
       await expectVoteReverted(orec, token, prop2.id, accounts[4], VoteType.Yes);
+      // Try with non-respected account as well
+      await expectVoteReverted(orec, token, prop2.id, accounts[16], VoteType.Yes);
     });
 
-    // TODO:
-    it("should allow voting yes again after max_live_votes limit was reached once proposals voted on have have been executed");
+    it("should allow voting no even though max_live_votes limit was reached", async function() {
+      const { token, accounts, orec, buildMintProp } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      const props: Array<ReturnType<typeof buildMintProp>> = [];
+      for (let i = 0; i < MAX_LIVE_VOTES; i++) {
+        const prop = buildMintProp(accounts[16].address, 100);
+        await expectVoteCounted(orec, token, prop.id, accounts[4], VoteType.Yes);
+        await expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.Yes);
+        props.push(prop);
+      }
+
+      const prop = buildMintProp(accounts[16].address, 100);
+      // Yes fails
+      await expectVoteReverted(orec, token, prop.id, accounts[4], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop.id, accounts[16], VoteType.Yes);
+      // No succeeds
+      await expectVoteCounted(orec, token, prop.id, accounts[4], VoteType.No);
+      await expectVoteCounted(orec, token, prop.id, accounts[16], VoteType.No);
+
+      // Go to veto stage
+      await time.increase(DAY_1 * 2n);
+      for (const prop of props) {
+        expect(await orec.getStage(prop.id)).to.be.equal(Stage.Veto);
+      }
+
+      const prop2 = buildMintProp(accounts[16].address, 100);
+      // Yes fails
+      await expectVoteReverted(orec, token, prop2.id, accounts[4], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop2.id, accounts[16], VoteType.Yes);
+      // No succeeds
+      await expectVoteCounted(orec, token, prop2.id, accounts[4], VoteType.No);
+      await expectVoteCounted(orec, token, prop2.id, accounts[16], VoteType.No);
+
+      // Go to execute stage
+      await time.increase(DAY_6);
+      for (const prop of props) {
+        expect(await orec.getStage(prop.id)).to.be.equal(Stage.Execution);
+      }
+
+      const prop3 = buildMintProp(accounts[16].address, 100);
+      // Yes fails
+      await expectVoteReverted(orec, token, prop3.id, accounts[4], VoteType.Yes);
+      await expectVoteReverted(orec, token, prop3.id, accounts[16], VoteType.Yes);
+      // No succeeds
+      await expectVoteCounted(orec, token, prop3.id, accounts[4], VoteType.No);
+      await expectVoteCounted(orec, token, prop3.id, accounts[16], VoteType.No);
+    })
   });
 
   describe("support for IRespect implementers as respectContract(s)", function() {
