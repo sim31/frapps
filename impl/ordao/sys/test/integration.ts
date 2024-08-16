@@ -322,7 +322,7 @@ describe("orclient", function() {
   describe("proposing a tick (to increment meeting number)", function() {
     let cl2: ORClient;
     before("connect through a new signer to avoid hitting maxLiveVotes", async function() {
-      cl2 = cl.connect(signers[8]);
+      cl2 = cl.connect(signers[18]);
     })
     before("create proposal by calling proposeTick", async function() {
       tickProps.push((await confirm(cl2.proposeTick())).proposal);
