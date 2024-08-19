@@ -25,10 +25,6 @@
       "path": "./orclient/"
     },
 		{
-			"name": "ordao-sys",
-			"path": "./ordao/sys/"
-		},
-		{
 			"name": "ordao-gui",
 			"path": "./ordao/gui/"
 		},
@@ -39,7 +35,15 @@
     {
       "name": "ethers-decode-error",
       "path": "./ethers-decode-error/"
-    }
+    },
+		{
+			"name": "ordao-sys-dev",
+			"path": "./ordao/sys/dev"
+		},
+		{
+			"name": "ordao-sys-op-sepolia",
+			"path": "./ordao/sys/op-sepolia"
+		}
 	],
 	"settings": {
 		"solidity.compileUsingRemoteVersion": "v0.8.24+commit.e11b9ed9",
