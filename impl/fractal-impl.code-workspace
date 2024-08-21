@@ -40,10 +40,10 @@
 			"name": "ordao-sys-dev",
 			"path": "./ordao/sys/dev"
 		},
-		{
-			"name": "ordao-sys-op-sepolia",
-			"path": "./ordao/sys/op-sepolia"
-		}
+    {
+      "name": "ordao-sc-deployment",
+      "path": "./ordao/sc-deployment"
+    }
 	],
 	"settings": {
 		"solidity.compileUsingRemoteVersion": "v0.8.24+commit.e11b9ed9",
