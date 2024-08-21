@@ -3,14 +3,31 @@
   "version": "1.0.0",
   "description": "Scripts to manage deployment of ORDAO contracts",
   "main": "index.js",
+  "config": {
+    "op_sepolia_1_params": "../sys/op-sepolia-1/deployment-params.json",
+    "orec_dbg": "../../orec/artifacts/contracts/Orec.sol/Orec.dbg.json",
+    "orec_dbg_path_op_sepolia1": "ignition/deployments/op-sepolia-1/artifacts/Orec#Orec.dbg.json",
+    "respect1155_dbg": "../../respect1155/sc/artifacts/contracts/Respect1155.sol/Respect1155.dbg.json",
+    "respect1155_dbg_path_op_sepolia1": "ignition/deployments/op-sepolia-1/artifacts/Ordao#Respect1155.dbg.json",
+    "orec_build_info": "../../orec/artifacts/build-info/",
+    "respect1155_build_info": "../../respect1155/sc/artifacts/build-info/"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy-op-sepolia-1": "npx hardhat ignition deploy --parameters $npm_package_config_op_sepolia_1_params --deployment-id op-sepolia-1 --reset --network opSepolia ignition/modules/Ordao.ts",
+    "copy-orec-dbg": "cp $npm_package_config_orec_dbg $npm_package_config_orec_dbg_path_op_sepolia1",
+    "copy-respect1155-dbg": "cp $npm_package_config_respect1155_dbg $npm_package_config_respect1155_dbg_path_op_sepolia1",
+    "copy-orec-buildinfo": "cp $npm_package_config_orec_build_info/* ignition/deployments/build-info/",
+    "copy-respect1155-buildinfo": "cp $npm_package_config_respect1155_build_info/* ignition/deployments/build-info/",
+    "verify-op-sepolia-1": "npm run copy-orec-dbg && npm run copy-respect1155-dbg && mkdir ignition/deployments/build-info && npm run copy-orec-buildinfo && npm run copy-respect1155-buildinfo && npx hardhat ignition verify op-sepolia-1"
+
   },
   "author": "sim31",
   "license": "GPL-3.0",
   "devDependencies": {
     "@nomicfoundation/hardhat-ignition-ethers": "^0.15.5",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "dotenv": "^16.4.5",
     "hardhat": "^2.22.8",
     "typescript": "^5.5.4"
   }

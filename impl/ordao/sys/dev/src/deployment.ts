@@ -20,7 +20,6 @@ import jsonfile from "jsonfile";
 import { ContractTransactionResponse } from "ethers";
 import { DecodedError } from "ethers-decode-error";
 import { TxFailed } from "orclient";
-import Ordao from "../ignition/modules/Ordao.js";
 
 export interface DevConfig {
   oldRanksDelay: bigint;
@@ -223,7 +222,7 @@ export class Deployment {
         ]
       }
     ]
-    await _handleTx(oldRespect.submitRanks(groupRes4), 5);
+    await _handleTx(oldRespect.submitRanks(groupRes4));
     console.log("Submitted ranks: ", groupRes4);
 
     // await time.increase(WEEK_1);
@@ -249,60 +248,39 @@ export class Deployment {
 
     console.log("Test balanceOf: ", await oldRespect.balanceOf(addrs[12]));
 
-    const { orec, newRespect } = await hre.ignition.deploy(
-      Ordao,
-      {
-        parameters: {
-          Orec: {
-            oldRespectAddr,
-            votePeriod: cfg.votePeriod,
-            vetoPeriod: cfg.vetoPeriod,
-            voteThreshold: cfg.voteThreshold,
-            maxLiveYesVotes: cfg.maxLiveVotes
-          },
-          Ordao: {
-            uri: "https://tf.io"
-          }
-        }
-      }
+    //////// Deploy Orec ///////////
+    const orecFactory = new OrecFactory(signer);
+
+    let orec = await orecFactory.deploy(
+      oldRespectAddr,
+      cfg.votePeriod, cfg.vetoPeriod, cfg.voteThreshold, cfg.maxLiveVotes
     );
-
-    // let orec = await orecFactory.deploy(
-    //   oldRespectAddr,
-    //   cfg.votePeriod, cfg.vetoPeriod, cfg.voteThreshold, cfg.maxLiveVotes
-    // );
-    // orec = await orec.waitForDeployment();
-
+    orec = await orec.waitForDeployment();
     const orecAddr = await orec.getAddress();
-    const newRespectAddr= await newRespect.getAddress();
-
     console.log("Deployed OREC: ", orecAddr);
     // Test
     console.log("test by calling voteLen()", await orec.voteLen());
     console.log("test by calling respectContract()", await orec.respectContract());
-    console.log("Deployed new Respect: ", await newRespectAddr);
+
+    ///////// Deploy new respect contract /////////
+    const respectFactory = new Respect1155.Factory(signers[0]);
+
+    let newRespect = await respectFactory.deploy(orec, "https://tf.io");
+    newRespect = await newRespect.waitForDeployment();
+    const newRespectAddr = await newRespect.getAddress();
+    console.log("Deployed new Respect: ", newRespectAddr);
     console.log("Test by calling owner(): ", await newRespect.owner());
-
-    // ///////// Deploy new respect contract /////////
-    // const respectFactory = new Respect1155.Factory(signers[0]);
-
-    // let newRespect = await respectFactory.deploy(orec, "https://tf.io");
-    // newRespect = await newRespect.waitForDeployment();
-    // const newRespectAddr = await newRespect.getAddress();
-    // console.log("Deployed new Respect: ", newRespectAddr);
-    // console.log("Test by calling owner(): ", await newRespect.owner());
 
     const state: DeployState = {
       oldRanksDelay: z.coerce.number().parse(cfg.oldRanksDelay),
       addrs, signers, oldRespect, oldRespectAddr,
       oldRespectOwner: signer, oldRespectExecutor: signer,
       nonRespectedAccs,
-      orec: (orec as unknown) as Orec, orecAddr,
+      orec, orecAddr,
       votePeriod: z.coerce.number().parse(cfg.votePeriod),
       vetoPeriod: z.coerce.number().parse(cfg.vetoPeriod),
       voteThreshold: cfg.voteThreshold,
-      newRespect: (newRespect as unknown) as Respect1155.Contract,
-      newRespectAddr,
+      newRespect, newRespectAddr,
       providerUrl: "http://localhost:8545"
     };
 

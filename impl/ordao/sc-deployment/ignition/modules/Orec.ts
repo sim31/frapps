@@ -1,5 +1,6 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
-import Orec from "../../../../orec/artifacts/contracts/Orec.sol/Orec.json";
+// @ts-ignore
+import Orec from "../../../../orec/artifacts/contracts/Orec.sol/Orec.json" with { type: 'json' }
 
 
 export default buildModule("Orec", (m) => {

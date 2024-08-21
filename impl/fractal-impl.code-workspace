@@ -43,6 +43,10 @@
     {
       "name": "ordao-sc-deployment",
       "path": "./ordao/sc-deployment"
+    },
+    {
+      "name": "ordao-sys-op-sepolia-1",
+      "path": "./ordao/sys/op-sepolia-1
     }
 	],
 	"settings": {

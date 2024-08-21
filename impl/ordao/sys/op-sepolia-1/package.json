@@ -1,0 +1,29 @@
+{
+  "name": "ordao-sys-op-sepolia-1",
+  "version": "1.0.0",
+  "description": "Scripts for running / managing deployment of ORDAO on OP Sepolia",
+  "main": "index.js",
+  "type": "module",
+  "config": {
+    "respect1155": "../../../respect1155/sc/",
+    "orec": "../../../orec/",
+    "ordao_tests": "./",
+    "ts_utils": "../../../ts-utils",
+    "ortypes": "../../../ortypes",
+    "orclient": "../../../orclient",
+    "ornode": "../../../ornode",
+    "ordao_gui": "../../gui",
+    "ordao_console": "../../console",
+    "ornode_to_cfg_path": "../ordao/sys/dev/tmp/ornode-dev-cfg.json",
+    "sc_deployment": "../../sc-deployment/",
+    "sc_deployment_to_params": "../sys/op-sepolia-1/deployment-params.json"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "sim31",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "shelljs": "^0.8.5"
+  }
+}
