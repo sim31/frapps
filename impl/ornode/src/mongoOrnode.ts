@@ -6,7 +6,10 @@ import { IORNode } from "ortypes";
 export let ornode: Promise<IORNode>;
 
 export async function init() {
-  const mordb = await MongoOrdb.create();
+  const mordb = await MongoOrdb.create({
+    mongoUrl: config.mongoCfg.url,
+    dbName: config.mongoCfg.dbName
+  });
 
   ornode = ORNode.create({
     newRespect: config.contracts.newRespect,

@@ -7,13 +7,8 @@ import { TickStore } from "./tickStore.js";
 import { VoteStore } from "./voteStore.js";
 
 export interface Config {
-  mongoUrl?: Url
-  dbName?: string
-}
-
-export const configDefaults = {
-  mongoUrl: 'mongodb://localhost:27017',
-  dbName: "ornode"
+  mongoUrl: Url
+  dbName: string
 }
 
 export class MongoOrdb implements IOrdb {
@@ -49,8 +44,8 @@ export class MongoOrdb implements IOrdb {
     awardStore: AwardStore,
     voteStore: VoteStore
   }> {
-    const url = config.mongoUrl ?? configDefaults.mongoUrl;
-    const dbName = config.dbName ?? configDefaults.dbName;
+    const url = config.mongoUrl
+    const dbName = config.dbName;
     const mgClient = new MongoClient(url, { directConnection: true });
     await mgClient.connect();
 
@@ -62,7 +57,7 @@ export class MongoOrdb implements IOrdb {
     return { mgClient, propStore, tickStore, awardStore, voteStore }
   }
 
-  static async create(config: Config = configDefaults): Promise<MongoOrdb> {
+  static async create(config: Config): Promise<MongoOrdb> {
     const { mgClient, propStore, tickStore, awardStore, voteStore } =
       await MongoOrdb._connectToDb(config);
 

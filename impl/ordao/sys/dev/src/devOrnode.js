@@ -10,7 +10,11 @@ async function main() {
       newRespect: d.newRespectAddr,
       orec: d.orecAddr
     },
-    tokenMetadataCfg: tokenCfg
+    tokenMetadataCfg: tokenCfg,
+    mongoCfg: {
+      url: 'mongodb://localhost:27017',
+      dbName: "ornode-dev"
+    }
   };
   jsonfile.writeFileSync("./tmp/ornode-dev-cfg.json", config);
 

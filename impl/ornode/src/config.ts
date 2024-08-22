@@ -6,6 +6,11 @@ import "dotenv/config";
 import jsonfile from "jsonfile";
 import { zRespectFungibleMt } from "ortypes/respect1155.js";
 
+export const zMongoConfig = z.object({
+  url: z.string(),
+  dbName: z.string()
+});
+
 export const zContractsAddrs = z.object({
   oldRespect: zEthAddress.optional(),
   newRespect: zEthAddress,
@@ -26,7 +31,8 @@ export type TokenMtCfg = z.infer<typeof zTokenMtCfg>;
 export const zConfig = z.object({
   contracts: zContractsAddrs,
   providerUrl: z.string().url(),
-  tokenMetadataCfg: zTokenMtCfg
+  tokenMetadataCfg: zTokenMtCfg,
+  mongoCfg: zMongoConfig
 });
 export type Config = z.infer<typeof zConfig>;
 
