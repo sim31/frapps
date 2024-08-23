@@ -1,4 +1,4 @@
-import { ContractRunner, Provider as EthProvider, JsonRpcProvider, Provider, Result, Signer } from "ethers";
+import { ContractRunner, Provider as EthProvider, JsonRpcProvider, Provider, Result, Signer, WebSocketProvider } from "ethers";
 import { ExecStatus, OrecContract as Orec, OrecFactory } from "./orec.js";
 import { EthAddress, isEthAddr, zEthNonZeroAddress } from "./eth.js";
 import { IORNode } from "./iornode.js";
@@ -107,8 +107,16 @@ export class ORContext<CT extends Config> {
     let runner: ContractRunner | undefined | null;
     if (config.contractRunner) {
       if (typeof config.contractRunner === 'string') {
-        const url = zUrl.parse(config.contractRunner);
-        runner = new JsonRpcProvider(url);
+        // const url = zUrl.parse(config.contractRunner);
+        const url = new URL(config.contractRunner);
+        console.log("Provider protocol: ", url.protocol, ", full url: ", url.toString());
+        if (url.protocol === 'https:') {
+          runner = new JsonRpcProvider(url.toString());
+        } else if (url.protocol === 'wss:') {
+          runner = new WebSocketProvider(url.toString());
+        } else {
+          throw new Error("Unknown protocol in URL for provider");
+        }
       } else {
         runner = config.contractRunner;
       }

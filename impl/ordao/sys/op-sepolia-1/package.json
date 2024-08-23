@@ -16,14 +16,24 @@
     "ordao_console": "../../console",
     "ornode_to_cfg_path": "../ordao/sys/dev/tmp/ornode-dev-cfg.json",
     "sc_deployment": "../../sc-deployment/",
-    "sc_deployment_to_params": "../sys/op-sepolia-1/deployment-params.json"
+    "sc_deployment_to_params": "../sys/op-sepolia-1/deployment-params.json",
+    "dev": "../dev/",
+    "ornode_to_local_cfg_path": "../ordao/sys/op-sepolia-1/ornode-cfg.local.json",
+    "ornode_to_home1_cfg_path": "../ordao/sys/op-sepolia-1/ornode-cfg.ornode-home-1.json"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup": "cd $npm_package_config_dev && npm run setup",
+    "build-all": "cd $npm_package_config_dev && npm run build-all",
+    "build": "cd $npm_package_config_dev && npm run build",
+    "build-console": "cd $npm_package_config_dev && npm run build-console",
+    "ornode-local": "node src/runOrnodeLocal.js",
+    "console": "node src/runConsole.js"
   },
   "author": "sim31",
   "license": "GPL-3.0",
   "dependencies": {
+    "jsonfile": "^6.1.0",
     "shelljs": "^0.8.5"
   }
 }

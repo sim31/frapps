@@ -52,6 +52,8 @@
     "watch-ornode": "cd $npm_package_config_ornode && npm run build-watch -- --preserveWatchOutput",
     "build-ornode": "cd $npm_package_config_ornode && npm run build",
     "setup-ornode": "cd $npm_package_config_ornode && npm install && npm run build",
+    "setup-console": "cd $npm_package_config_ordao_console && npm install && npm run build",
+    "build-console": "cd $npm_package_config_ordao_console && npm run build",
     "build-ornode-clean": "cd $npm_package_config_ornode && npm run build-clean",
     "build-watch": "concurrently --kill-others \"npm:watch-respect1155\" \"npm:watch-orec\" \"npm:watch-ts-utils\" \"npm:watch-ortypes\" \"npm:watch-orclient\" \"npm:watch-ornode\"",
     "init-db": "node src/setupMongodb.js",
@@ -59,8 +61,10 @@
     "clean-dev-mongod": "rm -rf ./tmp/mongodb/dev/*",
     "dev-mongod-clean": "npm run clean-dev-mongod && npm run dev-mongod",
     "build": "npm run build-respect1155 && npm run build-orec && npm run build-ts-utils && npm run build-ortypes && npm run build-orclient && npm run build-ornode",
+    "build-all": "npm run build-respect1155 && npm run build-orec && npm run build-ts-utils && npm run build-ortypes && npm run build-orclient && npm run build-ornode && npm run build-console",
     "build-clean": "npm run build-respect1155-clean && npm run build-orec-clean && npm run build-ts-utils-clean && npm run build-ortypes-clean && npm run build-orclient-clean && npm run build-ornode-clean",
     "setup-gui": "cd $npm_package_config_ordao_gui && npm install && npx vite build",
+    "build-gui": "cd $npm_package_config_ordao_gui && npx vite build",
     "dev-gui": "node src/devGui.js",
     "dev-console": "node src/devConsole.js",
     "watch-orclient-docs": "node src/watchOrclientDocs.js",
@@ -71,7 +75,7 @@
     "test-contracts": "npm run test-orec && npm run test-respect1155",
     "dev": "node src/dev.js",
     "dev-no-vite": "node src/dev.js --no-vite",
-    "setup": "npm install && npm run setup-orec && npm run setup-respect1155 && npm run setup-ts-utils && npm run setup-ortypes && npm run setup-orclient && npm run setup-ornode && npm run setup-gui"
+    "setup": "npm install && npm run setup-orec && npm run setup-respect1155 && npm run setup-ts-utils && npm run setup-ortypes && npm run setup-orclient && npm run setup-ornode && npm run setup-gui && npm run setup-console"
   },
   "keywords": [],
   "author": "sim31",

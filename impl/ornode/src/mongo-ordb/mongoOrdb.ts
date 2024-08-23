@@ -46,7 +46,7 @@ export class MongoOrdb implements IOrdb {
   }> {
     const url = config.mongoUrl
     const dbName = config.dbName;
-    const mgClient = new MongoClient(url, { directConnection: true });
+    const mgClient = new MongoClient(url);
     await mgClient.connect();
 
     const propStore = new ProposalStore(mgClient, dbName);

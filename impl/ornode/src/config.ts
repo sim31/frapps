@@ -32,7 +32,8 @@ export const zConfig = z.object({
   contracts: zContractsAddrs,
   providerUrl: z.string().url(),
   tokenMetadataCfg: zTokenMtCfg,
-  mongoCfg: zMongoConfig
+  mongoCfg: zMongoConfig,
+
 });
 export type Config = z.infer<typeof zConfig>;
 
