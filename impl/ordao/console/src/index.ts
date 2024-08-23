@@ -32,18 +32,20 @@ async function create() {
   (window as any).c = orconsole;
 }
 
-if (
-  window.location.pathname === "/" || 
-  window.location.pathname === ""
-) {
-  const newUrl =
-    window.location.protocol + "//"
-    + window.location.host + "/index.html"
-    + window.location.search   
-  window.location.replace(newUrl);
-} else {
+// if (
+//   window.location.pathname === "/" || 
+//   window.location.pathname === ""
+// ) {
+//   const newUrl =
+//     window.location.protocol + "//"
+//     + window.location.host + "/index.html"
+//     + window.location.search   
+//   window.location.replace(newUrl);
+// } else {
+//   create();
+// }
+
   create();
-}
 
 
 

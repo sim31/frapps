@@ -19,8 +19,13 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        docsIndex: resolve(__dirname, 'public/index.html'),
-        orconsole: resolve(__dirname, "public/classes/ORClient.html")
+        orclient: resolve(__dirname, "classes/ORClient.html"),
+        orcontext: resolve(__dirname, "classes/ORContext.html"),
+        config: resolve(__dirname, "interfaces/Config.html"),
+        onchainActionRes: resolve(__dirname, "interfaces/OnchainActionRes.html"),
+        proposeRes: resolve(__dirname, "interfaces/ProposeRes.html"),
+        execRes: resolve(__dirname, "types/ExecRes.html"),
+        defaultConfig: resolve(__dirname, "variables/defaultConfig.html"),
       },
     },
   }

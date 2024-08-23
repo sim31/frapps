@@ -19,7 +19,7 @@ import { z } from "zod";
 // Re-define so that ORContext docs are included
 export class ORContext extends ORContextOrig<ConfigWithOrnode> {}
 
-export function isPropCreated(propState: ProposalState) {
+function isPropCreated(propState: ProposalState) {
   return propState.createTime > 0n;
 }
 
