@@ -23,12 +23,16 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "setup": "cd $npm_package_config_dev && npm run setup",
+    "build-console-local": "node src/buildConsoleLocal.js",
+    "build-console": "node src/buildConsole.js",
     "build-all": "cd $npm_package_config_dev && npm run build-all",
     "build": "cd $npm_package_config_dev && npm run build",
-    "build-console-local": "node src/buildConsoleLocal.js",
+    "setup-local": "npm install && cd $npm_package_config_dev && npm run setup && build-console-local",
+    "setup": "npm install && cd $npm_package_config_dev && npm run setup && build-console",
     "ornode-local": "node src/runOrnodeLocal.js",
-    "console-local": "cd $npm_package_config_ordao_console && npm run preview build -- --port 5173"
+    "ornode": "node src/runOrnode.js",
+    "console-local": "cd $npm_package_config_ordao_console && npm run preview build -- --port 5173",
+    "ornode-swagger-ui": "cd $npm_package_config_ornode && ORNODE_CFG_PATH=$npm_package_config_ornode_to_home1_cfg_path npm run swagger-ui"
   },
   "author": "sim31",
   "license": "GPL-3.0",

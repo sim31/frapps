@@ -14,7 +14,8 @@
     "ornode": "../../../ornode",
     "ordao_gui": "../../gui",
     "ordao_console": "../../console",
-    "ornode_to_cfg_path": "../ordao/sys/dev/tmp/ornode-dev-cfg.json"
+    "ornode_to_cfg_path": "../ordao/sys/dev/tmp/ornode-dev-cfg.json",
+    "ethers_decode_error": "../../../ethers-decode-error"
   },
   "scripts": {
     "hh-test-ordao": "NODE_OPTIONS='--enable-source-maps --experimental-loader ts-node/esm/transpile-only --no-warnings=ExperimentalWarning' hardhat --show-stack-traces --network localhost test",
@@ -63,8 +64,9 @@
     "build": "npm run build-respect1155 && npm run build-orec && npm run build-ts-utils && npm run build-ortypes && npm run build-orclient && npm run build-ornode",
     "build-all": "npm run build-respect1155 && npm run build-orec && npm run build-ts-utils && npm run build-ortypes && npm run build-orclient && npm run build-ornode && npm run build-console",
     "build-clean": "npm run build-respect1155-clean && npm run build-orec-clean && npm run build-ts-utils-clean && npm run build-ortypes-clean && npm run build-orclient-clean && npm run build-ornode-clean",
-    "setup-gui": "cd $npm_package_config_ordao_gui && npm install && npx vite build",
+    "setup-gui": "cd $npm_package_config_ordao_gui && npm install && npm run build",
     "build-gui": "cd $npm_package_config_ordao_gui && npx vite build",
+    "setup-ethers-decode-error": "cd $npm_package_config_ethers_decode_error && npm install && npm run build",
     "dev-gui": "node src/devGui.js",
     "dev-console": "node src/devConsole.js",
     "watch-orclient-docs": "node src/watchOrclientDocs.js",
@@ -75,7 +77,7 @@
     "test-contracts": "npm run test-orec && npm run test-respect1155",
     "dev": "node src/dev.js",
     "dev-no-vite": "node src/dev.js --no-vite",
-    "setup": "npm install && npm run setup-orec && npm run setup-respect1155 && npm run setup-ts-utils && npm run setup-ortypes && npm run setup-orclient && npm run setup-ornode && npm run setup-gui && npm run setup-console"
+    "setup": "git submodule update --init --recursive && npm install && npm run setup-orec && npm run setup-respect1155 && npm run setup-ethers-decode-error && npm run setup-ts-utils && npm run setup-ortypes && npm run setup-orclient && npm run setup-ornode && npm run setup-gui && npm run setup-console"
   },
   "keywords": [],
   "author": "sim31",

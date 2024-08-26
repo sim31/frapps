@@ -28,12 +28,19 @@ export const zTokenMtCfg = z.object({
 });
 export type TokenMtCfg = z.infer<typeof zTokenMtCfg>;
 
+export const zSwaggerUICfg = z.object({
+  ornodeEndpoint: z.string().url().default("http://localhost:8090")
+});
+export type SwaggerUICfg = z.infer<typeof zSwaggerUICfg>;
+
 export const zConfig = z.object({
   contracts: zContractsAddrs,
   providerUrl: z.string().url(),
   tokenMetadataCfg: zTokenMtCfg,
   mongoCfg: zMongoConfig,
-
+  swaggerUI: zSwaggerUICfg.default({
+    ornodeEndpoint: "http://localhost:8090"
+  })
 });
 export type Config = z.infer<typeof zConfig>;
 
