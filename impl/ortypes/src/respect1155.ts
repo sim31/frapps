@@ -34,7 +34,11 @@ export const zTokenId = zBytes32.refine(val => {
 });
 export type TokenId = z.infer<typeof zTokenId>;
 
+export const zTokenIdNoPrefix = z.preprocess(val => `0x${val}`, zTokenId);
+
 export const zFungibleTokenId = z.literal(zeroPadBytes("0x00", 32));
+
+export const zFungibleTokenIdNoPrefix = z.preprocess(val => `0x${val}`, zFungibleTokenId);
 
 export const zFungibleTokenIdNum = z.literal(0n);
 

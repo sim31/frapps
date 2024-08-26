@@ -26,6 +26,7 @@ import {
   VoteStatus,
   zVoteStatus,
   ExecError,
+  zCustomCall
 } from "../orclient.js";
 import {
   zStoredProposal as zNProposal,
@@ -323,7 +324,7 @@ function mkzNProposalToCustomCall(orctx: ORContext) {
     } catch(err) {
       addCustomIssue(val, ctx, err, "Exception in zNProposalToCustomCall")
     }
-  }).pipe(zCustomSignal)
+  }).pipe(zCustomCall)
 }
 
 function mkzNProposalToDecodedProp(orctx: ORContext) {

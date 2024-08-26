@@ -29,18 +29,25 @@ export const zTokenMtCfg = z.object({
 export type TokenMtCfg = z.infer<typeof zTokenMtCfg>;
 
 export const zSwaggerUICfg = z.object({
-  ornodeEndpoint: z.string().url().default("http://localhost:8090")
+  ornodeEndpoint: z.string().url().default("http://localhost:8090"),
+  host: z.string().default("localhost"),
+  port: z.number().default(9000)
 });
 export type SwaggerUICfg = z.infer<typeof zSwaggerUICfg>;
+
+export const zOrnodeCfg = z.object({
+  host: z.string().default("localhost"),
+  port: z.number().default(8090)
+})
+export type OrnodeCfg = z.infer<typeof zOrnodeCfg>;
 
 export const zConfig = z.object({
   contracts: zContractsAddrs,
   providerUrl: z.string().url(),
   tokenMetadataCfg: zTokenMtCfg,
   mongoCfg: zMongoConfig,
-  swaggerUI: zSwaggerUICfg.default({
-    ornodeEndpoint: "http://localhost:8090"
-  })
+  swaggerUI: zSwaggerUICfg.default({}), // Defaults used
+  ornode: zOrnodeCfg.default({}) // Defaults used
 });
 export type Config = z.infer<typeof zConfig>;
 
@@ -54,7 +61,10 @@ console.log("Loaded config: ", config);
 
 export const ezConfig = createConfig({
   server: {
-    listen: 8090, // port, UNIX socket or options
+    listen: {
+      port: config.ornode.port,
+      host: config.ornode.host
+    }
   },
   cors: true,
   logger: { level: "debug", color: true },

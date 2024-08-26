@@ -326,7 +326,9 @@ function mkzCCustomCallReqToProposal(orctx: ORContext) {
   return zCustomCallRequest.transform(async (val, ctx) => {
     try {
       const attachment: CustomCallAttachment = {
-        propType: zPropType.Enum.customCall
+        propType: zPropType.Enum.customCall,
+        propTitle: val.metadata?.propTitle,
+        propDescription: val.metadata?.propDescription
       };
 
       const memo = idOfCustomCallAttach(attachment);

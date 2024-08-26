@@ -14,9 +14,24 @@ import { zEthAddress, zPropId } from "ortypes";
 import { resultHandler } from "./resultHandler.js";
 import { getOrnode } from "./mongoOrnode.js";
 import { stringify } from "ts-utils";
-import { join } from "path";
-import { zRespectAwardMt, zRespectFungibleMt, zTokenId, TokenId, zFungibleTokenId, zRespectAwardPrettyMt, zRespectAwardMtToPretty } from "ortypes/respect1155.js";
+import {
+  zRespectAwardMt,
+  zRespectFungibleMt,
+  zTokenId,
+  zTokenIdNoPrefix,
+  zFungibleTokenIdNoPrefix,
+  TokenId,
+  zFungibleTokenId,
+  zRespectAwardPrettyMt,
+  zRespectAwardMtToPretty
+} from "ortypes/respect1155.js";
 import { Erc1155Mt, zErc1155Mt } from "ortypes/erc1155.js";
+import { join } from "path";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const factory = new EndpointsFactory(resultHandler);
 
@@ -119,7 +134,7 @@ const getRespectMetadata = factory.build({
 const getToken = factory.build({
   method: "get",
   input: z.object({
-    tokenId: z.union([zFungibleTokenId, zTokenId]),
+    tokenId: z.union([zFungibleTokenIdNoPrefix, zTokenIdNoPrefix]),
   }),
   output: z.union([zRespectFungibleMt, zRespectAwardPrettyMt, zRespectAwardMt]),
   handler: async ({ input, options, logger }) => {
@@ -180,7 +195,7 @@ export const routing: Routing = {
     getAwards,
     getVotes
   },
-  public: new ServeStatic("./public", {
+  static: new ServeStatic(join(__dirname, "../static"), {
     dotfiles: "deny",
     index: false,
     redirect: false,

@@ -17,7 +17,7 @@ const specObj = JSON.parse(apiSpec.getSpecAsJson());
 
 const app = express();
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specObj));
+app.use('/', swaggerUi.serve, swaggerUi.setup(specObj));
 
-app.listen(3000);
+app.listen(config.swaggerUI.port, config.swaggerUI.host);
 
