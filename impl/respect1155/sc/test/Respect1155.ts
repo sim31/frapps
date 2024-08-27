@@ -34,9 +34,10 @@ async function deploy() {
 
   const owner = accounts[0];
   const uri = "https://somedomain.io/tokens/{id}";
+  const contractURI = "https://somedomain.io/contractURI"
 
   const Respect = await hre.ethers.getContractFactory("Respect1155");
-  const respect = await Respect.deploy(owner, uri);
+  const respect = await Respect.deploy(owner, uri, contractURI);
 
   const ERC1155Receiver = await hre.ethers.getContractFactory("ERC1155ReceiverLogger");
   const receiver = await ERC1155Receiver.deploy();
@@ -47,7 +48,7 @@ async function deploy() {
   const ERC1155ReceiverInvalid = await hre.ethers.getContractFactory("ERC1155ReceiverInvalid");
   const recInvalid = await ERC1155ReceiverInvalid.deploy();
 
-  return { respect, owner, accounts, uri, receiver, recReverter, recInvalid };
+  return { respect, owner, accounts, uri, receiver, recReverter, recInvalid, contractURI };
 }
 
 async function deployAndMint() {
@@ -84,9 +85,10 @@ describe("Respect1155", function () {
       expect(await respect.owner()).to.be.equal(owner);
     });
     it("should set uri", async function() {
-      const { respect, uri } = await loadFixture(deploy);
+      const { respect, uri, contractURI } = await loadFixture(deploy);
 
       expect(await respect.uri(0)).to.be.equal(uri);
+      expect(await respect.contractURI()).to.be.equal(contractURI);
     });
   })
 
@@ -357,6 +359,30 @@ describe("Respect1155", function () {
       const altCaller = await respect.connect(accounts[5]);
 
       const newURI = "https://newaddr.io/tokens/{id}";
+      await expect(altCaller.setURI(newURI)).to.be.reverted;
+    })
+  })
+
+  describe("setContractURI", function() {
+    it("should change contract URI if called by owner", async function() {
+      const { respect, mints } = await loadFixture(deployAndMint);
+
+      const uriBefore = await respect.uri(mints[9].id);
+      const newURI = "https://newaddr.io/contractURI";
+
+      await expect(respect.setContractURI(newURI)).to.not.be.reverted;
+
+      expect(await respect.contractURI())
+        .to.be.equal(newURI)
+        .and.not.be.equal(uriBefore);
+    });
+
+    it("should not allow changing contract URI for non-owner of contract", async function() {
+      const { respect, mints, accounts } = await loadFixture(deployAndMint);
+
+      const altCaller = await respect.connect(accounts[5]);
+
+      const newURI = "https://newaddr.io/a";
       await expect(altCaller.setURI(newURI)).to.be.reverted;
     })
   })

@@ -11,8 +11,8 @@ contract Respect1155 is Respect1155Base, Ownable {
         uint64 value;
     }
 
-    constructor(address owner, string memory uri_)
-        Respect1155Base(uri_) Ownable(owner) {}
+    constructor(address owner, string memory uri_, string memory contractURI_)
+        Respect1155Base(uri_, contractURI_) Ownable(owner) {}
 
     function mintRespect(MintRequest calldata request, bytes calldata data) external virtual onlyOwner {
         _mintRespect(request.id, request.value, data);
@@ -37,6 +37,10 @@ contract Respect1155 is Respect1155Base, Ownable {
 
     function setURI(string calldata uri) external onlyOwner {
         _setURI(uri);
+    }
+
+    function setContractURI(string calldata uri) external onlyOwner {
+        _setContractURI(uri);
     }
 
 }

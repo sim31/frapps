@@ -3,11 +3,12 @@ pragma solidity ^0.8.24;
 
 import "orec/contracts/IRespect.sol";
 import "./IRespect1155.sol";
+import "./IERC7572.sol";
+import {Arrays} from "@openzeppelin/contracts/utils/Arrays.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import {IERC1155Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 import {IERC165, ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import {Arrays} from "@openzeppelin/contracts/utils/Arrays.sol";
 
 /**
  * 256 bits (32 bytes):
@@ -24,7 +25,7 @@ function ownerFromTokenId(TokenId packed) pure returns (address) {
 /**
  * @title Interface for Respect tokens
  */
-abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, IERC1155Errors {
+abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, IERC1155Errors, IERC7572 {
     using Arrays for uint256[];
     using Arrays for address[];
 
@@ -41,9 +42,11 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
 
     // Used as the URI for all token types by relying on ID substitution, e.g. https://token-cdn-domain/{id}.json
     string private _uri;
+    string private _contractURI;
 
-    constructor(string memory uri_) {
+    constructor(string memory uri_, string memory contractURI_) {
         _setURI(uri_);
+        _setContractURI(contractURI_);
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
@@ -67,6 +70,10 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
      */
     function uri(uint256 /* id */) public view virtual returns (string memory) {
         return _uri;
+    }
+
+    function contractURI() external view returns (string memory) {
+        return _contractURI;
     }
 
     function valueOfToken(uint256 tokenId) public view override returns (uint64) {
@@ -273,5 +280,10 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
 
     function _setURI(string memory newuri) internal virtual {
         _uri = newuri;
+    }
+
+    function _setContractURI(string memory newuri) internal virtual {
+        _contractURI = newuri;
+        emit ContractURIUpdated();
     }
 }
