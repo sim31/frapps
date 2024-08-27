@@ -35,6 +35,7 @@ import {
   zBytesToVoteMemo,
   ExecStatus,
   zExecStatusStr,
+  ContractMetadata,
 } from "ortypes"
 import { TokenMtCfg } from "./config.js"
 import { IOrdb } from "./ordb/iordb.js";
@@ -209,6 +210,10 @@ export class ORNode implements IORNode {
 
   async getRespectMetadata(): Promise<RespectFungibleMt> {
     return this._cfg.tokenCfg.fungible;
+  }
+
+  async getRespectContractMt(): Promise<ContractMetadata> {
+    return this._cfg.tokenCfg.contract;
   }
 
   async getToken(

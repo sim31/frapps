@@ -110,7 +110,7 @@ export class ORContext<CT extends Config> {
         // const url = zUrl.parse(config.contractRunner);
         const url = new URL(config.contractRunner);
         console.log("Provider protocol: ", url.protocol, ", full url: ", url.toString());
-        if (url.protocol === 'https:') {
+        if (url.protocol === 'https:' || url.protocol === 'http:') {
           runner = new JsonRpcProvider(url.toString());
         } else if (url.protocol === 'wss:') {
           runner = new WebSocketProvider(url.toString());

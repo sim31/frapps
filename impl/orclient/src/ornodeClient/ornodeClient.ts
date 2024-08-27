@@ -381,6 +381,7 @@ type PostV1GetProposalsInput = {
     spec: {
         before?: number | undefined;
         limit?: number | undefined;
+        execStatusFilter?: ("NotExecuted" | "Executed" | "ExecutionFailed")[] | undefined;
     };
 };
 
@@ -681,6 +682,56 @@ type PostV1GetRespectMetadataResponse = {
     };
 };
 
+type PostV1GetRespectContractMtInput = {};
+
+type PostV1GetRespectContractMtResponse = {
+    status: "success";
+    data: {
+        /** Name of contract */
+        name: string;
+        /** Symbol of contract */
+        symbol?: string | undefined;
+        /** Description of contract */
+        description?: string | undefined;
+        image?: string | undefined;
+        banner_image?: string | undefined;
+        featured_image?: string | undefined;
+        external_link?: string | undefined;
+        collaborators?: string[] | undefined;
+    };
+} | {
+    status: "error";
+    error: {
+        message: string;
+        name?: string;
+    };
+};
+
+type GetV1RespectContractMetadataInput = {};
+
+type GetV1RespectContractMetadataResponse = {
+    status: "success";
+    data: {
+        /** Name of contract */
+        name: string;
+        /** Symbol of contract */
+        symbol?: string | undefined;
+        /** Description of contract */
+        description?: string | undefined;
+        image?: string | undefined;
+        banner_image?: string | undefined;
+        featured_image?: string | undefined;
+        external_link?: string | undefined;
+        collaborators?: string[] | undefined;
+    };
+} | {
+    status: "error";
+    error: {
+        message: string;
+        name?: string;
+    };
+};
+
 type GetV1TokenTokenIdInput = {
     tokenId: "0x0000000000000000000000000000000000000000000000000000000000000000" | string;
 };
@@ -822,7 +873,7 @@ type PostV1GetVotesResponse = {
     };
 };
 
-export type Path = "/v1/putProposal" | "/v1/getProposal" | "/v1/getProposals" | "/v1/getPeriodNum" | "/v1/getToken" | "/v1/getAward" | "/v1/getRespectMetadata" | "/v1/token/:tokenId" | "/v1/getAwards" | "/v1/getVotes";
+export type Path = "/v1/putProposal" | "/v1/getProposal" | "/v1/getProposals" | "/v1/getPeriodNum" | "/v1/getToken" | "/v1/getAward" | "/v1/getRespectMetadata" | "/v1/getRespectContractMt" | "/v1/respectContractMetadata" | "/v1/token/:tokenId" | "/v1/getAwards" | "/v1/getVotes";
 
 export type Method = "get" | "post" | "put" | "delete" | "patch";
 
@@ -836,6 +887,8 @@ export interface Input extends Record<MethodPath, any> {
     "post /v1/getToken": PostV1GetTokenInput;
     "post /v1/getAward": PostV1GetAwardInput;
     "post /v1/getRespectMetadata": PostV1GetRespectMetadataInput;
+    "post /v1/getRespectContractMt": PostV1GetRespectContractMtInput;
+    "get /v1/respectContractMetadata": GetV1RespectContractMetadataInput;
     "get /v1/token/:tokenId": GetV1TokenTokenIdInput;
     "post /v1/getAwards": PostV1GetAwardsInput;
     "post /v1/getVotes": PostV1GetVotesInput;
@@ -849,14 +902,16 @@ export interface Response extends Record<MethodPath, any> {
     "post /v1/getToken": PostV1GetTokenResponse;
     "post /v1/getAward": PostV1GetAwardResponse;
     "post /v1/getRespectMetadata": PostV1GetRespectMetadataResponse;
+    "post /v1/getRespectContractMt": PostV1GetRespectContractMtResponse;
+    "get /v1/respectContractMetadata": GetV1RespectContractMetadataResponse;
     "get /v1/token/:tokenId": GetV1TokenTokenIdResponse;
     "post /v1/getAwards": PostV1GetAwardsResponse;
     "post /v1/getVotes": PostV1GetVotesResponse;
 }
 
-export const jsonEndpoints = { "post /v1/putProposal": true, "post /v1/getProposal": true, "post /v1/getProposals": true, "get /v1/getPeriodNum": true, "post /v1/getToken": true, "post /v1/getAward": true, "post /v1/getRespectMetadata": true, "get /v1/token/:tokenId": true, "post /v1/getAwards": true, "post /v1/getVotes": true };
+export const jsonEndpoints = { "post /v1/putProposal": true, "post /v1/getProposal": true, "post /v1/getProposals": true, "get /v1/getPeriodNum": true, "post /v1/getToken": true, "post /v1/getAward": true, "post /v1/getRespectMetadata": true, "post /v1/getRespectContractMt": true, "get /v1/respectContractMetadata": true, "get /v1/token/:tokenId": true, "post /v1/getAwards": true, "post /v1/getVotes": true };
 
-export const endpointTags = { "post /v1/putProposal": [], "post /v1/getProposal": [], "post /v1/getProposals": [], "get /v1/getPeriodNum": [], "post /v1/getToken": [], "post /v1/getAward": [], "post /v1/getRespectMetadata": [], "get /v1/token/:tokenId": [], "post /v1/getAwards": [], "post /v1/getVotes": [] };
+export const endpointTags = { "post /v1/putProposal": [], "post /v1/getProposal": [], "post /v1/getProposals": [], "get /v1/getPeriodNum": [], "post /v1/getToken": [], "post /v1/getAward": [], "post /v1/getRespectMetadata": [], "post /v1/getRespectContractMt": [], "get /v1/respectContractMetadata": [], "get /v1/token/:tokenId": [], "post /v1/getAwards": [], "post /v1/getVotes": [] };
 
 export type Provider = <M extends Method, P extends Path>(method: M, path: P, params: Input[`${M} ${P}`]) => Promise<Response[`${M} ${P}`]>;
 

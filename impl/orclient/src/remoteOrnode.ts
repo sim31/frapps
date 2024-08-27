@@ -1,4 +1,4 @@
-import { EthAddress, IORNode, PropId, ProposalInvalid, ProposalNotCreated, ProposalNotFound } from "ortypes";
+import { ContractMetadata, EthAddress, IORNode, PropId, ProposalInvalid, ProposalNotCreated, ProposalNotFound } from "ortypes";
 import { GetProposalsSpec, GetAwardsSpec, ORNodePropStatus, StoredProposal as Proposal, ProposalFull, zErrorType, Vote, GetVotesSpec } from "ortypes/ornode.js";
 import { OrnodeClient, createOrnodeClient } from "./ornodeClient/index.js";
 import { Input, Method, Path, Response } from "./ornodeClient/ornodeClient.js"
@@ -96,6 +96,11 @@ export class RemoteOrnode implements IORNode {
 
   async getRespectMetadata(): Promise<RespectFungibleMt> {
     const data = await this._makeOrnodeRequest("post", "/v1/getRespectMetadata", {});
+    return data;
+  }
+
+  async getRespectContractMt(): Promise<ContractMetadata> {
+    const data = await this._makeOrnodeRequest("post", "/v1/getRespectContractMt", {});
     return data;
   }
 

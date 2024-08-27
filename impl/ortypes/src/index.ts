@@ -11,5 +11,7 @@ export * as Respect1155 from "./respect1155.js";
 export * as Utils from "./utils.js";
 export * as FractalRespect from "./fractalRespect.js";
 export * from "./zErrorHandling.js";
+export * from "./erc1155.js";
+export * from "./erc7572.js";
 
 export * from "./common.js";

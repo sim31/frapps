@@ -15,6 +15,15 @@
       "description": "Awards for a contributions to Optimsim Fractal",
       "image": "http://localhost:8090/public/of.png",
       "decimals": 0
+    },
+    "contract": {
+      "name": "Fractal name Respect",
+      "symbol": "SYM",
+      "description": "",
+      "image": "",
+      "banner_image": "",
+      "featured_image": "",
+      "external_link": ""
     }
   },
   "mongoCfg": {

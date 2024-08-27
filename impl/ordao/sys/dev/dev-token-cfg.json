@@ -9,5 +9,14 @@
     "description": "Awards for a contributions to Optimsim Fractal",
     "image": "http://localhost:8090/public/of.png",
     "decimals": 0
+  },
+  "contract": {
+    "name": "Optimism Fractal Respect",
+    "symbol": "OFR",
+    "description": "Awards for a contributions to Optimsim Fractal",
+    "image": "http://localhost:8090/public/of.png",
+    "banner_image": "http://localhost:8090/public/of.png",
+    "featured_image": "http://localhost:8090/public/of.png",
+    "external_link": "https://of.frapps.xyz"
   }
 }

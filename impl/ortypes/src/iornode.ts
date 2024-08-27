@@ -14,7 +14,7 @@ import {
 } from "./ornode.js";
 import { RespectAwardMt, RespectFungibleMt } from "./respect1155.js";
 import { Erc1155Mt, TokenId } from "./erc1155.js";
-import { EthAddress } from "./eth.js";
+import { ContractMetadata } from "./erc7572.js";
 
 export interface IORNode {
   /**
@@ -41,6 +41,8 @@ export interface IORNode {
   getVotes: (spec?: GetVotesSpec) => Promise<Vote[]>;
 
   getRespectMetadata: () => Promise<RespectFungibleMt>;
+
+  getRespectContractMt: () => Promise<ContractMetadata>;
 }
 
 export class ProposalNotFound extends Error {

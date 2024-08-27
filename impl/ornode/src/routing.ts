@@ -10,7 +10,7 @@ import {
   zGetVotesSpec,
   zVote,
 } from "ortypes/ornode.js";
-import { zEthAddress, zPropId } from "ortypes";
+import { zContractMetadata, zEthAddress, zPropId } from "ortypes";
 import { resultHandler } from "./resultHandler.js";
 import { getOrnode } from "./mongoOrnode.js";
 import { stringify } from "ts-utils";
@@ -131,6 +131,28 @@ const getRespectMetadata = factory.build({
   }
 });
 
+const getRespectContractMt = factory.build({
+  method: "post",
+  input: z.object({}),
+  output: zContractMetadata,
+  handler: async ({input, options, logger}) => {
+    logger.debug(`getRespectContractMt ${stringify(input)}. options: ${stringify(options)}`);
+    const n = await getOrnode();
+    return await n.getRespectContractMt();
+  }
+});
+
+const getRespectContractMtGet = factory.build({
+  method: "get",
+  input: z.object({}),
+  output: zContractMetadata,
+  handler: async ({input, options, logger}) => {
+    logger.debug(`GET getRespectContractMt ${stringify(input)}. options: ${stringify(options)}`);
+    const n = await getOrnode();
+    return await n.getRespectContractMt();
+  }
+});
+
 const getToken = factory.build({
   method: "get",
   input: z.object({
@@ -189,6 +211,8 @@ export const routing: Routing = {
     getToken: getTokenPost,
     getAward,
     getRespectMetadata,
+    getRespectContractMt,
+    respectContractMetadata: getRespectContractMtGet,
     token: {
       ":tokenId": getToken
     },

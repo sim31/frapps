@@ -265,7 +265,7 @@ export class Deployment {
     ///////// Deploy new respect contract /////////
     const respectFactory = new Respect1155.Factory(signers[0]);
 
-    let newRespect = await respectFactory.deploy(orec, "https://tf.io");
+    let newRespect = await respectFactory.deploy(orec, "https://tf.io/token/{id}", "https://tf.io/respectContractURI");
     newRespect = await newRespect.waitForDeployment();
     const newRespectAddr = await newRespect.getAddress();
     console.log("Deployed new Respect: ", newRespectAddr);

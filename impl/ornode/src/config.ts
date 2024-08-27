@@ -1,6 +1,6 @@
 import { createConfig } from "express-zod-api";
 import fs from "fs";
-import { zEthAddress } from "ortypes";
+import { zContractMetadata, zEthAddress } from "ortypes";
 import { z } from "zod"
 import "dotenv/config";
 import jsonfile from "jsonfile";
@@ -24,7 +24,8 @@ export const zTokenMtCfg = z.object({
     description: z.string().optional(),
     image: z.string().url().optional(),
   }),
-  fungible: zRespectFungibleMt
+  fungible: zRespectFungibleMt,
+  contract: zContractMetadata
 });
 export type TokenMtCfg = z.infer<typeof zTokenMtCfg>;
 
