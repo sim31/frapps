@@ -101,6 +101,7 @@ contract Orec is Ownable {
     error ProposalDoesNotExist();
     error InvalidVote();
     error MaxLiveYesVotesExceeded();
+    error MaxLiveNoVotesExceeded();
     error UnsupportedRespectContract();
 
     /// Length of a voting period
@@ -114,8 +115,14 @@ contract Orec is Ownable {
     address public respectContract;
     RespectAPIType internal _respectAPType;
 
-    /// Maximum number of yes votes on live proposals. This is security mechanism for preventing proposal spam attacks.
+    /// Maximum number of yes votes on live proposals (per account). This is security mechanism for preventing proposal spam attacks.
     uint8 public maxLiveYesVotes;
+    /// Maximum number of no votes on live proposals (per account).
+    /// Recommended value: 2 * maxLiveYesVotes. Anything smaller will prevent protection from spam attacks.
+    /// In case of a respect-holder who is maliciously blocking everything this value will allow 3 other respect-holders
+    /// to overcome that by voting on multiple proposals at the same time (maxLiveYesVotes each).
+    /// Can set it to max uint8 value if you don't see that scenario as a problem.
+    uint8 public maxLiveNoVotes;
 
     mapping (PropId => ProposalState) public proposals;
     mapping (address => EnumerableMap.Bytes32ToBytes32Map) private _liveVotes;
@@ -125,13 +132,15 @@ contract Orec is Ownable {
         uint64 voteLenSeconds_,
         uint64 vetoLenSeconds_,
         uint256 minWeight_,
-        uint8 maxLiveYesVotes_
+        uint8 maxLiveYesVotes_,
+        uint8 maxLiveNoVotes_
     ) Ownable(address(this)) {
         _setRespectContract(respectContract_);
         voteLen = voteLenSeconds_;
         vetoLen = vetoLenSeconds_;
         minWeight = minWeight_;
         maxLiveYesVotes = maxLiveYesVotes_;
+        maxLiveNoVotes = maxLiveNoVotes_;
     }
 
     /// Vote for proposal. Creates it if it doesn't exist.
@@ -250,8 +259,12 @@ contract Orec is Ownable {
         vetoLen = newVetoLen;
     }
 
-    function setMaxLiveVotes(uint8 newMaxLiveVotes) public onlyOwner {
-        maxLiveYesVotes = newMaxLiveVotes;
+    function setMaxLiveYesVotes(uint8 newMaxLiveYesVotes) public onlyOwner {
+        maxLiveYesVotes = newMaxLiveYesVotes;
+    }
+
+    function setMaxLiveNoVotes(uint8 newMaxLiveNoVotes) public onlyOwner {
+        maxLiveNoVotes = newMaxLiveNoVotes;
     }
 
     function proposalId(Message calldata message) public pure returns (PropId) {
@@ -374,7 +387,7 @@ contract Orec is Ownable {
         }
 
         // Remove non-live votes, count yes votes on other proposals
-        uint liveYesCount = _updateLiveVotes(votesOfAcc, propId);
+        (uint liveYesCount, uint liveNoCount) = _updateLiveVotes(votesOfAcc, propId);
 
         // Timing checks
         if (newVote.vtype == VoteType.Yes) {
@@ -387,6 +400,9 @@ contract Orec is Ownable {
         } else if (newVote.vtype == VoteType.No) {
             if (!_isVoteActive(p)) {
                 revert ProposalVoteInactive();
+            }
+            if (liveNoCount >= maxLiveNoVotes) {
+                revert MaxLiveNoVotesExceeded();
             }
         } else {
             // Not allowing VoteType.None votes
@@ -467,15 +483,13 @@ contract Orec is Ownable {
         return bytes32(b);
     }
 
-    /// @return liveYesCount - number of live yes votes
     function _updateLiveVotes(
         EnumerableMap.Bytes32ToBytes32Map storage voteMap,
         PropId currentProp
-    ) internal returns (uint) {
+    ) internal returns (uint liveYesCount, uint liveNoCount) {
         uint len = voteMap.length();
         PropId[] memory toRemove = new PropId[](len);
         uint removeCount = 0;
-        uint liveYesCount = 0;
         for (uint i = 0; i < len; i++) {
             (bytes32 key, bytes32 value) = voteMap.at(i);
             PropId propId = PropId.wrap(key);
@@ -485,8 +499,13 @@ contract Orec is Ownable {
                 removeCount += 1;
             } else {
                 Vote memory v = _bytes32ToVote(value);
-                if (v.vtype == VoteType.Yes && PropId.unwrap(propId) != PropId.unwrap(currentProp)) {
-                    liveYesCount += 1;
+                if (PropId.unwrap(propId) != PropId.unwrap(currentProp)) {
+                    if (v.vtype == VoteType.Yes) {
+                        liveYesCount += 1;
+                    } else {
+                        assert(v.vtype == VoteType.No);
+                        liveNoCount += 1;
+                    }
                 }
             }
         }
@@ -495,7 +514,7 @@ contract Orec is Ownable {
             voteMap.remove(PropId.unwrap(toRemove[i]));
         }
 
-        return liveYesCount;
+        return (liveYesCount, liveNoCount);
     }
 
     function _getProposal(PropId propId) internal view returns (ProposalState storage) {
