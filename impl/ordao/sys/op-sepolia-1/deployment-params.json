@@ -4,9 +4,10 @@
     "votePeriod": 180,
     "vetoPeriod": 180,
     "voteThreshold": 34,
-    "maxLiveYesVotes": 6
+    "maxLiveYesVotes": 4
   },
   "Ordao": {
-    "uri": "temporaryuri"
+    "uri": "https://test1-ornode.frapps.xyz/v1/token/{id}",
+    "contractURI": "https://test1-ornode.frapps.xyz/v1/respectContractMetadata"
   }
 }

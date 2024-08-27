@@ -15,11 +15,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy-op-sepolia-1": "npx hardhat ignition deploy --parameters $npm_package_config_op_sepolia_1_params --deployment-id op-sepolia-1 --network opSepolia ignition/modules/Ordao.ts",
+    "deploy-op-sepolia-1-reset": "npx hardhat ignition deploy --parameters $npm_package_config_op_sepolia_1_params --deployment-id op-sepolia-1 --reset --network opSepolia ignition/modules/Ordao.ts",
     "copy-orec-dbg": "cp $npm_package_config_orec_dbg $npm_package_config_orec_dbg_path_op_sepolia1",
     "copy-respect1155-dbg": "cp $npm_package_config_respect1155_dbg $npm_package_config_respect1155_dbg_path_op_sepolia1",
     "copy-orec-buildinfo": "cp $npm_package_config_orec_build_info/* ignition/deployments/build-info/",
     "copy-respect1155-buildinfo": "cp $npm_package_config_respect1155_build_info/* ignition/deployments/build-info/",
-    "verify-op-sepolia-1": "npm run copy-orec-dbg && npm run copy-respect1155-dbg && mkdir ignition/deployments/build-info && npm run copy-orec-buildinfo && npm run copy-respect1155-buildinfo && npx hardhat ignition verify op-sepolia-1"
+    "verify-op-sepolia-1": "npm run copy-orec-dbg && npm run copy-respect1155-dbg && mkdir -p ignition/deployments/build-info && npm run copy-orec-buildinfo && npm run copy-respect1155-buildinfo && npx hardhat ignition verify op-sepolia-1"
 
   },
   "author": "sim31",
