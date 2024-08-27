@@ -164,6 +164,11 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
         revert OpNotSupported();
     }
 
+    function tokenExists(uint256 tokenId) public view returns(bool) {
+        uint64 v = _valueOf(tokenId);
+        return v != 0;
+    }
+
     function _mintRespect(uint256 id, uint64 value, bytes memory data) internal {
         address to = _ownerOf(id);
         address operator = msg.sender;
@@ -256,11 +261,6 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
 
     function _valueOf(uint256 tokenId) internal view returns (uint64) {
         return _values[tokenId];
-    }
-
-    function tokenExists(uint256 tokenId) public view returns(bool) {
-        uint64 v = _valueOf(tokenId);
-        return v != 0;
     }
 
     function _ownerOf(uint256 tokenId) internal pure returns (address) {

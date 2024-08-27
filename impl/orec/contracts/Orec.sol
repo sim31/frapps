@@ -267,6 +267,28 @@ contract Orec is Ownable {
         emit Signal(signalType, data);
     }
 
+    /**
+     * Return current vote of voter on currently live proposal (identified by propId).
+     */
+    function getLiveVote(PropId propId, address voter) public view returns (Vote memory) {
+        EnumerableMap.Bytes32ToBytes32Map storage voteMap = _liveVotes[voter];
+        return _getVote(voteMap, propId);
+    }
+
+    function voteWeightOf(address account) public view returns (VoteWeight) {
+        uint256 respect = respectOf(account);
+        uint128 w = uint128(Math.min(respect, _maxVoteWeight));
+        return VoteWeight.wrap(w);
+    }
+
+    function respectOf(address account) public view returns (uint256) {
+        if (_respectAPType == RespectAPIType.IRespect) {
+            return (IRespect(respectContract)).respectOf(account);
+        } else {
+            return (IERC20(respectContract)).balanceOf(account);
+        }
+    }
+
     function _setRespectContract(IERC165 respect) internal {
         address raddr = address(respect);
         if (respect.supportsInterface(type(IRespect).interfaceId)) {
@@ -382,14 +404,6 @@ contract Orec is Ownable {
         }
     }
 
-    /**
-     * Return current vote of voter on currently live proposal (identified by propId).
-     */
-    function getLiveVote(PropId propId, address voter) public view returns (Vote memory) {
-        EnumerableMap.Bytes32ToBytes32Map storage voteMap = _liveVotes[voter];
-        return _getVote(voteMap, propId);
-    }
-
     function _getVote(
         EnumerableMap.Bytes32ToBytes32Map storage voteMap,
         PropId propId
@@ -451,20 +465,6 @@ contract Orec is Ownable {
         uint128 weight = VoteWeight.unwrap(v.weight);
         uint256 b = (uint256(v.vtype) << 128) | (uint256(weight));
         return bytes32(b);
-    }
-
-    function voteWeightOf(address account) public view returns (VoteWeight) {
-        uint256 respect = respectOf(account);
-        uint128 w = uint128(Math.min(respect, _maxVoteWeight));
-        return VoteWeight.wrap(w);
-    }
-
-    function respectOf(address account) public view returns (uint256) {
-        if (_respectAPType == RespectAPIType.IRespect) {
-            return (IRespect(respectContract)).respectOf(account);
-        } else {
-            return (IERC20(respectContract)).balanceOf(account);
-        }
     }
 
     /// @return liveYesCount - number of live yes votes
