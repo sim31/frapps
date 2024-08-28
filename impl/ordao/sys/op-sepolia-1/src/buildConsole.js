@@ -6,21 +6,24 @@ import shelljs from "shelljs";
 const dCfg = jsonfile.readFileSync("../../sc-deployment/ignition/deployments/op-sepolia-1/deployed_addresses.json");
 const dparams = jsonfile.readFileSync("./deployment-params.json");
 
+const buildDirFromOrclient = "../ordao/console/build/op-sepolia-1"
+const buildDir = "build/op-sepolia-1"
+
 const docCmd = `cd $npm_package_config_orclient && \
   npx typedoc ./src/orclient.ts \
   --name "orconsole" \
   --readme "../ordao/console/DOCS-INDEX.md" \
   --customFooterHtml "<script type="module" src="/src/index.ts"></script>"\
-  --out "../ordao/console/build" \
+  --out ${buildDirFromOrclient} \
   `
 
 shelljs.exec(docCmd);
 
 const copyCmd = `cd $npm_package_config_ordao_console && \
-  cp tsconfig.json build/ && \
-  cp tsconfig.node.json build/ && \
-  cp vite.config.ts build/ && \
-  cp -r src build/
+  cp tsconfig.json ${buildDir} && \
+  cp tsconfig.node.json ${buildDir} && \
+  cp vite.config.ts ${buildDir} && \
+  cp -r src ${buildDir}
 `
 
 shelljs.exec(copyCmd);
@@ -32,7 +35,7 @@ const consoleCmd = `cd $npm_package_config_ordao_console && \
   VITE_ORNODE_URL=https://test1-ornode.frapps.xyz \
   VITE_APP_TITLE="ORConsole Test 1" \
   \
-  npm run build build/
+  npm run build ${buildDir}
   `;
 
 // cp public/index.html dist/index.html
@@ -40,7 +43,7 @@ const consoleCmd = `cd $npm_package_config_ordao_console && \
 shelljs.exec(consoleCmd);
 
 const copyAssets = `cd $npm_package_config_ordao_console && \
-  cp -r build/assets/* build/dist/assets/ \
+  cp -r ${buildDir}/assets/* ${buildDir}/dist/assets/ \
 `
 
 shelljs.exec(copyAssets);

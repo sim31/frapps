@@ -113,7 +113,7 @@ export class RemoteOrnode implements IORNode {
 
   private async _makeOrnodeRequest<M extends Method, P extends Path>(
     method: M, path: P, params: Input[`${M} ${P}`]
-  ): Promise<Extract<Response[`${M} ${P}`], { status: "success" }>["data"]> {
+  ): Promise<Exclude<Response[`${M} ${P}`], { status: "error" }>> {
     let data: any;
     let error: any;
     try {
@@ -126,7 +126,7 @@ export class RemoteOrnode implements IORNode {
         data = response;
       }
     } catch (err) {
-      throw new OrnodeRequestFailed(`Request ${method} ${path} with params: ${stringify(params)} failed. Cause: ${stringify(err)}`, err);
+      throw new OrnodeRequestFailed(`Request ${method} ${path} with params: ${stringify(params)} failed! Cause: ${stringify(err)}`, err);
     }
 
     if (error !== undefined) {

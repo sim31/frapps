@@ -3,11 +3,9 @@ import shelljs from "shelljs";
 
 // NOTE: don't forget to run typedoc in watch mode in parallel (see watchOrclientDocs.js)
 
-const dCfg = jsonfile.readFileSync("../../sc-deployment/ignition/deployments/op-sepolia-1/deployed_addresses.json");
-const dparams = jsonfile.readFileSync("./deployment-params.json");
-
-const buildDirFromOrclient = "../ordao/console/build/op-sepolia-1-local"
-const buildDir = "build/op-sepolia-1-local"
+const dCfg = jsonfile.readFileSync("./tmp/dev-deployment.json");
+const buildDirFromOrclient = "../ordao/console/build/dev"
+const buildDir = "build/dev/"
 
 const docCmd = `cd $npm_package_config_orclient && \
   npx typedoc ./src/orclient.ts \
@@ -29,11 +27,11 @@ const copyCmd = `cd $npm_package_config_ordao_console && \
 shelljs.exec(copyCmd);
 
 const consoleCmd = `cd $npm_package_config_ordao_console && \
-  VITE_OLD_RESPECT_ADDR=${dparams['Orec']['oldRespectAddr']} \
-  VITE_NEW_RESPECT_ADDR=${dCfg['Ordao#Respect1155']} \
-  VITE_OREC_ADDR=${dCfg['Orec#Orec']} \
+  VITE_OLD_RESPECT_ADDR=${dCfg.oldRespectAddr} \
+  VITE_NEW_RESPECT_ADDR=${dCfg.newRespectAddr} \
+  VITE_OREC_ADDR=${dCfg.orecAddr} \
   VITE_ORNODE_URL=http://localhost:8090 \
-  VITE_APP_TITLE="ORConsole local" \
+  VITE_APP_TITLE="ORConsole dev" \
   \
   npm run build ${buildDir}
   `;
@@ -48,3 +46,7 @@ const copyAssets = `cd $npm_package_config_ordao_console && \
 
 shelljs.exec(copyAssets);
 
+const run = `cd $npm_package_config_ordao_console &&
+  npm run preview ${buildDir} -- --port 5174 --clearScreen false \
+`
+shelljs.exec(run)

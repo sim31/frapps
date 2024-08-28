@@ -31,9 +31,9 @@
     "setup-local": "npm install && cd $npm_package_config_dev && npm run setup && build-console-local",
     "setup": "npm install && cd $npm_package_config_dev && npm run setup && build-console",
     "ornode-local": "node src/runOrnodeLocal.js",
-    "console-local": "cd $npm_package_config_ordao_console && npm run preview build -- --port 5173",
+    "console-local": "cd $npm_package_config_ordao_console && npm run preview build/op-sepolia-1-local -- --port 5173",
     "ornode": "node src/runOrnode.js",
-    "console": "cd $npm_package_config_ordao_console && npm run serve",
+    "console": "cd $npm_package_config_ordao_console && npx http-server build/op-sepolia-1/dist/ -p 8080 -a localhost",
     "ornode-swagger-ui": "cd $npm_package_config_ornode && ORNODE_CFG_PATH=$npm_package_config_ornode_to_home1_cfg_path npm run swagger-ui"
   },
   "author": "sim31",

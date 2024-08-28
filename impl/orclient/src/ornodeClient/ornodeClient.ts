@@ -180,10 +180,7 @@ type PostV1PutProposalInput = {
 };
 
 type PostV1PutProposalResponse = {
-    status: "success";
-    data: {
-        propStatus: "ProposalExists" | "ProposalStored";
-    };
+    propStatus: "ProposalExists" | "ProposalStored";
 } | {
     status: "error";
     error: {
@@ -196,9 +193,194 @@ type PostV1GetProposalInput = {
     propId: string;
 };
 
-type PostV1GetProposalResponse = {
-    status: "success";
-    data: {
+type PostV1GetProposalResponse = ({
+    id: string;
+    content?: {
+        addr: any;
+        cdata: string | any;
+        memo: string | any;
+    } | undefined;
+    attachment?: ({
+        propType: "respectBreakout";
+        propTitle?: string | undefined;
+        propDescription?: string | undefined;
+        salt?: string | undefined;
+        groupNum: number;
+    } | {
+        propType: "respectAccount";
+        propTitle?: string | undefined;
+        propDescription?: string | undefined;
+        salt?: string | undefined;
+        mintReason: string;
+        mintTitle: string;
+    } | {
+        propType: "burnRespect";
+        propTitle?: string | undefined;
+        propDescription?: string | undefined;
+        salt?: string | undefined;
+        burnReason: string;
+    } | {
+        propType: "customSignal";
+        propTitle?: string | undefined;
+        propDescription?: string | undefined;
+        salt?: string | undefined;
+        link?: string | undefined;
+    } | {
+        propType: "tick";
+        propTitle?: string | undefined;
+        propDescription?: string | undefined;
+        salt?: string | undefined;
+        link?: string | undefined;
+    } | {
+        propType: "customCall";
+        propTitle?: string | undefined;
+        propDescription?: string | undefined;
+        salt?: string | undefined;
+    }) | undefined;
+    createTs: number;
+    /** Hash of transaction which created this proposal */
+    createTxHash?: string | undefined;
+    /** Hash of transaction which executed this proposal */
+    executeTxHash?: string | undefined;
+    status: "NotExecuted" | "Executed" | "ExecutionFailed";
+} | {
+    id: string;
+    content: {
+        addr: any;
+        cdata: string | any;
+        memo: string | any;
+    };
+    attachment: {
+        propType: "respectBreakout";
+        propTitle?: string | undefined;
+        propDescription?: string | undefined;
+        salt?: string | undefined;
+        groupNum: number;
+    };
+    createTs: number;
+    /** Hash of transaction which created this proposal */
+    createTxHash?: string | undefined;
+    /** Hash of transaction which executed this proposal */
+    executeTxHash?: string | undefined;
+    status: "NotExecuted" | "Executed" | "ExecutionFailed";
+} | {
+    id: string;
+    content: {
+        addr: any;
+        cdata: string | any;
+        memo: string | any;
+    };
+    attachment: {
+        propType: "respectAccount";
+        propTitle?: string | undefined;
+        propDescription?: string | undefined;
+        salt?: string | undefined;
+        mintReason: string;
+        mintTitle: string;
+    };
+    createTs: number;
+    /** Hash of transaction which created this proposal */
+    createTxHash?: string | undefined;
+    /** Hash of transaction which executed this proposal */
+    executeTxHash?: string | undefined;
+    status: "NotExecuted" | "Executed" | "ExecutionFailed";
+} | {
+    id: string;
+    content: {
+        addr: any;
+        cdata: string | any;
+        memo: string | any;
+    };
+    attachment: {
+        propType: "burnRespect";
+        propTitle?: string | undefined;
+        propDescription?: string | undefined;
+        salt?: string | undefined;
+        burnReason: string;
+    };
+    createTs: number;
+    /** Hash of transaction which created this proposal */
+    createTxHash?: string | undefined;
+    /** Hash of transaction which executed this proposal */
+    executeTxHash?: string | undefined;
+    status: "NotExecuted" | "Executed" | "ExecutionFailed";
+} | {
+    id: string;
+    content: {
+        addr: any;
+        cdata: string | any;
+        memo: string | any;
+    };
+    attachment: {
+        propType: "customSignal";
+        propTitle?: string | undefined;
+        propDescription?: string | undefined;
+        salt?: string | undefined;
+        link?: string | undefined;
+    };
+    createTs: number;
+    /** Hash of transaction which created this proposal */
+    createTxHash?: string | undefined;
+    /** Hash of transaction which executed this proposal */
+    executeTxHash?: string | undefined;
+    status: "NotExecuted" | "Executed" | "ExecutionFailed";
+} | {
+    id: string;
+    content: {
+        addr: any;
+        cdata: string | any;
+        memo: string | any;
+    };
+    attachment: {
+        propType: "tick";
+        propTitle?: string | undefined;
+        propDescription?: string | undefined;
+        salt?: string | undefined;
+        link?: string | undefined;
+    };
+    createTs: number;
+    /** Hash of transaction which created this proposal */
+    createTxHash?: string | undefined;
+    /** Hash of transaction which executed this proposal */
+    executeTxHash?: string | undefined;
+    status: "NotExecuted" | "Executed" | "ExecutionFailed";
+} | {
+    id: string;
+    content: {
+        addr: any;
+        cdata: string | any;
+        memo: string | any;
+    };
+    attachment: {
+        propType: "customCall";
+        propTitle?: string | undefined;
+        propDescription?: string | undefined;
+        salt?: string | undefined;
+    };
+    createTs: number;
+    /** Hash of transaction which created this proposal */
+    createTxHash?: string | undefined;
+    /** Hash of transaction which executed this proposal */
+    executeTxHash?: string | undefined;
+    status: "NotExecuted" | "Executed" | "ExecutionFailed";
+}) | {
+    status: "error";
+    error: {
+        message: string;
+        name?: string;
+    };
+};
+
+type PostV1GetProposalsInput = {
+    spec: {
+        before?: number | undefined;
+        limit?: number | undefined;
+        execStatusFilter?: ("NotExecuted" | "Executed" | "ExecutionFailed")[] | undefined;
+    };
+};
+
+type PostV1GetProposalsResponse = {
+    proposals: ({
         id: string;
         content?: {
             addr: any;
@@ -368,198 +550,7 @@ type PostV1GetProposalResponse = {
         /** Hash of transaction which executed this proposal */
         executeTxHash?: string | undefined;
         status: "NotExecuted" | "Executed" | "ExecutionFailed";
-    };
-} | {
-    status: "error";
-    error: {
-        message: string;
-        name?: string;
-    };
-};
-
-type PostV1GetProposalsInput = {
-    spec: {
-        before?: number | undefined;
-        limit?: number | undefined;
-        execStatusFilter?: ("NotExecuted" | "Executed" | "ExecutionFailed")[] | undefined;
-    };
-};
-
-type PostV1GetProposalsResponse = {
-    status: "success";
-    data: {
-        proposals: ({
-            id: string;
-            content?: {
-                addr: any;
-                cdata: string | any;
-                memo: string | any;
-            } | undefined;
-            attachment?: ({
-                propType: "respectBreakout";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                groupNum: number;
-            } | {
-                propType: "respectAccount";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                mintReason: string;
-                mintTitle: string;
-            } | {
-                propType: "burnRespect";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                burnReason: string;
-            } | {
-                propType: "customSignal";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                link?: string | undefined;
-            } | {
-                propType: "tick";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                link?: string | undefined;
-            } | {
-                propType: "customCall";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-            }) | undefined;
-            createTs: number;
-            /** Hash of transaction which created this proposal */
-            createTxHash?: string | undefined;
-            /** Hash of transaction which executed this proposal */
-            executeTxHash?: string | undefined;
-            status: "NotExecuted" | "Executed" | "ExecutionFailed";
-        } | {
-            id: string;
-            content: {
-                addr: any;
-                cdata: string | any;
-                memo: string | any;
-            };
-            attachment: {
-                propType: "respectBreakout";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                groupNum: number;
-            };
-            createTs: number;
-            /** Hash of transaction which created this proposal */
-            createTxHash?: string | undefined;
-            /** Hash of transaction which executed this proposal */
-            executeTxHash?: string | undefined;
-            status: "NotExecuted" | "Executed" | "ExecutionFailed";
-        } | {
-            id: string;
-            content: {
-                addr: any;
-                cdata: string | any;
-                memo: string | any;
-            };
-            attachment: {
-                propType: "respectAccount";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                mintReason: string;
-                mintTitle: string;
-            };
-            createTs: number;
-            /** Hash of transaction which created this proposal */
-            createTxHash?: string | undefined;
-            /** Hash of transaction which executed this proposal */
-            executeTxHash?: string | undefined;
-            status: "NotExecuted" | "Executed" | "ExecutionFailed";
-        } | {
-            id: string;
-            content: {
-                addr: any;
-                cdata: string | any;
-                memo: string | any;
-            };
-            attachment: {
-                propType: "burnRespect";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                burnReason: string;
-            };
-            createTs: number;
-            /** Hash of transaction which created this proposal */
-            createTxHash?: string | undefined;
-            /** Hash of transaction which executed this proposal */
-            executeTxHash?: string | undefined;
-            status: "NotExecuted" | "Executed" | "ExecutionFailed";
-        } | {
-            id: string;
-            content: {
-                addr: any;
-                cdata: string | any;
-                memo: string | any;
-            };
-            attachment: {
-                propType: "customSignal";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                link?: string | undefined;
-            };
-            createTs: number;
-            /** Hash of transaction which created this proposal */
-            createTxHash?: string | undefined;
-            /** Hash of transaction which executed this proposal */
-            executeTxHash?: string | undefined;
-            status: "NotExecuted" | "Executed" | "ExecutionFailed";
-        } | {
-            id: string;
-            content: {
-                addr: any;
-                cdata: string | any;
-                memo: string | any;
-            };
-            attachment: {
-                propType: "tick";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-                link?: string | undefined;
-            };
-            createTs: number;
-            /** Hash of transaction which created this proposal */
-            createTxHash?: string | undefined;
-            /** Hash of transaction which executed this proposal */
-            executeTxHash?: string | undefined;
-            status: "NotExecuted" | "Executed" | "ExecutionFailed";
-        } | {
-            id: string;
-            content: {
-                addr: any;
-                cdata: string | any;
-                memo: string | any;
-            };
-            attachment: {
-                propType: "customCall";
-                propTitle?: string | undefined;
-                propDescription?: string | undefined;
-                salt?: string | undefined;
-            };
-            createTs: number;
-            /** Hash of transaction which created this proposal */
-            createTxHash?: string | undefined;
-            /** Hash of transaction which executed this proposal */
-            executeTxHash?: string | undefined;
-            status: "NotExecuted" | "Executed" | "ExecutionFailed";
-        })[];
-    };
+    })[];
 } | {
     status: "error";
     error: {
@@ -571,10 +562,7 @@ type PostV1GetProposalsResponse = {
 type GetV1GetPeriodNumInput = {};
 
 type GetV1GetPeriodNumResponse = {
-    status: "success";
-    data: {
-        periodNum: number;
-    };
+    periodNum: number;
 } | {
     status: "error";
     error: {
@@ -587,38 +575,35 @@ type PostV1GetTokenInput = {
     tokenId: "0x0000000000000000000000000000000000000000000000000000000000000000" | string;
 };
 
-type PostV1GetTokenResponse = {
-    status: "success";
-    data: {
-        name?: string | undefined;
-        decimals: 0;
-        description?: string | undefined;
-        image?: string | undefined;
-        properties?: {} | undefined;
-    } | {
-        name: string;
-        description?: string | undefined;
-        image?: string | undefined;
-        properties: {
-            tokenId: string;
-            recipient: any;
-            mintType: number;
-            mintTs?: number | undefined;
-            mintTxHash?: string | undefined;
-            denomination: number;
-            periodNumber: number;
-            groupNum?: number | undefined;
-            level?: number | undefined;
-            reason?: string | undefined;
-            title?: string | undefined;
-            burn?: ({
-                burnTxHash?: string | undefined;
-                burnReason?: string | undefined;
-            } | null) | undefined;
-            mintProposalId?: string | undefined;
-        };
-    };
+type PostV1GetTokenResponse = ({
+    name?: string | undefined;
+    decimals: 0;
+    description?: string | undefined;
+    image?: string | undefined;
+    properties?: {} | undefined;
 } | {
+    name: string;
+    description?: string | undefined;
+    image?: string | undefined;
+    properties: {
+        tokenId: string;
+        recipient: any;
+        mintType: number;
+        mintTs?: number | undefined;
+        mintTxHash?: string | undefined;
+        denomination: number;
+        periodNumber: number;
+        groupNum?: number | undefined;
+        level?: number | undefined;
+        reason?: string | undefined;
+        title?: string | undefined;
+        burn?: ({
+            burnTxHash?: string | undefined;
+            burnReason?: string | undefined;
+        } | null) | undefined;
+        mintProposalId?: string | undefined;
+    };
+}) | {
     status: "error";
     error: {
         message: string;
@@ -631,29 +616,26 @@ type PostV1GetAwardInput = {
 };
 
 type PostV1GetAwardResponse = {
-    status: "success";
-    data: {
-        name: string;
-        description?: string | undefined;
-        image?: string | undefined;
-        properties: {
-            tokenId: string;
-            recipient: any;
-            mintType: number;
-            mintTs?: number | undefined;
-            mintTxHash?: string | undefined;
-            denomination: number;
-            periodNumber: number;
-            groupNum?: number | undefined;
-            level?: number | undefined;
-            reason?: string | undefined;
-            title?: string | undefined;
-            burn?: ({
-                burnTxHash?: string | undefined;
-                burnReason?: string | undefined;
-            } | null) | undefined;
-            mintProposalId?: string | undefined;
-        };
+    name: string;
+    description?: string | undefined;
+    image?: string | undefined;
+    properties: {
+        tokenId: string;
+        recipient: any;
+        mintType: number;
+        mintTs?: number | undefined;
+        mintTxHash?: string | undefined;
+        denomination: number;
+        periodNumber: number;
+        groupNum?: number | undefined;
+        level?: number | undefined;
+        reason?: string | undefined;
+        title?: string | undefined;
+        burn?: ({
+            burnTxHash?: string | undefined;
+            burnReason?: string | undefined;
+        } | null) | undefined;
+        mintProposalId?: string | undefined;
     };
 } | {
     status: "error";
@@ -666,14 +648,11 @@ type PostV1GetAwardResponse = {
 type PostV1GetRespectMetadataInput = {};
 
 type PostV1GetRespectMetadataResponse = {
-    status: "success";
-    data: {
-        name?: string | undefined;
-        decimals: 0;
-        description?: string | undefined;
-        image?: string | undefined;
-        properties?: {} | undefined;
-    };
+    name?: string | undefined;
+    decimals: 0;
+    description?: string | undefined;
+    image?: string | undefined;
+    properties?: {} | undefined;
 } | {
     status: "error";
     error: {
@@ -685,20 +664,17 @@ type PostV1GetRespectMetadataResponse = {
 type PostV1GetRespectContractMtInput = {};
 
 type PostV1GetRespectContractMtResponse = {
-    status: "success";
-    data: {
-        /** Name of contract */
-        name: string;
-        /** Symbol of contract */
-        symbol?: string | undefined;
-        /** Description of contract */
-        description?: string | undefined;
-        image?: string | undefined;
-        banner_image?: string | undefined;
-        featured_image?: string | undefined;
-        external_link?: string | undefined;
-        collaborators?: string[] | undefined;
-    };
+    /** Name of contract */
+    name: string;
+    /** Symbol of contract */
+    symbol?: string | undefined;
+    /** Description of contract */
+    description?: string | undefined;
+    image?: string | undefined;
+    banner_image?: string | undefined;
+    featured_image?: string | undefined;
+    external_link?: string | undefined;
+    collaborators?: string[] | undefined;
 } | {
     status: "error";
     error: {
@@ -710,20 +686,17 @@ type PostV1GetRespectContractMtResponse = {
 type GetV1RespectContractMetadataInput = {};
 
 type GetV1RespectContractMetadataResponse = {
-    status: "success";
-    data: {
-        /** Name of contract */
-        name: string;
-        /** Symbol of contract */
-        symbol?: string | undefined;
-        /** Description of contract */
-        description?: string | undefined;
-        image?: string | undefined;
-        banner_image?: string | undefined;
-        featured_image?: string | undefined;
-        external_link?: string | undefined;
-        collaborators?: string[] | undefined;
-    };
+    /** Name of contract */
+    name: string;
+    /** Symbol of contract */
+    symbol?: string | undefined;
+    /** Description of contract */
+    description?: string | undefined;
+    image?: string | undefined;
+    banner_image?: string | undefined;
+    featured_image?: string | undefined;
+    external_link?: string | undefined;
+    collaborators?: string[] | undefined;
 } | {
     status: "error";
     error: {
@@ -736,60 +709,57 @@ type GetV1TokenTokenIdInput = {
     tokenId: "0x0000000000000000000000000000000000000000000000000000000000000000" | string;
 };
 
-type GetV1TokenTokenIdResponse = {
-    status: "success";
-    data: {
-        name?: string | undefined;
-        decimals: 0;
-        description?: string | undefined;
-        image?: string | undefined;
-        properties?: {} | undefined;
-    } | {
-        name: string;
-        description?: string | undefined;
-        image?: string | undefined;
-        properties: {
-            tokenId: string;
-            recipient: any;
-            mintType: number;
-            mintTxHash?: string | undefined;
-            denomination: number;
-            periodNumber: number;
-            groupNum?: number | undefined;
-            level?: number | undefined;
-            reason?: string | undefined;
-            title?: string | undefined;
-            burn?: ({
-                burnTxHash?: string | undefined;
-                burnReason?: string | undefined;
-            } | null) | undefined;
-            mintProposalId?: string | undefined;
-            mintDateTime?: string | undefined;
-        };
-    } | {
-        name: string;
-        description?: string | undefined;
-        image?: string | undefined;
-        properties: {
-            tokenId: string;
-            recipient: any;
-            mintType: number;
-            mintTs?: number | undefined;
-            mintTxHash?: string | undefined;
-            denomination: number;
-            periodNumber: number;
-            groupNum?: number | undefined;
-            level?: number | undefined;
-            reason?: string | undefined;
-            title?: string | undefined;
-            burn?: ({
-                burnTxHash?: string | undefined;
-                burnReason?: string | undefined;
-            } | null) | undefined;
-            mintProposalId?: string | undefined;
-        };
+type GetV1TokenTokenIdResponse = ({
+    name?: string | undefined;
+    decimals: 0;
+    description?: string | undefined;
+    image?: string | undefined;
+    properties?: {} | undefined;
+} | {
+    name: string;
+    description?: string | undefined;
+    image?: string | undefined;
+    properties: {
+        tokenId: string;
+        recipient: any;
+        mintType: number;
+        mintTxHash?: string | undefined;
+        denomination: number;
+        periodNumber: number;
+        groupNum?: number | undefined;
+        level?: number | undefined;
+        reason?: string | undefined;
+        title?: string | undefined;
+        burn?: ({
+            burnTxHash?: string | undefined;
+            burnReason?: string | undefined;
+        } | null) | undefined;
+        mintProposalId?: string | undefined;
+        mintDateTime?: string | undefined;
     };
 } | {
+    name: string;
+    description?: string | undefined;
+    image?: string | undefined;
+    properties: {
+        tokenId: string;
+        recipient: any;
+        mintType: number;
+        mintTs?: number | undefined;
+        mintTxHash?: string | undefined;
+        denomination: number;
+        periodNumber: number;
+        groupNum?: number | undefined;
+        level?: number | undefined;
+        reason?: string | undefined;
+        title?: string | undefined;
+        burn?: ({
+            burnTxHash?: string | undefined;
+            burnReason?: string | undefined;
+        } | null) | undefined;
+        mintProposalId?: string | undefined;
+    };
+}) | {
     status: "error";
     error: {
         message: string;
@@ -807,32 +777,29 @@ type PostV1GetAwardsInput = {
 };
 
 type PostV1GetAwardsResponse = {
-    status: "success";
-    data: {
-        awards: {
-            name: string;
-            description?: string | undefined;
-            image?: string | undefined;
-            properties: {
-                tokenId: string;
-                recipient: any;
-                mintType: number;
-                mintTs?: number | undefined;
-                mintTxHash?: string | undefined;
-                denomination: number;
-                periodNumber: number;
-                groupNum?: number | undefined;
-                level?: number | undefined;
-                reason?: string | undefined;
-                title?: string | undefined;
-                burn?: ({
-                    burnTxHash?: string | undefined;
-                    burnReason?: string | undefined;
-                } | null) | undefined;
-                mintProposalId?: string | undefined;
-            };
-        }[];
-    };
+    awards: {
+        name: string;
+        description?: string | undefined;
+        image?: string | undefined;
+        properties: {
+            tokenId: string;
+            recipient: any;
+            mintType: number;
+            mintTs?: number | undefined;
+            mintTxHash?: string | undefined;
+            denomination: number;
+            periodNumber: number;
+            groupNum?: number | undefined;
+            level?: number | undefined;
+            reason?: string | undefined;
+            title?: string | undefined;
+            burn?: ({
+                burnTxHash?: string | undefined;
+                burnReason?: string | undefined;
+            } | null) | undefined;
+            mintProposalId?: string | undefined;
+        };
+    }[];
 } | {
     status: "error";
     error: {
@@ -853,18 +820,15 @@ type PostV1GetVotesInput = {
 };
 
 type PostV1GetVotesResponse = {
-    status: "success";
-    data: {
-        votes: {
-            ts?: number | undefined;
-            txHash?: string | undefined;
-            proposalId: string;
-            voter: any;
-            weight: number;
-            vote: "None" | "Yes" | "No";
-            memo?: string | undefined;
-        }[];
-    };
+    votes: {
+        ts?: number | undefined;
+        txHash?: string | undefined;
+        proposalId: string;
+        voter: any;
+        weight: number;
+        vote: "None" | "Yes" | "No";
+        memo?: string | undefined;
+    }[];
 } | {
     status: "error";
     error: {
