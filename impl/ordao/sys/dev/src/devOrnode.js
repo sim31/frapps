@@ -30,7 +30,7 @@ async function main() {
     --watch ../orec/dist/ \
     --watch ./ \
     \
-    --delay 5
+    --delay 3
     \
     dist/index.js`
   );
