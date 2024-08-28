@@ -123,7 +123,7 @@ export class RemoteOrnode implements IORNode {
         error = discriminateError(response.error);
       } else {
         console.debug("response: ", response);
-        data = response.data;
+        data = response;
       }
     } catch (err) {
       throw new OrnodeRequestFailed(`Request ${method} ${path} with params: ${stringify(params)} failed. Cause: ${stringify(err)}`, err);

@@ -13,7 +13,7 @@ const zError = z.object({
 
 export const resultHandler = createResultHandler({
   getPositiveResponse: (output: IOSchema) => ({
-    schema: z.object({ status: z.literal("success"), data: output }),
+    schema: output,
     mimeType: "application/json", // optinal, or mimeTypes for array
   }),
   getNegativeResponse: () => z.object({
@@ -22,10 +22,7 @@ export const resultHandler = createResultHandler({
   }),
   handler: ({ error, input, output, request, response, logger }) => {
     if (!error) {
-      response.status(200).json({
-        status: "success",
-        data: output
-      });
+      response.status(200).json(output);
       return;
     }
 
