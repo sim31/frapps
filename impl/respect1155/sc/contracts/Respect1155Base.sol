@@ -21,15 +21,18 @@ function ownerFromTokenId(TokenId packed) pure returns (address) {
     return address(i);
 }
 
-// TODO: explain: this is a general respect contract that can be used not just by fractals but also by EOAs
-/**
- * @title Interface for Respect tokens
- */
 abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, IERC1155Errors, IERC7572 {
     using Arrays for uint256[];
     using Arrays for address[];
 
     error OpNotSupported();
+    /// Only non-fungible Respect tokens have value field.
+    error NoValueField(uint256 tokenId);
+    error InvalidTokenId(uint256 tokenId);
+    error TokenAlreadyExists(uint256 tokenId);
+    error TokenDoesNotExist(uint256 tokenId);
+    error ERC1155TransferRejected(address receiver, bytes reason);
+    error ERC1155InvalidReceiverResponse(address receiver, bytes4 response);
 
     /// Balances of fungible respect
     mapping(address => uint256) private _balances;
@@ -77,7 +80,9 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
     }
 
     function valueOfToken(uint256 tokenId) public view override returns (uint64) {
-        require(tokenId != fungibleId, "Only NTTs have value field");
+        if (tokenId == fungibleId) {
+            revert NoValueField(tokenId);
+        }
         return _valueOf(tokenId);
     }
 
@@ -139,7 +144,9 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
 
     function ownerOf(uint256 tokenId) public pure returns (address) {
         address owner = _ownerOf(tokenId);
-        require(owner != address(0), "invalid token ID");
+        if (owner == address(0)) {
+            revert InvalidTokenId(tokenId);
+        }
         return owner;
     }
 
@@ -183,7 +190,9 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
         if (to == address(0)) {
             revert ERC1155InvalidReceiver(address(0));
         }
-        require(!tokenExists(id), "Token already exists");
+        if (tokenExists(id)) {
+            revert TokenAlreadyExists(id);
+        }
 
         // Create non-fungible token
         _values[id] = value;
@@ -208,7 +217,9 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
     function _burnRespect(uint256 tokenId) internal {
         address owner = ownerOf(tokenId);
         uint64 value = _valueOf(tokenId);
-        require(value != 0, "Token does not exist");
+        if (value == 0) {
+            revert TokenDoesNotExist(tokenId);
+        }
 
         // Delete non-fungible token
         delete _values[tokenId];
@@ -250,18 +261,10 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
             ) {
                 if (response != IERC1155Receiver.onERC1155BatchReceived.selector) {
                     // Tokens rejected
-                    revert ERC1155InvalidReceiver(to);
+                    revert ERC1155InvalidReceiverResponse(to, response);
                 }
             } catch (bytes memory reason) {
-                if (reason.length == 0) {
-                    // non-ERC1155Receiver implementer
-                    revert ERC1155InvalidReceiver(to);
-                } else {
-                    /// @solidity memory-safe-assembly
-                    assembly {
-                        revert(add(32, reason), mload(reason))
-                    }
-                }
+                revert ERC1155TransferRejected(to, reason);
             }
         }
     }
