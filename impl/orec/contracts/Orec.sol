@@ -39,6 +39,7 @@ contract Orec is Ownable {
     enum VoteType { None, Yes, No }
     enum Stage { Voting, Veto, Execution, Expired }
     enum VoteStatus { Passing, Failing, Passed, Failed }
+    enum CallType { Call, DelegateCall }
 
     struct Vote {
         VoteType vtype;
@@ -52,6 +53,7 @@ contract Orec is Ownable {
         address addr;
         /// Calldata
         bytes   cdata; 
+        CallType callType;
         /// This can serve as
         /// * Title for the proposal
         /// * Short description
@@ -177,12 +179,23 @@ contract Orec is Ownable {
         delete proposals[pId];
 
         if (_isExecPeriod(prop)) {
+            bool success;
+            bytes memory retVal;
             uint gasBefore = gasleft();
-            (bool success, bytes memory retVal) = message.addr.call(message.cdata);
+            if (message.callType == CallType.Call) {
+                (success, retVal) = message.addr.call(message.cdata);
+            } else {
+                (success, retVal) = message.addr.delegatecall(message.cdata);
+            }
 
             if (success) {
                 emit Executed(pId, retVal);
             } else {
+                // We have to revert in case of out-of-gas exceptions.
+                // Otherwise (if we just emited ExecutionFailed and keep proposal deleted)
+                // passed proposals could be expired by the attacker simply
+                // by calling `execute` with not enough gas.
+                // This also keeps estimateGas working well.
                 uint gasAfter = gasleft();
                 if (gasAfter < gasBefore / 64) {
                     revert OutOfGas();
