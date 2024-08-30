@@ -5,6 +5,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
+/**
+ * Only used for testing Orec
+ */
 contract MintableToken is Ownable, ERC20, ERC165 {
     constructor(
       address owner,

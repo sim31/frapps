@@ -6,6 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./IRespect.sol";
 
+/**
+ * Only used for testing Orec
+ */
 contract MintableRespectToken is IRespect, Ownable, ERC20, ERC165 {
     constructor(
       address owner,

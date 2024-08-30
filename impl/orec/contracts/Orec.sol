@@ -102,6 +102,7 @@ contract Orec is Ownable {
     error InvalidVote();
     error MaxLiveYesVotesExceeded();
     error UnsupportedRespectContract();
+    error OutOfGas();
 
     /// Length of a voting period
     uint64 public voteLen;
@@ -170,11 +171,18 @@ contract Orec is Ownable {
         // Delete proposal *before* executing it to avoid reentrancy.
         delete proposals[pId];
 
+        uint gasBefore = gasleft();
         (bool success, bytes memory retVal) = message.addr.call(message.cdata);
+
         if (success) {
             emit Executed(pId, retVal);
         } else {
-            emit ExecutionFailed(pId, retVal);
+            uint gasAfter = gasleft();
+            if (gasAfter < gasBefore / 64) {
+                revert OutOfGas();
+            } else {
+                emit ExecutionFailed(pId, retVal);
+            }
         }
         return success;
     }

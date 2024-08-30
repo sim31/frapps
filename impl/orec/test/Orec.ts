@@ -232,9 +232,10 @@ describe("Orec", function () {
   async function expectExecution(
     orec: Orec,
     prop: { msg: Orec.MessageStruct, id: PropId },
-    expectedEvent: "Executed" | "ExecutionFailed" = "Executed"
+    expectedEvent: "Executed" | "ExecutionFailed" = "Executed",
+    gasLimit?: bigint
   ) {
-    await expect(orec.execute(prop.msg))
+    await expect(orec.execute(prop.msg, { gasLimit }))
       .to.emit(orec, expectedEvent).withArgs(prop.id, anyValue)
     expect(await orec.isLive(prop.id)).to.be.false;
     expect(await orec.proposalExists(prop.id)).to.be.false;
@@ -1139,6 +1140,93 @@ describe("Orec", function () {
           await time.increase(voteLen + vetoLen);
 
           await expectExecution(orec, prop, "ExecutionFailed");
+        });
+      })
+
+      describe("gas requirements", function() {
+
+        it("should revert with out-of-gas error in case not enough gas is provided to execute proposed transaction", async function() {
+          const { orec, accounts, token, voteLen, vetoLen, buildMintProp, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+          const gasUserFactory = await hre.ethers.getContractFactory("GasUser");
+          const gasUser = await gasUserFactory.deploy();
+          const data = gasUser.interface.encodeFunctionData("useGas", [80]);
+
+          const msg: Orec.MessageStruct = {
+            addr: await gasUser.getAddress(),
+            cdata: data,
+            memo: toUtf8Bytes("")
+          };
+          const id = propId(msg);
+
+          await expectVoteCounted(orec, token, id, accounts[0], VoteType.Yes);
+
+          await time.increase(voteLen + vetoLen);
+
+          expect(await orec.getStage(id)).to.be.equal(Stage.Execution);
+
+          const execTxData = orec.interface.encodeFunctionData(
+            "execute", [msg]
+          );
+
+          const totalGas = await hre.ethers.provider.estimateGas({
+            from: accounts[0].address,
+            to: await orec.getAddress(),
+            data: execTxData
+          });
+
+          const propExecGas = await hre.ethers.provider.estimateGas({
+            from: await orec.getAddress(),
+            to: await gasUser.getAddress(),
+            data: hexlify(msg.cdata)
+          });
+
+          // Gas estimation should work
+          expect(totalGas).to.be.greaterThan(propExecGas);
+
+          const gasLimit = totalGas - (propExecGas / 2n);
+
+          console.log("gasLimit: ", gasLimit);
+
+          await expect(orec.execute(msg, { gasLimit }))
+            .to.be.revertedWithCustomError(orec, "OutOfGas");
+          
+          expect(await orec.proposalExists(id)).to.be.true;
+          expect(await orec.isLive(id)).to.be.true;
+        })
+
+        it("should not revert if estimated amount of gas is provided", async function() {
+          // Same as the previous test except estimated amount of gas is used.
+          const { orec, accounts, token, voteLen, vetoLen, buildMintProp, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+          const gasUserFactory = await hre.ethers.getContractFactory("GasUser");
+          const gasUser = await gasUserFactory.deploy();
+          const data = gasUser.interface.encodeFunctionData("useGas", [80]);
+
+          const msg: Orec.MessageStruct = {
+            addr: await gasUser.getAddress(),
+            cdata: data,
+            memo: toUtf8Bytes("")
+          };
+          const id = propId(msg);
+
+          await expectVoteCounted(orec, token, id, accounts[0], VoteType.Yes);
+
+          await time.increase(voteLen + vetoLen);
+
+          expect(await orec.getStage(id)).to.be.equal(Stage.Execution);
+
+          const execTxData = orec.interface.encodeFunctionData(
+            "execute", [msg]
+          );
+
+          const totalGas = await hre.ethers.provider.estimateGas({
+            from: accounts[0].address,
+            to: await orec.getAddress(),
+            data: execTxData
+          });
+
+          await expectExecution(orec, { msg, id }, "Executed", totalGas);
         });
       })
     })
