@@ -27,6 +27,7 @@ stateDiagram-v2
   veto --> passed: veto time over
   veto --> failed: noWeight * 2 >= yesWeight
   passed --> execState: execute called by someone
+  passed --> expired: exec time over
   execState --> executed
   execState --> execFailed
 
@@ -64,6 +65,13 @@ stateDiagram-v2
     state "Stage = Execution" as passedStage
     state "VoteStatus = Passed" as passedvt
     state "ExecStatus = NotExecuted" as passedExec
+  }
+
+  state "Expired" as expired {
+    direction LR
+    state "Stage = Expired" as expStage
+    state "VoteStatus = Passed" as expvt
+    state "ExecStatus = NotExecuted" as expExec 
   }
 
   state "Executed" as executed {

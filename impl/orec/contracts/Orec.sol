@@ -86,6 +86,7 @@ contract Orec is Ownable {
     );
     event Executed(PropId indexed propId, bytes retVal);
     event ExecutionFailed(PropId indexed propId, bytes retVal);
+    event ExecutionPeriodOver(PropId indexed propId);
     event ProposalCreated(PropId indexed propId);
     event Signal(uint8 indexed signalType, bytes data);
 
@@ -108,6 +109,8 @@ contract Orec is Ownable {
     uint64 public voteLen;
     /// Length of a veto period
     uint64 public vetoLen;
+    /// Length of execution period
+    uint64 public execLen;
     /// Minimum vote weight that proposal has to acquire before it can become passing
     uint256 public minWeight;
 
@@ -125,12 +128,14 @@ contract Orec is Ownable {
         IERC165 respectContract_,
         uint64 voteLenSeconds_,
         uint64 vetoLenSeconds_,
+        uint64 execLenSeconds_,
         uint256 minWeight_,
         uint8 maxLiveYesVotes_
     ) Ownable(address(this)) {
         _setRespectContract(respectContract_);
         voteLen = voteLenSeconds_;
         vetoLen = vetoLenSeconds_;
+        execLen = execLenSeconds_;
         minWeight = minWeight_;
         maxLiveYesVotes = maxLiveYesVotes_;
     }
@@ -171,20 +176,28 @@ contract Orec is Ownable {
         // Delete proposal *before* executing it to avoid reentrancy.
         delete proposals[pId];
 
-        uint gasBefore = gasleft();
-        (bool success, bytes memory retVal) = message.addr.call(message.cdata);
+        if (_isExecPeriod(prop)) {
+            uint gasBefore = gasleft();
+            (bool success, bytes memory retVal) = message.addr.call(message.cdata);
 
-        if (success) {
-            emit Executed(pId, retVal);
-        } else {
-            uint gasAfter = gasleft();
-            if (gasAfter < gasBefore / 64) {
-                revert OutOfGas();
+            if (success) {
+                emit Executed(pId, retVal);
             } else {
-                emit ExecutionFailed(pId, retVal);
+                uint gasAfter = gasleft();
+                if (gasAfter < gasBefore / 64) {
+                    revert OutOfGas();
+                } else {
+                    emit ExecutionFailed(pId, retVal);
+                }
             }
+            return success;
+        } else {
+            // It is passed, it is not exec period and it is stored.
+            // The fact that it is stored means that it is not executed yet.
+            // The fact that it is not exec period means that it is past its exec period.
+            emit ExecutionPeriodOver(pId);
+            return false;
         }
-        return success;
     }
 
     function proposalExists(PropId propId) public view returns (bool) {
@@ -192,10 +205,11 @@ contract Orec is Ownable {
         return _proposalExists(p);
     }
 
-    /// Proposal is said to be expired if it is rejected or its execution has been triggered. Otherwise proposal is said to be *live*
+    /// Proposal is said to be expired if it is rejected or its execution has been triggered
+    /// or it is past its execution period. Otherwise proposal is said to be *live*
     function isLive(PropId propId) public view returns (bool) {
         ProposalState storage p = proposals[propId];
-        return _isLive(p);
+        return _getStage(p) != Stage.Expired;
     }
 
     function isVotePeriod(PropId propId) public view returns (bool) {
@@ -213,22 +227,14 @@ contract Orec is Ownable {
         return _isVetoOrVotePeriod(p);
     }
 
+    function isExecPeriod(PropId propId) public view returns (bool) {
+        ProposalState storage p = _getProposal(propId);
+        return _isExecPeriod(p);
+    }
+
     function getStage(PropId propId) public view returns (Stage) {
         ProposalState storage p = _getProposal(propId);    // reverts if proposal does not exist
-        VoteStatus vstatus = _getVoteStatus(p);
-        if (vstatus == VoteStatus.Failed) {
-            return Stage.Expired;
-        } else if (vstatus == VoteStatus.Passed) {
-            // If proposal is passed then it must be in execution stage,
-            // because we don't store proposals for which execute has been called
-            // (so stage cannot be expired here).
-            return Stage.Execution;
-        } else if (_isVotePeriod(p)) {
-            return Stage.Voting;
-        } else {
-            assert(_isVetoPeriod(p));
-            return Stage.Veto;
-        }
+        return _getStage(p);
     }
 
     function getVoteStatus(PropId propId) public view returns (VoteStatus) {
@@ -256,6 +262,10 @@ contract Orec is Ownable {
 
     function setVetoLen(uint64 newVetoLen) public onlyOwner {
         vetoLen = newVetoLen;
+    }
+
+    function setExecLen(uint64 newExecLen) public onlyOwner {
+        execLen = newExecLen;
     }
 
     function setMaxLiveVotes(uint8 newMaxLiveVotes) public onlyOwner {
@@ -333,6 +343,12 @@ contract Orec is Ownable {
         return age >= voteLen && age < voteLen + vetoLen;
     }
 
+    function _isExecPeriod(ProposalState storage prop) internal view returns (bool) {
+        uint256 age = block.timestamp - prop.createTime;
+        uint256 voteAndVeto = voteLen + vetoLen;
+        return age >= voteAndVeto && age < voteAndVeto + execLen;
+    }
+
     function _isVetoOrVotePeriod(ProposalState storage prop) internal view returns (bool) {
         uint256 age = block.timestamp - prop.createTime;
         return age < voteLen + vetoLen;
@@ -353,6 +369,27 @@ contract Orec is Ownable {
     function _isVoteActive(ProposalState storage prop) internal view returns (bool) {
         VoteStatus status = _getVoteStatus(prop);
         return status == VoteStatus.Passing || status == VoteStatus.Failing;
+    }
+
+    function _getStage(ProposalState storage prop) internal view returns (Stage) {
+        if (!_proposalExists(prop)) {
+            return Stage.Expired;
+        }
+        VoteStatus vstatus = _getVoteStatus(prop);
+        if (vstatus == VoteStatus.Failed) {
+            return Stage.Expired;
+        } else if (vstatus == VoteStatus.Passed) {
+            if (_isExecPeriod(prop)) {
+                return Stage.Execution;
+            } else {
+                return Stage.Expired;
+            }
+        } else if (_isVotePeriod(prop)) {
+            return Stage.Voting;
+        } else {
+            assert(_isVetoPeriod(prop));
+            return Stage.Veto;
+        }
     }
 
     function _isLive(ProposalState storage prop) internal view returns (bool) {
