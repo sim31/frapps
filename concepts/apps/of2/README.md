@@ -21,28 +21,28 @@ Current scope (components of Optimism Fractal that would be changed):
 * Easier to deal with cases where breakout room submissions need to be corrected;
 * [Other advantages of OREC](../../OREC.md#rationale);
 
-## Ownership of contracts transferred to the current Respect-holders
+### Ownership of contracts transferred to the current Respect-holders
 Current contracts of Optimism Fractal are "owned" by people who started Optimism Fractal. Now that we have a stable Respect-distribution that represents participants of Optimism Fractal, we can transfer control to them.
 
 The control by Respect-holders would be exercised through [Orec (Optimistic Respect-based executive contract)](../../OREC.md) - a onchain transaction proposal system that is very flexible in adapting to levels of voter participation onchain.
 
-## Semi-automated distribution of Respect
+### Semi-automated distribution of Respect
 One of the main issues with the current version is the need for manual distribution of Respect. It looks like a single account issuing transactions to distribute Resepct. This account can be changed by owners of the contract but it's an issue still both in terms of centralization and amount of manual administrative work required.
 
-ORDAO achieves something I call "semi-automated" distribution of respect. The way it works is that participants submit votes on a proposal to distribute respect and if proposal is passed (according to [Orec rules](../../OREC.md)) then proposal enters "execution stage". At that point any account (does not have to be participant of Optimism Fractal) can send a transaction to execute the proposed transaction. The need for this additional transaction to execute the distribution is the only reason it's "semi-automated" and not "automated." But once a good GUI for this app is available this additional action will be as simple as anyone clicking one button and signing transaction with their wallet. This is a big improvement over a current version, where some administrator account has to create transactions by hand.
+ORDAO achieves something I call "semi-automated" distribution of respect. The way it works is that participants submit votes on a proposal to distribute respect and if proposal is passed (according to [Orec rules](../../OREC.md)) then proposal enters "execution stage". At that point any account (does not have to be participant of Optimism Fractal) can send a transaction to execute the proposed transaction. The need for this additional transaction to execute the distribution is the only reason it's "semi-automated" and not "automated." But once a good GUI for this app is available this additional action will be as simple as anyone clicking one button and signing transaction with their wallet. This is a big improvement over a current version, where some administrator account has to create transactions "by hand".
 
 The Respect amount to distribute will be automatically calculated by frontend before the user submitting a vote on any proposal to distribute respect. More details [here](#how-will-respect-game-result-in-respect-distribution).
 
-## No need for hard rules about how many submissions from the breakout room is needed
-Another pain-point in the current version is the requirement for number of onchain breakout room result submissions. It quite regularly results in [council](../of1/OP_Fractal_Intent_V2.pdf) having to pass proposals to distribute Respect for rooms which haven't made enough onchain submissions.
+### No need for hard rules about how many submissions from the breakout room is needed
+Another pain-point in the current version is the requirement for number of onchain breakout room result submissions. It quite regularly results in [council](../of1/OP_Fractal_Intent_V2.pdf) having to pass [proposals](https://snapshot.org/#/optimismfractal.eth) to distribute Respect for rooms which haven't made enough onchain submissions.
 
-The number of required submissions is quite arbitrary, as not reaching this number does not mean that there's no consensus. The fact that all council proposals to distribute Respect for rooms that didn't have enough submissions proves that there's often consensus in the fractal about a breakout room results even when there are not enough submissions. But of course we still need security mechanisms to prevent attackers from getting Respect.
+The number of required submissions is quite arbitrary, as not reaching this number does not mean that there's no consensus. The fact that all council proposals to distribute Respect for rooms that didn't have enough submissions proves that there's often consensus in about breakout room results even when there are not enough submissions. But of course we still need security mechanisms to prevent attackers from getting Respect.
 
 Respect distribution should be controlled by a fractal. So consensus of a fractal is more important than consensus of an individual breakout room. So if fractal has consensus that a breakout room should get awarded with Respect, it should be so. 
 
 I propose ditching the arbitrary requirements for number of submissions from a breakout room and instead using a flexible onchain proposal mechanism ([Orec](../../OREC.md)), that adapts to levels of onchain participation, to distribute Respect according to consensus of a fractal.
 
-## Fixes current problems with Respect token;
+### Fixes current problems with Respect token;
 [Respect1155](../../../impl/respect/sc/) fixes [main headaches](https://www.notion.so/edencreators/Improve-representation-of-Respect-on-block-explorers-1201d818ff3a430fa662e4d5e398fb79) with the current Respect contract of Optimism Fractal. It is ERC1155 contract with a fungible token representing fungible Respect and NTTs with value attribute that sums to balance of a fungible token.
 
 ## Concept (intent)
