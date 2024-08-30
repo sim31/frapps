@@ -71,7 +71,7 @@ abstract contract Respect1155Base is ERC165, IRespect1155, IERC1155MetadataURI, 
      * Clients calling this function must replace the `\{id\}` substring with the
      * actual token type ID.
      */
-    function uri(uint256 /* id */) public view virtual returns (string memory) {
+    function uri(uint256 /* id */) external view virtual returns (string memory) {
         return _uri;
     }
 
