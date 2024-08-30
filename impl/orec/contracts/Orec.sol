@@ -200,6 +200,10 @@ contract Orec is Ownable {
         }
     }
 
+    function cancelProposal(PropId propId) public onlyOwner {
+        delete proposals[propId];
+    }
+
     function proposalExists(PropId propId) public view returns (bool) {
         ProposalState storage p = proposals[propId];
         return _proposalExists(p);
