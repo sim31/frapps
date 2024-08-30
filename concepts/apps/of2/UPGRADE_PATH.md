@@ -30,6 +30,6 @@ But it is not just about being free from past designs, it's also about freedom f
 Overall this could set a precedent for a fractal that is able to periodically recreate itself and adapt.
 
 ## Going forward / scope of this proposal
-My intended scope of [Optimism Fractal 2](./OF2-CONCEPT.md) is 2-3 seasons (ideally starting with season 4). After that we might come up with something better and we might use an anologous upgrade path to do the transition.
+My intended scope of [Optimism Fractal 2](./OF2-CONCEPT.md) is 2-3 seasons (ideally starting with season 5). After that we might come up with something better and we might use an anologous upgrade path to do the transition.
 
 
