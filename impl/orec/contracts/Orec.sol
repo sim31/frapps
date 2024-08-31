@@ -136,7 +136,7 @@ contract Orec is Ownable {
     }
 
     /// Vote for proposal. Creates it if it doesn't exist.
-    function vote(PropId propId, VoteType voteType, bytes calldata) public {
+    function vote(PropId propId, VoteType voteType, bytes calldata) external {
         ProposalState storage p = proposals[propId];
 
         if (!_proposalExists(p)) {
@@ -147,7 +147,7 @@ contract Orec is Ownable {
     }
 
     /// Propose but don't vote
-    function propose(PropId propId) public {
+    function propose(PropId propId) external {
         ProposalState storage p = proposals[propId];
         if (_proposalExists(p)) {
             revert ProposalAlreadyExists();
@@ -159,7 +159,7 @@ contract Orec is Ownable {
      * Execute a passed proposal
      * @dev If modifying take care to avoid reentrancy.
      */
-    function execute(Message calldata message) public returns (bool) {
+    function execute(Message calldata message) external returns (bool) {
         PropId pId = proposalId(message);
 
         ProposalState storage prop = _getProposal(pId);
@@ -241,24 +241,24 @@ contract Orec is Ownable {
         return _isVoteActive(p);
     }
 
-    function setRespectContract(IERC165 respect) public onlyOwner {
+    function setRespectContract(IERC165 respect) external onlyOwner {
         _setRespectContract(respect);
     }
 
-    function setMinWeight(uint256 newMinWeigth) public onlyOwner {
+    function setMinWeight(uint256 newMinWeigth) external onlyOwner {
         minWeight = newMinWeigth;
     }
 
     // WARNING: increasing voteLen could make the proposals you thought expired active again (if they are within the new voteLen)
-    function setVoteLen(uint64 newVoteLen) public onlyOwner {
+    function setVoteLen(uint64 newVoteLen) external onlyOwner {
         voteLen = newVoteLen;
     }
 
-    function setVetoLen(uint64 newVetoLen) public onlyOwner {
+    function setVetoLen(uint64 newVetoLen) external onlyOwner {
         vetoLen = newVetoLen;
     }
 
-    function setMaxLiveVotes(uint8 newMaxLiveVotes) public onlyOwner {
+    function setMaxLiveVotes(uint8 newMaxLiveVotes) external onlyOwner {
         maxLiveYesVotes = newMaxLiveVotes;
     }
 
@@ -271,7 +271,7 @@ contract Orec is Ownable {
         return PropId.wrap(keccak256(packed));
     }
 
-    function signal(uint8 signalType, bytes calldata data) public onlyOwner {
+    function signal(uint8 signalType, bytes calldata data) external onlyOwner {
         emit Signal(signalType, data);
     }
 
