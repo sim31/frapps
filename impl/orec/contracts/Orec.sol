@@ -88,6 +88,7 @@ contract Orec is Ownable {
     event ExecutionFailed(PropId indexed propId, bytes retVal);
     event ProposalCreated(PropId indexed propId);
     event Signal(uint8 indexed signalType, bytes data);
+    event ProposalCanceled(PropId indexed propId);
 
     error VoteEnded();
     error ProposalAlreadyExists();
@@ -273,6 +274,15 @@ contract Orec is Ownable {
 
     function signal(uint8 signalType, bytes calldata data) external onlyOwner {
         emit Signal(signalType, data);
+    }
+
+    function cancelProposal(PropId propId) external onlyOwner {
+        if (proposalExists(propId)) {
+            delete proposals[propId];
+            emit ProposalCanceled(propId);
+        } else {
+            revert ProposalDoesNotExist();
+        }
     }
 
     /**

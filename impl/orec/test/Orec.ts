@@ -1262,6 +1262,39 @@ describe("Orec", function () {
     });
   });
 
+  describe("canceling a proposal", function() {
+    it("should allow removing a passed proposal by passing a proposal", async function() {
+      const { orec, accounts, token, voteLen, vetoLen, proposals: props } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      await expectVoteCounted(orec, token, props[0].id, accounts[1], VoteType.Yes);
+
+      await time.increase(voteLen + vetoLen);
+
+      expect(await orec.getStage(props[0].id)).to.be.equal(Stage.Execution);
+
+      const cdata = orec.interface.encodeFunctionData("cancelProposal", [props[0].id]);
+      const msg: Orec.MessageStruct = {
+        addr: await orec.getAddress(),
+        cdata,
+        memo: toUtf8Bytes("Cancel prop")
+      };
+      const cancelId = propId(msg);
+
+      await expectVoteCounted(orec, token, cancelId, accounts[0], VoteType.Yes);
+      await time.increase(voteLen + vetoLen);
+
+      expect(await orec.getStage(props[0].id)).to.be.equal(Stage.Execution);
+      expect(await orec.getStage(cancelId)).to.be.equal(Stage.Execution);
+
+      await expect(orec.execute(msg))
+        .to.emit(orec, "Executed").withArgs(cancelId, anyValue)
+        .to.emit(orec, "ProposalCanceled").withArgs(props[0].id);
+
+      await expectDeleted(orec, props[0].id);
+      await expectDeleted(orec, cancelId);
+    });
+  })
+
   describe("Spam prevention", function() {
     it("should not allow having more than max_live_votes of yes votes for non-respected accounts on proposals in voting stage", async function () {
       const { token, accounts, orec, buildMintProp } = await loadFixture(deployOrecWithProposals);

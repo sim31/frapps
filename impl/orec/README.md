@@ -26,9 +26,10 @@ stateDiagram-v2
   passing --> veto: vote time over
   veto --> passed: veto time over
   veto --> failed: noWeight * 2 >= yesWeight
-  passed --> execState: execute called by someone
+  passed --> execState: execute called with enough gas
   execState --> executed
   execState --> execFailed
+  passed --> execCanceled: a proposal is passed and executed to cancel this proposal
 
 
   state "Failing" as failing {
@@ -80,6 +81,27 @@ stateDiagram-v2
     state "ExecStatus = ExecutionFailed" as execfExec
   }
 
+  state "ExecutionCanceled" as execCanceled {
+    direction LR
+    state "Stage = Expired" as ecStage
+    state "VoteStatus = Passed" as ecvt
+    state "ExecStatus = Canceled" as ecExec
+  }
+
 ```
 
+There are some additional states that are possible to reach but are not very likely or useful:
 
+* It is possible to cancel a failed proposal
+
+This will delete the proposal from storage, but unless it's part of some bigger execution context you're not going to save any gas;
+
+* It might be theoretically possible to cancel a proposal that is not yet passed or failed;
+
+1. Construct proposal A but don't submit it onchain;
+2. Submit proposal B to cancel proposal A (submit it onchain);
+3. Submit proposal A;
+4. Pass and execute proposal B to cancel proposal A;
+Result: proposal A is canceled (removed) before it reaches execute stage.
+
+But I don't see a vulnerability here.

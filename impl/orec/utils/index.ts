@@ -17,7 +17,8 @@ export enum VoteType {
 export enum ExecStatus {
   NotExecuted = 0,
   Executed,
-  ExecutionFailed
+  ExecutionFailed,
+  Canceled
 }
 
 export enum Stage {
