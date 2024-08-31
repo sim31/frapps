@@ -178,6 +178,14 @@ contract Orec is Ownable {
         if (success) {
             emit Executed(pId, retVal);
         } else {
+            // We have to revert in case of out-of-gas exceptions.
+            // Otherwise (if we just emited ExecutionFailed and keep proposal deleted)
+            // passed proposals could be expired by the attacker simply
+            // by calling `execute` with not enough gas.
+            //
+            // This also keeps estimateGas working well.
+            //
+            // See EIP-150 to make sense of this.
             uint gasAfter = gasleft();
             if (gasAfter < gasBefore / 64) {
                 revert OutOfGas();
