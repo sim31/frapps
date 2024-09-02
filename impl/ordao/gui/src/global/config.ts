@@ -21,7 +21,7 @@ const orec = import.meta.env.VITE_OREC_ADDR;
 const ornodeUrl = import.meta.env.VITE_ORNODE_URL;
 const appTitle = import.meta.env.VITE_APP_TITLE;
 
-console.log(oldRespect, newRespect, orec, ornodeUrl, appTitle);
+// console.log(oldRespect, newRespect, orec, ornodeUrl, appTitle);
 
 export const config = zConfig.parse({
   contracts: {
@@ -31,5 +31,5 @@ export const config = zConfig.parse({
   appTitle
 });
 
-console.debug("Loaded config: ", config);
+console.log("Loaded config: ", config);
 

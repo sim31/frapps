@@ -8,6 +8,7 @@ const cmd = `cd $npm_package_config_ordao_gui && \
   VITE_NEW_RESPECT_ADDR=${dCfg.newRespectAddr} \
   VITE_OREC_ADDR=${dCfg.orecAddr} \
   VITE_ORNODE_URL=http://localhost:8090 \
+  VITE_APP_TITLE="Ordao gui dev" \
   \
   npm run dev -- --clearScreen false`;
 

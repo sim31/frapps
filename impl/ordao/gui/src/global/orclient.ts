@@ -6,7 +6,6 @@ import { config } from "./config.ts";
 import { RemoteOrnode, ORClient } from "orclient";
 import { BrowserProvider } from "ethers";
 import { ORContext } from "ortypes/orContext.js";
-import { z } from "zod";
 import { stringify } from "ts-utils";
 
 export async function create(): Promise<ORClient> {
@@ -30,13 +29,10 @@ export async function create(): Promise<ORClient> {
   const orclient = new ORClient(ctx);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).orclient = orclient;
+  (window as any).c = orclient;
 
   return orclient;
 }
-
-const zFunction = z.function().args(z.string(), z.number()).returns(z.boolean());
-export type Function = z.infer<typeof zFunction>;
 
 export const orclient = new Promise<ORClient>((resolve, reject) => {
   create().then(orcl => {
