@@ -12,6 +12,7 @@ import {
 import { ChangeEvent, useState } from 'react';
 import MintRespectForm from './MintRespectForm.js';
 import BurnRespectForm from './BurnRespectForm.js';
+import RespectBreakoutForm from './RespectBreakoutForm.js';
 
 export type ProposalFormModalProps = {
   isOpen: boolean;
@@ -30,6 +31,8 @@ export default function ProposalFormModal(props: ProposalFormModalProps) {
       return <MintRespectForm/>
     } else if (msgType === "burn") {
       return <BurnRespectForm/>
+    } else if (msgType === 'breakout') {
+      return <RespectBreakoutForm />;
     } else {
       return null;
     }
@@ -47,6 +50,7 @@ export default function ProposalFormModal(props: ProposalFormModalProps) {
           <Select placeholder='Select Action' onChange={onMsgTypeChange} value={msgType}>
             <option value='mint'>Mint Respect</option>
             <option value='burn'>Burn Respect</option>
+            <option value='breakout'>Respect breakout room</option>
           </Select>
 
           {renderForm()}
