@@ -22,7 +22,11 @@ export type TxProgressModalProps = {
 export default function TxProgressModal(props: TxProgressModalProps) {
 
   return (
-    <Modal isOpen={props.isOpen} onClose={props.onClose}>
+    <Modal
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      closeOnOverlayClick={false}
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader fontSize="2xl">

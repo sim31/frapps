@@ -14,6 +14,7 @@ import { hashObject } from "../utils/objectHash";
 import SubmitBreakoutResModal from "./SubmitBreakoutResModal";
 import { orclient } from "../global/orclient";
 import TxProgressModal from "./TxProgressModal";
+import { decodeError } from "../utils/decodeTxError";
 
 
 const resultDefaults: SearchParamsStateType = {
@@ -78,8 +79,15 @@ export default function RespectBreakoutForm() {
       setTxProgressDone(true);
     } catch (err) {
       setTxProgressStr("");
-      setTxProgressOpen(false);
-      throw err;
+      const decoded = decodeError(err);
+      if (decoded) {
+        // TODO: more friendly error message, explaining if it is a revert or what
+        setTxProgressStr(`Transaction failed. Error type: ${decoded.type}, reason: ${decoded.reason}`)
+        setTxProgressDone(true);
+      } else {
+        setTxProgressOpen(false);
+        throw err;
+      }
     }
   }, [request])
 
@@ -114,7 +122,7 @@ export default function RespectBreakoutForm() {
 
   return (
     <>
-      <Stack direction="column" spacing="1em" width="40em">
+      <Stack direction="column" spacing="1em" width="34em">
 
         <SubmitBreakoutResModal
           isOpen={submitOpen}
