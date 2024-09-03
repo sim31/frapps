@@ -15,7 +15,8 @@ export async function init() {
     newRespect: config.contracts.newRespect,
     orec: config.contracts.orec,
     providerUrl: config.providerUrl,
-    tokenCfg: config.tokenMetadataCfg
+    tokenCfg: config.tokenMetadataCfg,
+    startPeriodNumber: config.ornode.startPeriodNum
   }, mordb);
 }
 

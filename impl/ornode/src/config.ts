@@ -38,7 +38,8 @@ export type SwaggerUICfg = z.infer<typeof zSwaggerUICfg>;
 
 export const zOrnodeCfg = z.object({
   host: z.string().default("localhost"),
-  port: z.number().default(8090)
+  port: z.number().default(8090),
+  startPeriodNum: z.number().int().gte(0).default(0)
 })
 export type OrnodeCfg = z.infer<typeof zOrnodeCfg>;
 

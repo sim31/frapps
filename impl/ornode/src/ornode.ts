@@ -81,8 +81,10 @@ export interface ConstructorConfig {
    * For how long a proposal without weighted votes will be stored. In seconds
    * @default: orec.votePeriod
    */
+  // TODO:
   weghtlessPropAliveness?: number,
-  tokenCfg: TokenMtCfg
+  startPeriodNumber?: number
+  tokenCfg: TokenMtCfg,
 }
 
 export interface Config extends ConstructorConfig {
@@ -135,7 +137,8 @@ export class ORNode implements IORNode {
 
     const cfg: ConstructorConfig = {
       weghtlessPropAliveness: propAliveness,
-      tokenCfg: config.tokenCfg
+      tokenCfg: config.tokenCfg,
+      startPeriodNumber: config.startPeriodNumber
     }
 
     const ornode = new ORNode(ctx, db, cfg);
@@ -187,11 +190,10 @@ export class ORNode implements IORNode {
     return await this._db.proposals.getProposals(spec ?? {});
   }
 
-  // TODO:
   async getPeriodNum(): Promise<number> {
     // this._ctx.callTest();
     const tickNum = await this._db.ticks.tickCount();
-    return tickNum;
+    return (this._cfg.startPeriodNumber ?? 0) + tickNum;
   }
 
   async getAward(

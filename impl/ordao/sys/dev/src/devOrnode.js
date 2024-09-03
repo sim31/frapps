@@ -14,6 +14,9 @@ async function main() {
     mongoCfg: {
       url: 'mongodb://localhost:27017',
       dbName: "ornode-dev"
+    },
+    ornode: {
+      startPeriodNum: 39
     }
   };
   jsonfile.writeFileSync("./tmp/ornode-dev-cfg.json", config);

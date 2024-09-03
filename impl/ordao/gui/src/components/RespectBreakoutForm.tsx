@@ -147,7 +147,7 @@ export default function RespectBreakoutForm() {
 
         <TxProgressModal
           isOpen={txProgressOpen}
-          operationStr="Submitting vote"
+          operationStr="Voting"
           done={txProgressStatus === 'error' || txProgressStatus === 'submitted'}
           onClose={closeTxProgressModal}
         >
@@ -166,7 +166,7 @@ export default function RespectBreakoutForm() {
         </TxProgressModal>
 
         <FormControl>
-          <FormLabel>Meeting</FormLabel>
+          <FormLabel>Meeting number</FormLabel>
           <Input
             type="number"
             value={meeting}
@@ -175,7 +175,7 @@ export default function RespectBreakoutForm() {
         </FormControl>
 
         <FormControl>
-          <FormLabel>Group</FormLabel>
+          <FormLabel>Group number</FormLabel>
           <Input
             type="number"
             value={results.groupnumber ?? ""}
