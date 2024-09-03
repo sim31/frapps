@@ -4,9 +4,11 @@ import {
   FormControl,
   FormLabel,
   Button,
-  Text
+  Text,
+  Link,
+  VStack
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { RespectBreakoutRequest, zRespectBreakoutRequest } from "ortypes/orclient.js";
 import { useSearchParamsState, SearchParamsStateType } from 'react-use-search-params-state'
 import { fromError } from 'zod-validation-error';
@@ -15,7 +17,8 @@ import SubmitBreakoutResModal from "./SubmitBreakoutResModal";
 import { orclient } from "../global/orclient";
 import TxProgressModal from "./TxProgressModal";
 import { decodeError } from "../utils/decodeTxError";
-
+import { linkToTx } from "../utils/blockExplorerLink";
+import { ExternalLinkIcon } from '@chakra-ui/icons'
 
 const resultDefaults: SearchParamsStateType = {
   groupnumber: { type: 'number', default: null },
@@ -36,7 +39,9 @@ export default function RespectBreakoutForm() {
   const [request, setRequest] = useState<RespectBreakoutRequest>();
   const [txProgressOpen, setTxProgressOpen] = useState<boolean>(false);
   const [txProgressStr, setTxProgressStr] = useState("");
-  const [txProgressDone, setTxProgressDone] = useState(false);
+  const [txProgressStatus, setTxProgressStatus] = 
+    useState<'submitting' | 'submitted' | 'error' | undefined>()
+  const [txHash, setTxHash] = useState("");
 
   // Runs only on initial render
   // https://stackoverflow.com/a/55481525
@@ -60,7 +65,7 @@ export default function RespectBreakoutForm() {
 
   const closeTxProgressModal = () => {
     setTxProgressStr("");
-    setTxProgressDone(false);
+    setTxProgressStatus(undefined);
     setTxProgressOpen(false);
   }
 
@@ -69,21 +74,22 @@ export default function RespectBreakoutForm() {
       throw new Error("Request undefined");
     }
     closeSubmitModal();
+    setTxProgressStatus('submitting');
     setTxProgressStr("");
     setTxProgressOpen(true);
     try {
       const c = await orclient;            
       const res = await c.proposeBreakoutResult(request);
       // TODO: block explorer link
-      setTxProgressStr(`Vote submitted: \n${res.txReceipt.hash}`);
-      setTxProgressDone(true);
+      setTxProgressStatus('submitted');
+      setTxHash(res.txReceipt.hash);
     } catch (err) {
       setTxProgressStr("");
       const decoded = decodeError(err);
       if (decoded) {
         // TODO: more friendly error message, explaining if it is a revert or what
         setTxProgressStr(`Transaction failed. Error type: ${decoded.type}, reason: ${decoded.reason}`)
-        setTxProgressDone(true);
+        setTxProgressStatus('error');
       } else {
         setTxProgressOpen(false);
         throw err;
@@ -120,6 +126,14 @@ export default function RespectBreakoutForm() {
     }
   }
 
+  const explorerLink = useMemo(() => {
+    if (typeof txHash === 'string' && txHash.length > 0) {
+      return linkToTx(txHash);
+    } else {
+      return undefined;
+    }
+  }, [txHash]);
+
   return (
     <>
       <Stack direction="column" spacing="1em" width="34em">
@@ -134,10 +148,22 @@ export default function RespectBreakoutForm() {
         <TxProgressModal
           isOpen={txProgressOpen}
           operationStr="Submitting vote"
-          progressStr={txProgressStr}
-          done={txProgressDone}
+          done={txProgressStatus === 'error' || txProgressStatus === 'submitted'}
           onClose={closeTxProgressModal}
-        />
+        >
+          {txProgressStatus === 'submitting' || txProgressStatus === 'error'
+            ? <Text noOfLines={4}>{txProgressStr}</Text>
+            : (
+              <VStack>
+                <Text >Vote Submitted!</Text>
+                <Link color="teal.500" isExternal href={explorerLink}>
+                  Transaction in Block Explorer
+                  <ExternalLinkIcon marginLeft="2px"/>
+                </Link>
+              </VStack>
+            )
+          }
+        </TxProgressModal>
 
         <FormControl>
           <FormLabel>Meeting</FormLabel>

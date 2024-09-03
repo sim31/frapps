@@ -7,6 +7,11 @@ interface ImportMetaEnv {
   readonly VITE_NEW_RESPECT_ADDR: string;
   readonly VITE_OREC_ADDR: string;
   readonly VITE_ORNODE_URL: string;
+
+  readonly VITE_CHAIN_ID: string;
+  readonly VITE_RPC_URLS: string;
+  readonly VITE_BLOCKEXP_URL: string;
+  readonly VITE_CHAIN_NAME: string;
   // more env variables...
 }
 

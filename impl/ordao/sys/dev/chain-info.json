@@ -1,0 +1,6 @@
+{
+  "chainId": "0x7A69",
+  "rpcUrls": ["http://localhost:8545", "http://localhost:8546"],
+  "chainName": "localhost",
+  "blockExplorerUrl": "https://optimism.blockscout.com/"
+}

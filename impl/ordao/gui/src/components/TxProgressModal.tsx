@@ -5,17 +5,17 @@ import {
   ModalHeader,
   ModalFooter,
   ModalBody,
-  Text,
   Button,
   Center,
 } from '@chakra-ui/react'
 import { Spinner } from '@chakra-ui/react'
+import { ReactNode } from 'react';
 
 export type TxProgressModalProps = {
   isOpen: boolean;
   onClose: () => void;
   operationStr: string;
-  progressStr: string;
+  children: ReactNode,
   done: boolean;
 }
 
@@ -34,9 +34,7 @@ export default function TxProgressModal(props: TxProgressModalProps) {
         </ModalHeader>
         <ModalBody>
           <Center>
-            <Text noOfLines={4}>
-              {props.progressStr}
-            </Text>
+            {props.children}          
             <br></br>
             {!props.done && <Spinner/>}
           </Center>
