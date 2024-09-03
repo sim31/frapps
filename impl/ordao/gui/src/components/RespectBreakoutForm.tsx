@@ -6,11 +6,14 @@ import {
   Button,
   Text
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { RespectBreakoutRequest, zRespectBreakoutRequest } from "ortypes/orclient.js";
 import { useSearchParamsState, SearchParamsStateType } from 'react-use-search-params-state'
 import { fromError } from 'zod-validation-error';
+import { hashObject } from "../utils/objectHash";
+import SubmitBreakoutResModal from "./SubmitBreakoutResModal";
 import { orclient } from "../global/orclient";
+import TxProgressModal from "./TxProgressModal";
 
 
 const resultDefaults: SearchParamsStateType = {
@@ -24,12 +27,63 @@ const resultDefaults: SearchParamsStateType = {
 }
 
 export default function RespectBreakoutForm() {
-
   const [meeting, setMeeting] = useState("1");
   const [results, setResults] = useSearchParamsState(resultDefaults);
   const [errorStr, setErrorStr] = useState<string | undefined>(undefined);
+  const [submitOpen, setSubmitOpen] = useState<boolean>(false);
+  const [consensusId, setConsensusId] = useState<string>("");
+  const [request, setRequest] = useState<RespectBreakoutRequest>();
+  const [txProgressOpen, setTxProgressOpen] = useState<boolean>(false);
+  const [txProgressStr, setTxProgressStr] = useState("");
+  const [txProgressDone, setTxProgressDone] = useState(false);
 
-  const onSubmit = async () => {
+  // Runs only on initial render
+  // https://stackoverflow.com/a/55481525
+  useEffect(() => {
+    const f = async () => {
+      const c = await orclient;
+      setMeeting((await c.getNextMeetingNum()).toString());
+    }
+    f();
+  }, [])
+
+  const closeSubmitModal = () => {
+    setSubmitOpen(false);
+  }
+
+  const openSubmitModal = async (req: RespectBreakoutRequest) => {
+    setRequest(req);
+    setConsensusId(await hashObject(results));
+    setSubmitOpen(true);
+  }
+
+  const closeTxProgressModal = () => {
+    setTxProgressStr("");
+    setTxProgressDone(false);
+    setTxProgressOpen(false);
+  }
+
+  const onResSubmit = useCallback(async () => {
+    if (request === undefined) {
+      throw new Error("Request undefined");
+    }
+    closeSubmitModal();
+    setTxProgressStr("");
+    setTxProgressOpen(true);
+    try {
+      const c = await orclient;            
+      const res = await c.proposeBreakoutResult(request);
+      // TODO: block explorer link
+      setTxProgressStr(`Vote submitted: \n${res.txReceipt.hash}`);
+      setTxProgressDone(true);
+    } catch (err) {
+      setTxProgressStr("");
+      setTxProgressOpen(false);
+      throw err;
+    }
+  }, [request])
+
+  const onSubmitClick = async () => {
     const rankings: Array<string> = [];
     for (let i = 1; i <= 6; i++) {
       const key = `vote${i}`;
@@ -49,21 +103,33 @@ export default function RespectBreakoutForm() {
       const parsed = zRespectBreakoutRequest.parse(request);
       setErrorStr(undefined);
       console.log("Parsed: ", parsed);
-      orclient.then(cl => {
-        cl.proposeBreakoutResult(parsed);
-      });
+      await openSubmitModal(parsed);
     } catch (err) {
       const validationError = fromError(err);
       const errStr = validationError.toString();
       console.log("Error: ", validationError);
       setErrorStr(errStr);
     }
-    
   }
 
   return (
     <>
       <Stack direction="column" spacing="1em" width="40em">
+
+        <SubmitBreakoutResModal
+          isOpen={submitOpen}
+          onClose={closeSubmitModal}
+          onSubmit={onResSubmit}
+          consensusId={consensusId}
+        />
+
+        <TxProgressModal
+          isOpen={txProgressOpen}
+          operationStr="Submitting vote"
+          progressStr={txProgressStr}
+          done={txProgressDone}
+          onClose={closeTxProgressModal}
+        />
 
         <FormControl>
           <FormLabel>Meeting</FormLabel>
@@ -139,7 +205,7 @@ export default function RespectBreakoutForm() {
 
         <Text color="red">{errorStr ?? ""}</Text>
 
-        <Button onClick={onSubmit}>Submit</Button>
+        <Button onClick={onSubmitClick}>Submit</Button>
         {/* <Button>Share</Button> */}
 
 

@@ -9,6 +9,10 @@ import {
   Route,
 } from "react-router-dom";
 
+if (typeof console.debug !== 'function') {
+  console.debug = console.log;
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ChakraProvider>
