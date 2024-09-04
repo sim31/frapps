@@ -1,5 +1,4 @@
 import { ORClient, ORContext, defaultConfig, Config } from "orclient/index.js";
-import { stringify } from "ts-utils";
 
 function _getPublicFunctions(): string[] {
   return Object.getOwnPropertyNames(ORClient.prototype)
@@ -46,7 +45,6 @@ function _init() {
   (ORClient.prototype as any)['help'] = () => {
     window.location.hash = "";
     window.location.pathname = _indexPath;
-    _printHelp();
   }
 }
 

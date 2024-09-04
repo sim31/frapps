@@ -1,7 +1,7 @@
 import shelljs from "shelljs";
 
 async function main() {
-  shelljs.exec("ls ../../../")
+  shelljs.exec("ls ../../console/")
   shelljs.exec(`\
     npx nodemon \
     --watch ../../../ortypes/dist \

@@ -6,10 +6,11 @@ import shelljs from "shelljs";
 const dCfg = jsonfile.readFileSync("./tmp/dev-deployment.json");
 const buildDirFromOrclient = "../ordao/console/build/dev"
 const buildDir = "build/dev/"
+const chainInfo = jsonfile.readFileSync("./chain-info.json")
 
 const docCmd = `cd $npm_package_config_orclient && \
   npx typedoc ./src/orclient.ts \
-  --name "orconsole" \
+  --name "ORConsole (dev)" \
   --readme "../ordao/console/DOCS-INDEX.md" \
   --customFooterHtml "<script type="module" src="/src/index.ts"></script>"\
   --out ${buildDirFromOrclient} \
@@ -32,6 +33,11 @@ const consoleCmd = `cd $npm_package_config_ordao_console && \
   VITE_OREC_ADDR=${dCfg.orecAddr} \
   VITE_ORNODE_URL=http://localhost:8090 \
   VITE_APP_TITLE="ORConsole dev" \
+  \
+  VITE_CHAIN_ID=${chainInfo.chainId} \
+  VITE_RPC_URLS='${JSON.stringify(chainInfo.rpcUrls)}' \
+  VITE_CHAIN_NAME=${chainInfo.chainName} \
+  VITE_BLOCKEXP_URL=${chainInfo.blockExplorerUrl} \
   \
   npm run build ${buildDir}
   `;

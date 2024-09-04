@@ -11,7 +11,7 @@ const buildDir = "build/op-sepolia-1"
 
 const docCmd = `cd $npm_package_config_orclient && \
   npx typedoc ./src/orclient.ts \
-  --name "orconsole" \
+  --name "ORConsole (test)" \
   --readme "../ordao/console/DOCS-INDEX.md" \
   --customFooterHtml "<script type="module" src="/src/index.ts"></script>"\
   --out ${buildDirFromOrclient} \
