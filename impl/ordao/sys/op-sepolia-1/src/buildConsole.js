@@ -5,6 +5,7 @@ import shelljs from "shelljs";
 
 const dCfg = jsonfile.readFileSync("../../sc-deployment/ignition/deployments/op-sepolia-1/deployed_addresses.json");
 const dparams = jsonfile.readFileSync("./deployment-params.json");
+const chainInfo = jsonfile.readFileSync("./chain-info.json")
 
 const buildDirFromOrclient = "../ordao/console/build/op-sepolia-1"
 const buildDir = "build/op-sepolia-1"
@@ -33,7 +34,12 @@ const consoleCmd = `cd $npm_package_config_ordao_console && \
   VITE_NEW_RESPECT_ADDR=${dCfg['Ordao#Respect1155']} \
   VITE_OREC_ADDR=${dCfg['Orec#Orec']} \
   VITE_ORNODE_URL=https://test1-ornode.frapps.xyz \
-  VITE_APP_TITLE="ORConsole Test 1" \
+  VITE_APP_TITLE="ORConsole (test)" \
+  \
+  VITE_CHAIN_ID='${chainInfo.chainId}' \
+  VITE_RPC_URLS='${JSON.stringify(chainInfo.rpcUrls)}' \
+  VITE_CHAIN_NAME='${chainInfo.chainName}' \
+  VITE_BLOCKEXP_URL='${chainInfo.blockExplorerUrl}' \
   \
   npm run build ${buildDir}
   `;

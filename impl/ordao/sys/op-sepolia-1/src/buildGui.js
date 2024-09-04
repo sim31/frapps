@@ -12,7 +12,7 @@ const cmd = `cd $npm_package_config_ordao_gui && \
   VITE_NEW_RESPECT_ADDR=${dCfg['Ordao#Respect1155']} \
   VITE_OREC_ADDR=${dCfg['Orec#Orec']} \
   VITE_ORNODE_URL=http://localhost:8090 \
-  VITE_APP_TITLE="ORDAO (test local)" \
+  VITE_APP_TITLE="ORDAO (test)" \
   \
   VITE_CHAIN_ID='${chainInfo.chainId}' \
   VITE_RPC_URLS='${JSON.stringify(chainInfo.rpcUrls)}' \
