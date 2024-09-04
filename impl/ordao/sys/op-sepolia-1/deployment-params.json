@@ -7,7 +7,7 @@
     "maxLiveYesVotes": 4
   },
   "Ordao": {
-    "uri": "https://test1-ornode.frapps.xyz/v1/token/{id}",
-    "contractURI": "https://test1-ornode.frapps.xyz/v1/respectContractMetadata"
+    "uri": "https://test2-ornode.frapps.xyz/v1/token/{id}",
+    "contractURI": "https://test2-ornode.frapps.xyz/v1/respectContractMetadata"
   }
 }
