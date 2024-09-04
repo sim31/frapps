@@ -11,10 +11,10 @@ const cmd = `cd $npm_package_config_ordao_gui && \
   VITE_ORNODE_URL=http://localhost:8090 \
   VITE_APP_TITLE="Ordao gui dev" \
   \
-  VITE_CHAIN_ID=${chainInfo.chainId} \
+  VITE_CHAIN_ID='${chainInfo.chainId}' \
   VITE_RPC_URLS='${JSON.stringify(chainInfo.rpcUrls)}' \
-  VITE_CHAIN_NAME=${chainInfo.chainName} \
-  VITE_BLOCKEXP_URL=${chainInfo.blockExplorerUrl} \
+  VITE_CHAIN_NAME='${chainInfo.chainName}' \
+  VITE_BLOCKEXP_URL='${chainInfo.blockExplorerUrl}' \
   \
   npm run dev -- --clearScreen false`;
 
