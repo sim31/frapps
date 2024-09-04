@@ -11,7 +11,7 @@ const cmd = `cd $npm_package_config_ordao_gui && \
   VITE_OLD_RESPECT_ADDR=${dparams['Orec']['oldRespectAddr']} \
   VITE_NEW_RESPECT_ADDR=${dCfg['Ordao#Respect1155']} \
   VITE_OREC_ADDR=${dCfg['Orec#Orec']} \
-  VITE_ORNODE_URL=http://localhost:8090 \
+  VITE_ORNODE_URL=https://test2-ornode.frapps.xyz \
   VITE_APP_TITLE="ORDAO (test)" \
   \
   VITE_CHAIN_ID='${chainInfo.chainId}' \

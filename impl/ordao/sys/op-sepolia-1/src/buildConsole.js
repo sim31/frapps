@@ -33,7 +33,7 @@ const consoleCmd = `cd $npm_package_config_ordao_console && \
   VITE_OLD_RESPECT_ADDR=${dparams['Orec']['oldRespectAddr']} \
   VITE_NEW_RESPECT_ADDR=${dCfg['Ordao#Respect1155']} \
   VITE_OREC_ADDR=${dCfg['Orec#Orec']} \
-  VITE_ORNODE_URL=https://test1-ornode.frapps.xyz \
+  VITE_ORNODE_URL=https://test2-ornode.frapps.xyz \
   VITE_APP_TITLE="ORConsole (test)" \
   \
   VITE_CHAIN_ID='${chainInfo.chainId}' \
