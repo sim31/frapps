@@ -21,7 +21,8 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       optimisticEthereum: process.env.OP_ETHERSCAN_KEY!,
-      opSepolia: process.env.OPSEPOLIA_ETHERSCAN_KEY!
+      opSepolia: process.env.OPSEPOLIA_ETHERSCAN_KEY!,
+      optimism: process.env.OP_ETHERSCAN_KEY!
     },
     customChains: [
       {
