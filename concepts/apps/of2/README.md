@@ -4,7 +4,8 @@ This describes work being done in this repo to upgrade Optimism Fractal software
 
 The working code-name for this new software package is "ORDAO" (optimistic respect-based DAO). 
 
-Current scope (components of Optimism Fractal that would be changed):
+Scope of the upgrade (components of Optimism Fractal that would be replaced):
+
 * [Smart contracts](https://github.com/Optimystics/op-fractal-sc);
 * [Breakout room submission frontend](https://github.com/Optimystics/op-fractal-frontend);
 
@@ -15,7 +16,7 @@ Current scope (components of Optimism Fractal that would be changed):
 * No need for hard rules about how many submissions from the breakout room is needed;
 * Fixes [current problems](https://www.notion.so/edencreators/Improve-representation-of-Respect-on-block-explorers-1201d818ff3a430fa662e4d5e398fb79) with Respect token;
 * Enables respect-holders to mint or burn Respect for reasons other than respect game;
-  * Enabled awarding Respect for use cases other than Respect Game;
+  * Enables awarding Respect for use cases other than Respect Game;
   * Allows fixing mistakes in distribution more easily;
   * This is a step towards making it easier to deal with situations where ETH address of a person changes;
 * Easier to deal with cases where breakout room submissions need to be corrected;
@@ -59,6 +60,18 @@ Work is being done to implement this concept [here](../../../impl).
 
 ### How will Respect game result in Respect distribution
 Frontend will accept breakout room results as always, but then it will translate it to OREC proposal to distribute Respect for break-out room participants (according to their ranking). When the user submits, he will actually be submitting a vote on that OREC proposal. This way an old and familiar Respect game workflow will integrate seamlesly with the new and more powerful OREC mechanism.
+
+### ORConsole
+[ORConsole](../../../impl/ordao/console/) is a documentation / console app for interacting with ORDAO. It's already working and it's the main tool right now which I use to interact with ORDAO right now. It exposes all the functionality that will take time to develop in the GUI frontend. You can think of ORConsole as a web-app for the fractal where all the functionalities are available early in a command-line fashion.
+
+Most importantly it provides documentation for the programming API to interact with Ordao which will make it easier for anyone to build a GUI for ORDAO (or at least some of its features).
+
+### GUI
+Currently [GUI worked on in this repo](../../../impl/ordao/gui/) has only as much as the GUI for the previous version of Optimism Fractal - only a frontend for submitting breakout results is implemented. This is where help would be appreciated.
+
+One option is to grow [gui project](../../../impl/ordao/gui/) in this repo. But ORDAO is built with composability in mind, exposing APIs through [orclient](../../../impl/orclient/) which should make it easy to build a GUI from scratch or integrate interactions with ORDAO into other interfaces. [ORConsole is a great tool for learning ORClient](#orconsole).
+
+GUI (and orclient that it uses) can be improved gradually, even after contracts are replaced, so it does not have to slow down the [upgrade path process](#upgrade-path).
 
 ## Upgrade path
 
