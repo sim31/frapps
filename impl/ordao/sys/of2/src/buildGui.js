@@ -3,7 +3,7 @@ import shelljs from "shelljs";
 
 // NOTE: don't forget to run typedoc in watch mode in parallel (see watchOrclientDocs.js)
 
-const dCfg = jsonfile.readFileSync("../../sc-deployment/ignition/deployments/op-sepolia-1/deployed_addresses.json");
+const dCfg = jsonfile.readFileSync("../../sc-deployment/ignition/deployments/of/deployed_addresses.json");
 const dparams = jsonfile.readFileSync("./deployment-params.json");
 const chainInfo = jsonfile.readFileSync("./chain-info.json")
 

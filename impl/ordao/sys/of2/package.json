@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Scripts for running / managing deployment of ORDAO for Optimism Fractal",
   "main": "index.js",
+  "type": "module",
   "config": {
     "respect1155": "../../../respect1155/sc/",
     "orec": "../../../orec/",
@@ -13,7 +14,8 @@
     "ornode": "../../../ornode",
     "ordao_gui": "../../gui",
     "ordao_console": "../../console",
-    "ornode_to_cfg_path": "../ordao/sys/of2/ornode-cfg.json"
+    "ornode_to_cfg_path": "../ordao/sys/of2/ornode-cfg.json",
+    "dev": "../dev/"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
