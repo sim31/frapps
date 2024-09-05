@@ -49,8 +49,8 @@
       "path": "./ordao/sys/op-sepolia-1
     },
     {
-      "name": "ordao-sys-of",
-      "path": "./ordao/sys/of"
+      "name": "ordao-sys-of2",
+      "path": "./ordao/sys/of2"
     }
 	],
 	"settings": {
