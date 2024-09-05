@@ -4,14 +4,11 @@ import { stringify, withoutUndefined } from "ts-utils";
 import { IAwardStore, RespectAwardMt, TokenId, zRespectAwardMt, BurnData } from "../ordb/iawardStore.js";
 import { withoutId } from "./utils.js";
 import { GetAwardsSpec } from "ortypes/ornode.js";
+import { StoreConfig, zStoreConfig } from "./storeConfig.js";
+import { z } from "zod";
 
-export type AwardStoreConfig = {
-  defaultDocLimit: number;
-}
-
-const defaultConfig: AwardStoreConfig = {
-  defaultDocLimit: 50
-};
+export const zAwardStoreConfig = zStoreConfig;
+export type AwardStoreConfig = z.infer<typeof zAwardStoreConfig>;
 
 export class AwardStore implements IAwardStore {
   private readonly db: Db;
@@ -20,7 +17,7 @@ export class AwardStore implements IAwardStore {
   constructor(
     mongoClient: MongoClient,
     dbName: string,
-    config: AwardStoreConfig = defaultConfig
+    config: AwardStoreConfig
   ) {
     this.db = mongoClient.db(dbName);
     this._cfg = config;

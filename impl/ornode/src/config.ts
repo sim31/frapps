@@ -5,6 +5,9 @@ import { z } from "zod"
 import "dotenv/config";
 import jsonfile from "jsonfile";
 import { zRespectFungibleMt } from "ortypes/respect1155.js";
+import { zProposalStoreConfig } from "./mongo-ordb/proposalStore.js";
+import { zAwardStoreConfig } from "./mongo-ordb/awardStore.js";
+import { zVoteStoreConfig } from "./mongo-ordb/voteStore.js";
 
 export const zMongoConfig = z.object({
   url: z.string(),
@@ -39,7 +42,10 @@ export type SwaggerUICfg = z.infer<typeof zSwaggerUICfg>;
 export const zOrnodeCfg = z.object({
   host: z.string().default("localhost"),
   port: z.number().default(8090),
-  startPeriodNum: z.number().int().gte(0).default(0)
+  startPeriodNum: z.number().int().gte(0).default(0),
+  proposalStore: zProposalStoreConfig.default({}),
+  awardStore: zAwardStoreConfig.default({}),
+  voteStore: zVoteStoreConfig.default({}),
 })
 export type OrnodeCfg = z.infer<typeof zOrnodeCfg>;
 

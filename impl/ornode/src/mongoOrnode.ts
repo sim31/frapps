@@ -8,7 +8,10 @@ export let ornode: Promise<IORNode>;
 export async function init() {
   const mordb = await MongoOrdb.create({
     mongoUrl: config.mongoCfg.url,
-    dbName: config.mongoCfg.dbName
+    dbName: config.mongoCfg.dbName,
+    propStoreConfig: config.ornode.proposalStore,
+    awardStoreConfig: config.ornode.proposalStore,
+    voteStoreConfig: config.ornode.awardStore,
   });
 
   ornode = ORNode.create({

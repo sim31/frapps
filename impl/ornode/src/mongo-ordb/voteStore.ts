@@ -3,14 +3,11 @@ import { IVoteStore, Vote, GetVotesSpec, zVote } from "../ordb/ivoteStore.js";
 import { PropId } from "ortypes";
 import { stringify, withoutUndefined } from "ts-utils";
 import { withoutId } from "./utils.js";
+import { StoreConfig, zStoreConfig } from "./storeConfig.js";
+import { z } from "zod";
 
-export type VoteStoreConfig = {
-  defaultDocLimit: number;
-}
-
-export const defaultConfig: VoteStoreConfig = {
-  defaultDocLimit: 50
-};
+export const zVoteStoreConfig = zStoreConfig;
+export type VoteStoreConfig = z.infer<typeof zVoteStoreConfig>;
 
 export class VoteStore implements IVoteStore {
   private readonly db: Db;
@@ -19,7 +16,7 @@ export class VoteStore implements IVoteStore {
   constructor(
     mongoClient: MongoClient,
     dbName: string,
-    config: VoteStoreConfig = defaultConfig
+    config: VoteStoreConfig
   ) {
     this.db = mongoClient.db(dbName);
     this._cfg = config;
@@ -52,9 +49,11 @@ export class VoteStore implements IVoteStore {
       filter['vote'] = { $eq: spec.voteType }
     }
 
+    const limit = spec.limit ? Math.min(spec.limit, this._cfg.maxDocLimit) : this._cfg.defaultDocLimit;
+
     const docs = await this.votes.find(filter)
       .sort({ ts: -1 })
-      .limit(spec.limit ?? this._cfg.defaultDocLimit);
+      .limit(limit);
     const cursor = docs.map(ent => {
       return zVote.parse(withoutId(ent));
     });

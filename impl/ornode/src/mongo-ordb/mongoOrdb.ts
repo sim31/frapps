@@ -1,14 +1,17 @@
 import { MongoClient } from "mongodb";
 import { IOrdb } from "../ordb/iordb.js";
-import { AwardStore } from "./awardStore.js";
-import { ProposalStore } from "./proposalStore.js";
+import { AwardStore, AwardStoreConfig } from "./awardStore.js";
+import { ProposalStore, ProposalStoreConfig } from "./proposalStore.js";
 import { Url } from "ortypes/common.js";
 import { TickStore } from "./tickStore.js";
-import { VoteStore } from "./voteStore.js";
+import { VoteStore, VoteStoreConfig } from "./voteStore.js";
 
 export interface Config {
   mongoUrl: Url
-  dbName: string
+  dbName: string,
+  propStoreConfig: ProposalStoreConfig,
+  voteStoreConfig: VoteStoreConfig,
+  awardStoreConfig: AwardStoreConfig
 }
 
 export class MongoOrdb implements IOrdb {
@@ -36,7 +39,7 @@ export class MongoOrdb implements IOrdb {
   }
 
   private static async _connectToDb(
-    config: Config
+    config: Config,
   ): Promise<{
     mgClient: MongoClient,
     propStore: ProposalStore,
@@ -49,15 +52,17 @@ export class MongoOrdb implements IOrdb {
     const mgClient = new MongoClient(url);
     await mgClient.connect();
 
-    const propStore = new ProposalStore(mgClient, dbName);
+    const propStore = new ProposalStore(mgClient, dbName, config.propStoreConfig);
     const tickStore = new TickStore(mgClient, dbName);
-    const awardStore = new AwardStore(mgClient, dbName);
-    const voteStore = new VoteStore(mgClient, dbName);
+    const awardStore = new AwardStore(mgClient, dbName, config.voteStoreConfig);
+    const voteStore = new VoteStore(mgClient, dbName, config.awardStoreConfig);
 
     return { mgClient, propStore, tickStore, awardStore, voteStore }
   }
 
-  static async create(config: Config): Promise<MongoOrdb> {
+  static async create(
+    config: Config,
+  ): Promise<MongoOrdb> {
     const { mgClient, propStore, tickStore, awardStore, voteStore } =
       await MongoOrdb._connectToDb(config);
 

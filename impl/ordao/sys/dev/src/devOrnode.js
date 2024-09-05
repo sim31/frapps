@@ -16,7 +16,7 @@ async function main() {
       dbName: "ornode-dev"
     },
     ornode: {
-      startPeriodNum: 39
+      startPeriodNum: 39,
     }
   };
   jsonfile.writeFileSync("./tmp/ornode-dev-cfg.json", config);

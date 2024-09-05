@@ -15,6 +15,7 @@ import { resultArrayToObj } from "ortypes/utils.js";
 import { RespectAwardMt, RespectFungibleMt, TokenId } from "ortypes/respect1155.js";
 import { Erc1155Mt } from "ortypes/erc1155.js";
 import { z } from "zod";
+import { OrecContract } from "ortypes/orec.js";
 
 // Re-define so that ORContext docs are included
 export class ORContext extends ORContextOrig<ConfigWithOrnode> {}
@@ -521,6 +522,22 @@ export class ORClient {
     const nspec = this._clientToNode.transformGetAwardsSpec(spec ?? {});
     const awards = await this._ctx.ornode.getAwards(nspec);
     return awards;
+  }
+
+  async getVoteLength(): Promise<number> {
+    return Number(await this._ctx.orec.voteLen());
+  }
+
+  async getVetoLength(): Promise<number> {
+    return Number(await this._ctx.orec.vetoLen());
+  }
+  
+  async getMinWeight(): Promise<number> {
+    return Number(await this._ctx.orec.minWeight());
+  }
+
+  async getMaxLiveYesVotes(): Promise<number> {
+    return Number(await this._ctx.orec.maxLiveYesVotes());
   }
 
   private async _submitProposal(proposal: NProp, vote?: VoteWithProp): Promise<ProposeRes> {

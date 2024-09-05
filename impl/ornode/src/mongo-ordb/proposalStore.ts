@@ -3,14 +3,14 @@ import { PropId, TxHash } from "ortypes";
 import { IProposalStore, GetProposalsSpec, Proposal, zProposal } from "../ordb/iproposalStore.js";
 import { withoutId } from "./utils.js";
 import { withoutUndefined, stringify } from "ts-utils";
+import { StoreConfig, zStoreConfig } from "./storeConfig.js";
+import { z } from "zod";
 
-export type ProposalStoreConfig = {
-  defaultDocLimit: number;
-}
-
-export const defaultConfig: ProposalStoreConfig = {
-  defaultDocLimit: 50
-};
+export const zProposalStoreConfig = z.object({
+  defaultDocLimit: z.number().int().gt(0).default(10),
+  maxDocLimit: z.number().int().gt(0).default(50)
+})
+export type ProposalStoreConfig = z.infer<typeof zProposalStoreConfig>;
 
 export class ProposalStore implements IProposalStore {
   private readonly db: Db;
@@ -19,7 +19,7 @@ export class ProposalStore implements IProposalStore {
   constructor(
     mongoClient: MongoClient,
     dbName: string,
-    config: ProposalStoreConfig = defaultConfig
+    config: ProposalStoreConfig
   ) {
     this.db = mongoClient.db(dbName);
     this._cfg = config;
@@ -54,9 +54,11 @@ export class ProposalStore implements IProposalStore {
       filter['status'] = { $in: spec.execStatusFilter }
     }
 
+    const limit = spec.limit ? Math.min(spec.limit, this._cfg.maxDocLimit) : this._cfg.defaultDocLimit;
+
     const docs = await this.proposals.find(filter)
       .sort({ createTs: -1 })
-      .limit(spec.limit ?? this._cfg.defaultDocLimit);
+      .limit(limit);
     const dtos = docs.map(ent => {
       return zProposal.parse(withoutId(ent));
     });
