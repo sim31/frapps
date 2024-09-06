@@ -80,4 +80,4 @@ The idea is to deploy implementation on Optimism mainnet as a test version that 
 [More details here](./UPGRADE_PATH.md).
 
 ## Feedback
-If you have any feedback about this please share it in [Optimism Fractal Discord server](https://discord.gg/dJgrP8ekYC)
+If you have any feedback about this please share it in [Optimism Fractal Discord server](https://discord.gg/dJgrP8ekYC) or create an issue here on Github.
