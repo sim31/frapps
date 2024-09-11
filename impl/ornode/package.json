@@ -16,7 +16,8 @@
     "build-watch": "npx tsc --watch",
     "start": "node dist/index.js",
     "dev": "./run-dev.sh",
-    "swagger-ui": "nodemon dist/swagger-ui/index.js"
+    "swagger-ui": "nodemon dist/swagger-ui/index.js",
+    "backup": "node scripts/mongoDump.js"
   },
   "author": "sim31",
   "license": "GPL-3.0",
@@ -44,6 +45,7 @@
     "jsonfile": "^6.1.0",
     "mongodb": "^6.7.0",
     "ortypes": "file:../ortypes",
+    "shelljs": "^0.8.5",
     "swagger-ui-express": "^5.0.1",
     "ts-utils": "file:../ts-utils",
     "tsx": "^4.10.2",

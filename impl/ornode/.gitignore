@@ -3,4 +3,5 @@ node_modules
 orbitdb
 ipfs
 dist
+mongodump-cfg.json
 
