@@ -1692,7 +1692,7 @@ describe("Orec", function () {
     it("should allow itself to change voteLen", async function() {
       const { orec, accounts, token, voteLen, vetoLen, buildBurnProp, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
 
-      const cdata = orec.interface.encodeFunctionData("setVoteLen", [DAY_1 * 2n]);
+      const cdata = orec.interface.encodeFunctionData("setPeriodLengths", [DAY_1 * 2n, (await orec.vetoLen())]);
       const msg: Orec.MessageStruct = {
         addr: await orec.getAddress(),
         cdata,
@@ -1718,6 +1718,38 @@ describe("Orec", function () {
       await expectVoteCounted(orec, token, pId2, accounts[1], VoteType.Yes);
       await time.increase(voteLen + HOUR_1 * 6n);
       await expectVoteCounted(orec, token, pId2, accounts[2], VoteType.Yes);
+    });
+    it("should allow itself to change vetoLen", async function() {
+      const { orec, accounts, token, voteLen, vetoLen, buildBurnProp, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
+
+      expect(await orec.vetoLen()).to.be.equal(DAY_6);
+
+      const cdata = orec.interface.encodeFunctionData("setPeriodLengths", [(await orec.voteLen()), DAY_1]);
+      const msg: Orec.MessageStruct = {
+        addr: await orec.getAddress(),
+        cdata,
+        memo: toUtf8Bytes("setVoteLen1")
+      };
+      const pId = propId(msg);
+
+      await expectVoteCounted(orec, token, pId, accounts[1], VoteType.Yes);
+
+      await time.increase(voteLen + vetoLen);
+
+      await expectExecution(orec, { msg, id: pId }, "Executed");
+
+      expect(await orec.vetoLen()).to.be.equal(DAY_1);
+
+      // Try vetoing later to test the new setting
+      const msg2: Orec.MessageStruct = {
+        addr: await orec.getAddress(),
+        cdata,
+        memo: toUtf8Bytes("setVoteLen2")
+      };
+      const pId2 = propId(msg2);
+      await expectVoteCounted(orec, token, pId2, accounts[1], VoteType.Yes);
+      await time.increase(voteLen + DAY_1);
+      await expectVoteReverted(orec, token, pId2, accounts[2], VoteType.No, "", "ProposalVoteInactive");
     });
     it("should allow itself to change respect contract", async function() {
       const { orec, accounts, token, voteLen, vetoLen, buildMintProp, nonce } = await loadFixture(deployOrecWithProposalsAndBalances);
