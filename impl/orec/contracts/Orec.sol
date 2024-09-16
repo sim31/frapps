@@ -90,7 +90,6 @@ contract Orec is Ownable {
     event Signal(uint8 indexed signalType, bytes data);
     event ProposalCanceled(PropId indexed propId);
 
-    error VoteEnded();
     error ProposalAlreadyExists();
     error ProposalNotPassed();
     error ProposalAlreadyExecuted();
@@ -259,11 +258,8 @@ contract Orec is Ownable {
     }
 
     // WARNING: increasing voteLen could make the proposals you thought expired active again (if they are within the new voteLen)
-    function setVoteLen(uint64 newVoteLen) external onlyOwner {
+    function setPeriodLengths(uint64 newVoteLen, uint64 newVetoLen) external onlyOwner {
         voteLen = newVoteLen;
-    }
-
-    function setVetoLen(uint64 newVetoLen) external onlyOwner {
         vetoLen = newVetoLen;
     }
 
