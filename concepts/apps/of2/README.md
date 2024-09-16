@@ -58,6 +58,16 @@ The main change is the "Executive process" which defines how Optimism Fractal wi
 
 Work is being done to implement this concept [here](../../../impl).
 
+### Smart Contracts
+
+* [Orec](../../../impl/orec/) - implements [executive process](./OF2-CONCEPT.md#6-executive-process) to distribute Respect and other transactions for a fractal;
+* [Respect1155](../../../impl/respect1155/sc/) - new [Respect token](./OF2-CONCEPT.md#3-respect) contract, that OREC will interact with to [distribute Respect](./OF2-CONCEPT.md#4-respect-distribution) going forward (OREC will be set as the owner of this contract);
+* [FractalRespect](https://github.com/Optimystics/op-fractal-sc) - this is the [old Respect contract](./OF2-CONCEPT.md#5-parent-respect-token) that will be used to determine vote weights in OREC;
+
+![Smart contracts](./ordao-scs.drawio.png).
+
+Rationale for this design is in [upgrade path description](./UPGRADE_PATH.md).
+
 ### How will Respect game result in Respect distribution
 Frontend will accept breakout room results as always, but then it will translate it to OREC proposal to distribute Respect for break-out room participants (according to their ranking). When the user submits, he will actually be submitting a vote on that OREC proposal. This way an old and familiar Respect game workflow will integrate seamlesly with the new and more powerful OREC mechanism.
 
