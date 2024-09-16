@@ -60,8 +60,8 @@ Work is being done to implement this concept [here](../../../impl).
 
 ### Smart Contracts
 
-* [Orec](../../../impl/orec/) - implements [executive process](./OF2-CONCEPT.md#6-executive-process) to distribute Respect and other transactions for a fractal;
-* [Respect1155](../../../impl/respect1155/sc/) - new [Respect token](./OF2-CONCEPT.md#3-respect) contract, that OREC will interact with to [distribute Respect](./OF2-CONCEPT.md#4-respect-distribution) going forward (OREC will be set as the owner of this contract);
+* [Orec](../../../impl/orec/) - implements [executive process](./OF2-CONCEPT.md#6-executive-process) to execute distribution of Respect and other transactions for a fractal;
+* [Respect1155](../../../impl/respect1155/sc/) - new [Respect token](./OF2-CONCEPT.md#3-respect) contract, that OREC will use to [distribute Respect](./OF2-CONCEPT.md#4-respect-distribution) going forward (OREC will be set as the owner of this contract);
 * [FractalRespect](https://github.com/Optimystics/op-fractal-sc) - this is the [old Respect contract](./OF2-CONCEPT.md#5-parent-respect-token) that will be used to determine vote weights in OREC;
 
 ![Smart contracts](./ordao-scs.drawio.png).
