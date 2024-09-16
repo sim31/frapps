@@ -6,12 +6,15 @@
   "config": {
     "op_sepolia_1_params": "../sys/op-sepolia-1/deployment-params.json",
     "of2_params": "../sys/of2/deployment-params.json",
+    "oh_params": "../sys/oh/deployment-params.json",
     "orec_dbg": "../../orec/artifacts/contracts/Orec.sol/Orec.dbg.json",
     "orec_dbg_path_op_sepolia1": "ignition/deployments/op-sepolia-1/artifacts/Orec#Orec.dbg.json",
     "orec_dbg_path_of": "ignition/deployments/of/artifacts/Orec#Orec.dbg.json",
+    "orec_dbg_path_oh": "ignition/deployments/oh/artifacts/Orec#Orec.dbg.json",
     "respect1155_dbg": "../../respect1155/sc/artifacts/contracts/Respect1155.sol/Respect1155.dbg.json",
     "respect1155_dbg_path_op_sepolia1": "ignition/deployments/op-sepolia-1/artifacts/Ordao#Respect1155.dbg.json",
     "respect1155_dbg_path_of": "ignition/deployments/of/artifacts/Ordao#Respect1155.dbg.json",
+    "respect1155_dbg_path_oh": "ignition/deployments/oh/artifacts/Ordao#Respect1155.dbg.json",
     "orec_build_info": "../../orec/artifacts/build-info/",
     "respect1155_build_info": "../../respect1155/sc/artifacts/build-info/",
     "orec": "../../orec/",
@@ -36,7 +39,14 @@
     "copy-respect1155-dbg-of2": "cp $npm_package_config_respect1155_dbg $npm_package_config_respect1155_dbg_path_of",
     "verify-of2-ignition": "npm run copy-orec-dbg-of2 && npm run copy-respect1155-dbg-of2 && mkdir -p ignition/deployments/build-info && npm run copy-orec-buildinfo && npm run copy-respect1155-buildinfo && npx hardhat ignition verify of --include-unrelated-contracts",
     "verify-of2-orec": "cd $npm_package_config_orec && npx hardhat --network optimism verify --constructor-args $npm_package_config_of2_orec_args 0x7Abe89De9172b3F8F122AA8756b0F9Ee989686b7",
-    "verify-of2-respect1155": "cd $npm_package_config_respect1155 && npx hardhat --network op-mainnet verify --constructor-args $npm_package_config_of2_respect1155_args 0xAA76B4397b0F79D5a16093c3040d8cf95951b9Ee"
+    "verify-of2-respect1155": "cd $npm_package_config_respect1155 && npx hardhat --network op-mainnet verify --constructor-args $npm_package_config_of2_respect1155_args 0xAA76B4397b0F79D5a16093c3040d8cf95951b9Ee",
+
+    "deploy-oh": "npx hardhat ignition deploy --parameters $npm_package_config_oh_params --deployment-id oh --network optimism ignition/modules/Ordao.ts",
+    "deploy-oh-reset": "npx hardhat ignition deploy --parameters $npm_package_config_oh_params --deployment-id oh --reset --network optimism ignition/modules/Ordao.ts",
+
+    "copy-orec-dbg-oh": "cp $npm_package_config_orec_dbg $npm_package_config_orec_dbg_path_oh",
+    "copy-respect1155-dbg-oh": "cp $npm_package_config_respect1155_dbg $npm_package_config_respect1155_dbg_path_oh",
+    "verify-oh-ignition": "npm run copy-orec-dbg-oh && npm run copy-respect1155-dbg-oh && mkdir -p ignition/deployments/build-info && npm run copy-orec-buildinfo && npm run copy-respect1155-buildinfo && npx hardhat ignition verify oh --include-unrelated-contracts"
   },
   "author": "sim31",
   "license": "GPL-3.0",

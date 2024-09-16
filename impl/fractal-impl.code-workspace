@@ -51,6 +51,10 @@
     {
       "name": "ordao-sys-of2",
       "path": "./ordao/sys/of2"
+    },
+    {
+      "name": "ordao-office-hours",
+      "path": "./ordao/sys/oh"
     }
 	],
 	"settings": {
