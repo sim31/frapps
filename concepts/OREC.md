@@ -8,7 +8,7 @@
 
 DAOs being an onchain organizational unit often need to execute onchain transactions as a unit. Simplest voting solutions [typically suffer from voter-apathy](https://medium.com/@fydetreasury/the-dao-governance-conundrum-part-ii-e375c240b76a). This leads to DAO setting low quorum requirements to adapt to low voter turnout, which is a compromise in security. Setting the right quorum requirement is tricky, since we typically want higher requirement for security, but setting it too high can lead to DAO getting stuck. What makes this hard is that this has to be done in advance and it is hard to predict what kind of voter participation DAO will have in the future. All of this often causes DAOs to leave control to some kind of multisignature setup by the founders, where founders are expected to execute based on poll results (instead of voters being in control directly). This protects against a DAO getting stuck, but makes it more dependent on a limited and potentially centralized set of actors.
 
-Over the past few years a new kind of DAOs emerged called "fractals". Their main feature relevant here is "Respect" token assigned to contributors based on community consensus about value of their contributions relative to contributions of others (you can read more about this mechanism [here](https://optimystics.io/blog/optimystic-articles/introducing-the-respect-game)). This effectively creates a non-transferrable reputation token. This gives a problem described above a slightly different twist: in this case voting power cannot be bought and it also cannot be split among many accounts belonging to the same owner (no [sybil attacks](https://en.wikipedia.org/wiki/Sybil_attack)).
+Over the past few years a new kind of DAOs emerged called "fractals". Their main feature relevant here is "Respect" token assigned to contributors based on community consensus about value of their contributions relative to contributions from other participants(you can read more about this mechanism [here](https://optimystics.io/blog/optimystic-articles/introducing-the-respect-game)). This effectively creates a non-transferrable reputation token. This gives a problem described above a slightly different twist: in this case voting power cannot be bought and it also cannot be split among many accounts belonging to the same owner (no [sybil attacks](https://en.wikipedia.org/wiki/Sybil_attack)).
 
 ## OREC approach
 
@@ -64,7 +64,7 @@ The assumption here is that community will use variety of off-chain tools to com
 * The purpose of 9th rule is to preven spam attacks. Without this rule, any respected member with more than `prop_weight_threshold` could spam with many proposals and force honest members to waste a lot of gas vetoing each one.
 * If we consider total turnout to be union of Respect voting in both stages then a one way to think about it, is that 2/3rds + 1 of turnout is able to pass a proposal, which also means that 1/3rd of turnout is able to block it.
 
-## Existing solutions
+<!-- ## Alternative solutions
 
 * Top-contributor model
    * Problem: no reason to think that top-contributors are best suited to pass proposals to execute transactions;
@@ -74,14 +74,14 @@ The assumption here is that community will use variety of off-chain tools to com
    * Problem: overhead associated with electing, evaluating, changing role assignments. Can be even harder than voting on individual proposals. Introduces politics, promise-making;
    * Requires participants to be vigilant and evaluate persons elected to roles;
       * Much less-likely to work if there's no skin-in-the game and there's no skin in the game in typical fractal;
-      <!-- * TODO: check your old arguments about skin in the game to Vlad -->
+      * TODO: check your old arguments about skin in the game to Vlad
    * Still the problem of who should make the initial role assignments remains. Again top-contributors are not necessarily best-suited;
 * Council solution - adaptation of top-contributor model where council is created out of top-contributors who register;
    * Problem: one council for many proposals and for many problem areas;
    * Need for additional registration step week by week, while not knowing if there will be any proposals relevant for you;
    * Small contributor who registers can have as much voting power as any other in the council;
 
-In Orec roles can arise naturally as people take initiatives. If someone takes initiative to execute something on behalf of a DAO, they are given that power but only if others consent.
+In Orec roles can arise naturally as people take initiatives. If someone takes initiative to execute something on behalf of a DAO, they are given that power but only if others consent. -->
 
 ## Further research
 
@@ -93,9 +93,9 @@ OREC was thought out for the context of fractals which have non-transferrable re
 
 ### Adaptive quorum biasing
 
-[Adaptive quorum biasing](https://polkassembly.medium.com/adaptive-quorum-biasing-9b7e6d2a2261) is a voting system where required supermajority of 'yes' votes is adjusted based on the voter turnout, so that lower turnout would require bigger supermajority to vote 'yes'. This makes the voting system quite adaptive in that it can keep working under low-turnout scenario with a caveat that you need active voters to have more agreement in those cases.
+[Adaptive quorum biasing](https://polkassembly.medium.com/adaptive-quorum-biasing-9b7e6d2a2261) is a voting system where required supermajority of 'yes' votes is adjusted based on the voter turnout, so that lower turnout would require bigger supermajority to vote 'yes'. This makes the voting system quite adaptive in that it can keep working under low-turnout scenario with a helpful caveat that you need active voters to have more agreement in those cases.
 
-Currently the percentage of 'yes' votes needed to pass a proposal is fixed to 2/3+1 of all votes in OREC. OREC might benefit from using adaptive quorum biasing instead. This would make it a bit more complex, but could make it even more adaptive to various scenarios and be more easy to configure in a secure way.
+Currently the percentage of 'yes' votes needed to pass a proposal is fixed to 2/3+1 of all votes in OREC. OREC might benefit from using adaptive quorum biasing instead. This would make it the specification a bit more complex, but could make it even more adaptive to various scenarios over time and make it more easy to configure in a secure way.
 
 <!-- TODO: Security considerations section:
 * Stability of respect distribution;
