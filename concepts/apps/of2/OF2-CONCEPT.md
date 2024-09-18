@@ -20,7 +20,7 @@
 
 ### 4. Respect Distribution
 
-1. Respect should be distributed to participants of break-out groups which were able to reach consensus
+1. Respect should be distributed to participants of each break-out group which was able to reach consensus:
    1. Level 6 receives 55 Respect;
    2. Level 5 receives 34 Respect;
    3. Level 4 receives 21 Respect;
@@ -31,7 +31,7 @@
 ### 5. Consensus process
 
 1. Every week, during Respect Game meeting, a poll is created for participants to register to take part in the consensus process of Optimism Fractal next week. This is “registration poll”. Participants can register throughout the whole week;
-2. Top 6 Parent Respect earners out of those who registered in last week’s “registration poll” constitute a "council" for the current week;
+2. Top 6 [Parent Respect](#5-parent-respect-token) earners out of those who registered in last week’s “registration poll” constitute a "council" for the current week;
 3. A new council is activated at the start of a Respect Game meeting. Respect distribution at that moment is used to determine the council;
 4. If fewer than 6 participants have registered, then council is smaller (consists only of those who registered);
 5. A proposal is said to be passed by Optimism Fractal if at least 2/3rds of council members signal approval for it;
@@ -39,7 +39,7 @@
    1. Signal opinion of Optimism Fractal community;
    2. Make changes to the rules of Optimism Fractal (i.e.: rules expressed here);
    3. Select software implementation of Optimism Fractal (i.e.: implementation of rules defined here - smart contract deployment, official frontends, etc);
-   4. Blacklist break-out group results (see 3.2.3);
+   4. Blacklist break-out group results;
    5. Make changes to the current Respect distribution (burn existing or mint additional Respect);
 7. Optimism Fractal does not have any control or any other kind of power over any participating parties;
 
@@ -48,13 +48,17 @@
 1. Respect token deployed as the following contract on Optmimism Mainnet is "Parent Respect" of Optimism Fractal:
   [0x53C9E3a44B08E7ECF3E8882996A500eb06c0C5CC](https://optimistic.etherscan.io/address/0x53c9e3a44b08e7ecf3e8882996a500eb06c0c5cc);
 
-### 6. Executive process
+### 6. Executive contract
 
-1. Onchain Respect distribution of Optimism Fractal is managed by [Optimistic Respect-based executive contract](../../OREC.md#specification), configured with the following parameters:
+1. Executive contract is an onchain smart contract selected by [consensus process](#5-consensus-process) to execute onchain actions necessary to [distribute Respect](#4-respect-distribution) and implement the will expressed by the [consensus process](#5-consensus-process).
+2. Executive contract can be changed by the [consensus process](#5-consensus-process) at any time;
+
+
+<!-- 1. Onchain Respect distribution of Optimism Fractal is managed by [Optimistic Respect-based executive contract](../../OREC.md#specification), configured with the following parameters:
    1. `voting_period` = 2 day;
    2. `veto_period` = 2 days;
    3. `prop_weight_threshold` = 408;
    4. `respect_contract` = [Parent Respect contract](#5-parent-respect-token);
-   5. `max_live_votes` = 4;
+   5. `max_live_votes` = 4; -->
 
 

@@ -6,12 +6,12 @@ The working code-name for this new software package is "ORDAO" (optimistic respe
 
 Scope of the upgrade (components of Optimism Fractal that would be replaced):
 
-* [Smart contracts](https://github.com/Optimystics/op-fractal-sc);
-* [Breakout room submission frontend](https://github.com/Optimystics/op-fractal-frontend);
+* Smart contracts ([current](https://github.com/Optimystics/op-fractal-sc));
+* Breakout room submission frontend ([current](https://github.com/Optimystics/op-fractal-frontend));
 
 ## Features
 
-* Ownership of contracts transferred to the current respect-holders;
+* Ownership of contracts transferred to respect-holders;
 * Semi-automated distribution of Respect;
 * No need for hard rules about how many submissions from the breakout room is needed;
 * Fixes [current problems](https://www.notion.so/edencreators/Improve-representation-of-Respect-on-block-explorers-1201d818ff3a430fa662e4d5e398fb79) with Respect token;
@@ -20,7 +20,7 @@ Scope of the upgrade (components of Optimism Fractal that would be replaced):
   * Allows fixing mistakes in distribution more easily;
   * This is a step towards making it easier to deal with situations where ETH address of a person changes;
 * Easier to deal with cases where breakout room submissions need to be corrected;
-* [Other advantages of OREC](../../OREC.md#rationale);
+* [Other advantages of OREC](../../OREC.md#orec-approach);
 
 ### Ownership of contracts transferred to the current Respect-holders
 Current contracts of Optimism Fractal are "owned" by people who started Optimism Fractal. Now that we have a stable Respect-distribution that represents participants of Optimism Fractal, we can transfer control to them.
@@ -37,7 +37,7 @@ The Respect amount to distribute will be automatically calculated by frontend be
 ### No need for hard rules about how many submissions from the breakout room is needed
 Another pain-point in the current version is the requirement for number of onchain breakout room result submissions. It quite regularly results in [council](../of1/OP_Fractal_Intent_V2.pdf) having to pass [proposals](https://snapshot.org/#/optimismfractal.eth) to distribute Respect for rooms which haven't made enough onchain submissions.
 
-The number of required submissions is quite arbitrary, as not reaching this number does not mean that there's no consensus. The fact that all council proposals to distribute Respect for rooms that didn't have enough submissions proves that there's often consensus in about breakout room results even when there are not enough submissions. But of course we still need security mechanisms to prevent attackers from getting Respect.
+The number of required submissions is quite arbitrary, as not reaching this number does not mean that there's no consensus. The fact that pretty much all council proposals to distribute Respect for rooms that didn't have enough submissions pass, proves that there's often consensus about breakout room results even when there are not enough submissions. But of course we still need security mechanisms to prevent attackers from getting Respect.
 
 Respect distribution should be controlled by a fractal. So consensus of a fractal is more important than consensus of an individual breakout room. So if fractal has consensus that a breakout room should get awarded with Respect, it should be so. 
 
@@ -50,7 +50,7 @@ I propose ditching the arbitrary requirements for number of submissions from a b
 
 [OF2-CONCEPT document here](./OF2-CONCEPT.md) describes how the proposed version would work. It is a modified version of the [current intent document](../of1/OP_Fractal_Intent_V2.pdf) that Optimism Fractal participants should be familiar with. It serves the same function as the current intent document. It is a human language definition of Optimism Fractal that could be useful to prevent any misunderstandings and contentious forks.
 
-The main change is the "Executive process" which defines how Optimism Fractal will implement their consensus onchain (distribute Respect, etc).
+The main change are the addition "Executive contract" section which defines how Optimism Fractal will implement their consensus onchain (distribute Respect, etc) and removal of 3rd section which was about validity of breakout-room results.
 
 [Read full concept here](./OF2-CONCEPT.md).
 
@@ -60,7 +60,7 @@ Work is being done to implement this concept [here](../../../impl).
 
 ### Smart Contracts
 
-* [Orec](../../../impl/orec/) - implements [executive process](./OF2-CONCEPT.md#6-executive-process) to execute distribution of Respect and other transactions for a fractal;
+* [Orec](../../../impl/orec/) - implements [executive contract](./OF2-CONCEPT.md#6-executive-contract) to execute distribution of Respect and other transactions for a fractal;
 * [Respect1155](../../../impl/respect1155/sc/) - new [Respect token](./OF2-CONCEPT.md#3-respect) contract, that OREC will use to [distribute Respect](./OF2-CONCEPT.md#4-respect-distribution) going forward (OREC will be set as the owner of this contract);
 * [FractalRespect](https://github.com/Optimystics/op-fractal-sc) - this is the [old Respect contract](./OF2-CONCEPT.md#5-parent-respect-token) that will be used to determine vote weights in OREC;
 

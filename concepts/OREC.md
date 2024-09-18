@@ -8,16 +8,20 @@
 
 DAOs being an onchain organizational unit often need to execute onchain transactions as a unit. Simplest voting solutions [typically suffer from voter-apathy](https://medium.com/@fydetreasury/the-dao-governance-conundrum-part-ii-e375c240b76a). This leads to DAO setting low quorum requirements to adapt to low voter turnout, which is a compromise in security. Setting the right quorum requirement is tricky, since we typically want higher requirement for security, but setting it too high can lead to DAO getting stuck. What makes this hard is that this has to be done in advance and it is hard to predict what kind of voter participation DAO will have in the future. All of this often causes DAOs to leave control to some kind of multisignature setup by the founders, where founders are expected to execute based on poll results (instead of voters being in control directly). This protects against a DAO getting stuck, but makes it more dependent on a limited and potentially centralized set of actors.
 
-Over the past few years a new kind of DAOs emerged called "fractals". Their main feature relevant here is "Respect" token assigned to contributors based on community consensus about value of their contributions relative to contributions from other participants(you can read more about this mechanism [here](https://optimystics.io/blog/optimystic-articles/introducing-the-respect-game)). This effectively creates a non-transferrable reputation token. This gives a problem described above a slightly different twist: in this case voting power cannot be bought and it also cannot be split among many accounts belonging to the same owner (no [sybil attacks](https://en.wikipedia.org/wiki/Sybil_attack)).
+Over the past few years a new kind of DAOs emerged called "[fractals](https://optimystics.io/blog/fractalhistory)". Their main feature relevant here is "Respect" token assigned to contributors based on community consensus about value of their contributions relative to contributions from other participants (you can read more about this mechanism [here](https://optimystics.io/blog/optimystic-articles/introducing-the-respect-game)). This effectively creates a non-transferrable reputation token and gives a problem described above a slightly different twist: in this case voting power cannot be bought and it also cannot be split among many accounts belonging to the same owner (no [sybil attacks](https://en.wikipedia.org/wiki/Sybil_attack)).
 
 ## OREC approach
+
+OREC features a novel approach to combat voter-apathy in the context of fractals with non-transferrable reputation token. It is also oriented for contexts where community uses off-chain tools to build consensus. The approach can be summarized as follows:
 
 * Set quorum required to execute onchain transactions to be very low (to say 5%);
 * As a result, under typical low voter turnout scenario, a single bigger contributor is enough to execute transaction;
 * In case a transaction which community disagrees with is proposed, rely on rest of the community to block it;
-* Make it easy to block transactions by adding a time delay between voting and execution during which only negative votes are accepted;
+* **Make it easy to block transactions by adding a time delay between voting and execution during which only negative votes are accepted;**
 
-The assumption here is that community will use variety of off-chain tools to communicate as well as build consensus and OREC will be used as the last step in the decision-making process. So a vote in OREC is not a vote on idea proposals, it's a vote on whether "to execute a specific action at a specific moment in time". This makes it much easier to rally community to block a dangerous or contentious proposal. It could simply be done on the grounds that - "we need to discuss this more". But transaction proposals which haven't gone through the agreed-upon process of deliberation are unlikely to happen often in OREC, because eligible proposals can only be initiated by respected members of community (respect-holders).
+<!-- TODO: Compare with Optimistic rollup challenge period - creation of proposal and voting after is like a time to make the claim that there's consensus and provide evidence for it, and veto period is time where this can be disputed -->
+The assumption here is that community will use variety of off-chain tools to communicate as well as build consensus and OREC will be used as the last step in the decision-making process. So a vote in OREC is not a vote on idea proposals, it's a vote on whether "a proposed transaction represents consensus of the community (does community want to execute this transaction now)". This makes it much easier to rally community to block a dangerous or contentious transaction proposal. It could simply be done on the grounds that - "we need to discuss this more". But transaction proposals which haven't gone through the agreed-upon process of deliberation are unlikely to happen often in OREC, because eligible proposals can only be initiated by respected members of community (respect-holders).
+
 
 <!-- In this context OREC does not require campaignign to vote. Asking for people to vote means asking people to do the work of reviewing and understanding proposals. Here we are asking people to judge if execution initiatives are justifiable and represent the community. -->
 
@@ -63,6 +67,7 @@ The assumption here is that community will use variety of off-chain tools to com
 
 * The purpose of 9th rule is to preven spam attacks. Without this rule, any respected member with more than `prop_weight_threshold` could spam with many proposals and force honest members to waste a lot of gas vetoing each one.
 * If we consider total turnout to be union of Respect voting in both stages then a one way to think about it, is that 2/3rds + 1 of turnout is able to pass a proposal, which also means that 1/3rd of turnout is able to block it.
+* In context where community builds consensus off-chain and only uses OREC for execution, veto period can be likened to a challenge period concept that other "optimistic" protocols use (e.g.: [optimistic rollups](https://ethereum.org/en/developers/docs/scaling/optimistic-rollups/#what-is-an-optimistic-rollup), [optimistic oracle](https://docs.uma.xyz/developers/osnap/osnap-proposal-verification#verifying-proposals)). In case of OREC, during challenge period community can dispute and block a transaction proposal by proving lack of consensus through negative votes on that proposal.
 
 <!-- ## Alternative solutions
 
@@ -95,7 +100,7 @@ OREC was thought out for the context of fractals which have non-transferrable re
 
 [Adaptive quorum biasing](https://polkassembly.medium.com/adaptive-quorum-biasing-9b7e6d2a2261) is a voting system where required supermajority of 'yes' votes is adjusted based on the voter turnout, so that lower turnout would require bigger supermajority to vote 'yes'. This makes the voting system quite adaptive in that it can keep working under low-turnout scenario with a helpful caveat that you need active voters to have more agreement in those cases.
 
-Currently the percentage of 'yes' votes needed to pass a proposal is fixed to 2/3+1 of all votes in OREC. OREC might benefit from using adaptive quorum biasing instead. This would make it the specification a bit more complex, but could make it even more adaptive to various scenarios over time and make it more easy to configure in a secure way.
+Currently the percentage of 'yes' votes needed to pass a proposal is fixed to 2/3+1 of all votes in OREC. OREC might benefit from using adaptive quorum biasing instead. This would make the specification a bit more complex, but could make it even more adaptive to various scenarios over time and make it more easy to configure in a secure way.
 
 <!-- TODO: Security considerations section:
 * Stability of respect distribution;
