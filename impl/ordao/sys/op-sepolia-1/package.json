@@ -19,7 +19,7 @@
     "sc_deployment_to_params": "../sys/op-sepolia-1/deployment-params.json",
     "dev": "../dev/",
     "ornode_to_local_cfg_path": "../ordao/sys/op-sepolia-1/ornode-cfg.local.json",
-    "ornode_to_home1_cfg_path": "../ordao/sys/op-sepolia-1/ornode-cfg.ornode-home-1.json"
+    "ornode_to_home1_cfg_path": "../ordao/sys/op-sepolia-1/ornode-cfg.json"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
