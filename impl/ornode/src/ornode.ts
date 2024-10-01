@@ -461,7 +461,8 @@ export class ORNode implements IORNode {
             ...award.properties,
             mintTs: await getTs(),
             reason: prop?.attachment?.mintReason,
-            title: prop?.attachment?.mintTitle
+            title: prop?.attachment?.mintTitle,
+            groupNum: prop?.attachment?.groupNum
           }
         }
       } else if (propType === 'burnRespect') {

@@ -194,6 +194,10 @@ function mkzNProposalToRespectAccount(orctx: ORContext) {
         tokenId: zBigIntToBytes32.parse(args.request.id)
       }
 
+      if (attachment.groupNum !== undefined) {
+        r.groupNum = attachment.groupNum;
+      }
+
       return r;
     } catch(err) {
       addCustomIssue(val, ctx, err, "Exception in zNProposalToRespectAccount");

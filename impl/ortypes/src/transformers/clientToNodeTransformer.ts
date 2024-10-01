@@ -179,7 +179,8 @@ function mkzCRespAccountReqToProposal(orctx: ORContext) {
         mintReason: val.reason,
         mintTitle: val.title,
         propTitle: val.metadata?.propTitle,
-        propDescription: val.metadata?.propDescription
+        propDescription: val.metadata?.propDescription,
+        groupNum: val.groupNum
       };
 
       const memo = idOfRespectAccountAttach(attachment);

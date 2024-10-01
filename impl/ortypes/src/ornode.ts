@@ -26,7 +26,8 @@ export type RespectBreakoutAttachment = z.infer<typeof zRespectBreakoutAttachmen
 export const zRespectAccountAttachment = zPropAttachmentBase.extend({
   propType: z.literal(zPropType.Enum.respectAccount),
   mintReason: z.string(),
-  mintTitle: z.string()
+  mintTitle: z.string(),
+  groupNum: zGroupNum.optional()
 });
 export type RespectAccountAttachment = z.infer<typeof zRespectAccountAttachment>;
 
@@ -286,12 +287,13 @@ export function idOfRespectAccountAttach(attachment: RespectAccountAttachment) {
     ...attachment,
     propTitle: attachment.propTitle ?? "",
     propDescription: attachment.propDescription ?? "",
-    salt: attachment.salt ?? ""
+    salt: attachment.salt ?? "",
+    groupNum: attachment.groupNum ?? 0
   };
 
   return solidityPackedKeccak256(
-    [ "string", "string", "string", "string", "string", "string" ],
-    [ a.propType, a.propTitle, a.propDescription, a.salt, a.mintReason, a.mintTitle ]
+    [ "string", "string", "string", "string", "string", "string", "uint"],
+    [ a.propType, a.propTitle, a.propDescription, a.salt, a.mintReason, a.mintTitle, a.groupNum ]
   );
 }
 

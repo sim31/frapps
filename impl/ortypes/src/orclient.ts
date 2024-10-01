@@ -85,6 +85,7 @@ export const zRespectAccount = zDecodedPropBase.extend({
   propType: z.literal(zPropType.Enum.respectAccount),
   meetingNum: zMeetingNum,
   mintType: zMintType,
+  groupNum: zGroupNum.optional(),
   account: zEthAddress,
   value: zUint,
   title: z.string(),
