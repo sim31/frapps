@@ -7,6 +7,10 @@ import { RemoteOrnode, ORClient } from "orclient";
 import { BrowserProvider } from "ethers";
 import { ORContext } from "ortypes/orContext.js";
 import { stringify } from "ts-utils";
+import { createWeb3Modal, defaultConfig, useWeb3ModalProvider } from '@web3modal/ethers/react'
+
+useWeb3ModalProvider
+
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function switchChain(ethereum: any) {
@@ -37,6 +41,7 @@ async function switchChain(ethereum: any) {
     }
 }
 
+createWeb3Modal
 
 export async function create(): Promise<ORClient> {
   const ornode: RemoteOrnode = new RemoteOrnode(config.ornodeUrl);
