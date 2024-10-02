@@ -135,7 +135,7 @@ export class ORClient {
         // But if ornode returns an old proposal which is not onchain - then something is wrong with ornode.
         if (err.name === 'OnchainPropNotFound') {
           const now = Date.now() / 1000;
-          if (nprop.createTs !== undefined && now - nprop.createTs < 20) {
+          if (nprop.createTs !== undefined && Math.abs(now - nprop.createTs) < 20) {
             continue;
           }
         }
