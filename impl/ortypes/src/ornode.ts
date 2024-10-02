@@ -27,7 +27,8 @@ export const zRespectAccountAttachment = zPropAttachmentBase.extend({
   propType: z.literal(zPropType.Enum.respectAccount),
   mintReason: z.string(),
   mintTitle: z.string(),
-  groupNum: zGroupNum.optional()
+  groupNum: zGroupNum.optional(),
+  version: z.number().int().gt(0).optional()
 });
 export type RespectAccountAttachment = z.infer<typeof zRespectAccountAttachment>;
 
@@ -282,8 +283,8 @@ export function idOfRespectBreakoutAttach(attachment: RespectBreakoutAttachment)
   );
 }
 
-export function idOfRespectAccountAttach(attachment: RespectAccountAttachment) {
-  const a: Required<RespectAccountAttachment> = {
+export function idOfRespectAccountAttachV1(attachment: RespectAccountAttachment) {
+  const a: Required<Omit<RespectAccountAttachment, "version">> = {
     ...attachment,
     propTitle: attachment.propTitle ?? "",
     propDescription: attachment.propDescription ?? "",
@@ -294,6 +295,20 @@ export function idOfRespectAccountAttach(attachment: RespectAccountAttachment) {
   return solidityPackedKeccak256(
     [ "string", "string", "string", "string", "string", "string", "uint"],
     [ a.propType, a.propTitle, a.propDescription, a.salt, a.mintReason, a.mintTitle, a.groupNum ]
+  );
+}
+
+export function idOfRespectAccountAttachV0(attachment: RespectAccountAttachment) {
+  const a: Required<Omit<RespectAccountAttachment, "version" | "groupNum">> = {
+    ...attachment,
+    propTitle: attachment.propTitle ?? "",
+    propDescription: attachment.propDescription ?? "",
+    salt: attachment.salt ?? ""
+  };
+
+  return solidityPackedKeccak256(
+    [ "string", "string", "string", "string", "string", "string"],
+    [ a.propType, a.propTitle, a.propDescription, a.salt, a.mintReason, a.mintTitle]
   );
 }
 
@@ -344,8 +359,15 @@ export function attachmentId(attachment: PropAttachment) {
   switch (attachment.propType) {
     case 'respectBreakout':
       return idOfRespectBreakoutAttach(attachment);
-    case 'respectAccount':
-      return idOfRespectAccountAttach(attachment);
+    case 'respectAccount': {
+      if (attachment.version === undefined) {
+        return idOfRespectAccountAttachV0(attachment);
+      } else if (attachment.version === 2) {
+        return idOfRespectAccountAttachV1(attachment);
+      } else {
+        throw new Error("Invalid version value for RespectAccount attachment");
+      }
+    }
     case 'burnRespect':
       return idOfBurnRespectAttach(attachment);
     case 'customSignal':
