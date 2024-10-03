@@ -19,8 +19,10 @@ export async function init() {
     orec: config.contracts.orec,
     providerUrl: config.providerUrl,
     tokenCfg: config.tokenMetadataCfg,
-    startPeriodNumber: config.ornode.startPeriodNum
+    startPeriodNumber: config.ornode.startPeriodNum,
+    sync: config.ornode.sync
   }, mordb);
+  await ornode;
 }
 
 export async function getOrnode() {

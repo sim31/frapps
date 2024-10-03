@@ -12,6 +12,8 @@ async function main() {
 
   if (process.argv[2] === "--no-vite") {
     shelljs.exec("npm run dev-servers-no-vite");
+  } else if (process.argv[2] === "--no-ornode") {
+    shelljs.exec("npm run dev-servers-no-ornode");
   } else {
     shelljs.exec("npm run dev-servers");
   }

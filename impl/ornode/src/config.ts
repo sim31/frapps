@@ -39,6 +39,14 @@ export const zSwaggerUICfg = z.object({
 });
 export type SwaggerUICfg = z.infer<typeof zSwaggerUICfg>;
 
+export const zSyncConfig = z.object({
+  fromBlock: z.number().int().nonnegative(),
+  // Logs cannot be queried for unlimited range of blocks (e.g.: https://github.com/ethers-io/ethers.js/issues/1798).
+  // So we sync in steps of `stepRange` until we get from `fromBlock` to latest block
+  stepRange: z.number().int().nonnegative().default(8000),
+});
+export type SyncConfig = z.infer<typeof zSyncConfig>;
+
 export const zOrnodeCfg = z.object({
   host: z.string().default("localhost"),
   port: z.number().default(8090),
@@ -46,6 +54,7 @@ export const zOrnodeCfg = z.object({
   proposalStore: zProposalStoreConfig.default({}),
   awardStore: zAwardStoreConfig.default({}),
   voteStore: zVoteStoreConfig.default({}),
+  sync: zSyncConfig.optional()
 })
 export type OrnodeCfg = z.infer<typeof zOrnodeCfg>;
 

@@ -36,8 +36,9 @@ import {
   ExecStatus,
   zExecStatusStr,
   ContractMetadata,
+  TypedContractEvent,
 } from "ortypes"
-import { TokenMtCfg } from "./config.js"
+import { TokenMtCfg, SyncConfig } from "./config.js"
 import { IOrdb } from "./ordb/iordb.js";
 import { ORContext } from "ortypes";
 import { Proposal } from "./ordb/iproposalStore.js";
@@ -56,7 +57,7 @@ import {
   zTokenId,
   zFungibleTokenIdNum
 } from "ortypes/respect1155.js";
-import { BigNumberish, toBeHex, toBigInt, TransactionReceipt, ZeroAddress } from "ethers";
+import { BigNumberish, EventFragment, EventLog, Log, toBeHex, toBigInt, TransactionReceipt, ZeroAddress } from "ethers";
 import {
   RespectAwardMt,
   BurnData,
@@ -65,6 +66,7 @@ import {
 import { expect } from "chai";
 import { stringify } from "ts-utils";
 import { LogDescription } from "ethers";
+import { TopicFilter } from "ethers";
 
 export class IllegalEvent extends Error {
   event: any;
@@ -91,6 +93,7 @@ export interface Config extends ConstructorConfig {
   newRespect: EthAddress | Respect1155.Contract,
   orec: EthAddress | OrecContract,
   providerUrl?: Url,
+  sync?: SyncConfig
 }
 
 type ORNodeContextConfig = Omit<ORContext.Config, "ornode">;
@@ -121,8 +124,6 @@ export class ORNode implements IORNode {
     this._db = db;
     this._cfg = config;
     this._ctx = orcontext;
-
-    this._registerEventHandlers();
   }
 
   static async create(config: Config, db: IOrdb): Promise<ORNode> {
@@ -143,7 +144,160 @@ export class ORNode implements IORNode {
 
     const ornode = new ORNode(ctx, db, cfg);
 
+    if (config.sync !== undefined) {
+      await ornode._sync(config.sync);
+    } else {
+      // ornode._registerEventHandlers();
+    }
+
     return ornode
+  }
+
+  private async _sync(config: SyncConfig) {
+    console.log("starting sync");
+    const provider = this._ctx.runner.provider;
+    if (!provider) {
+      throw new Error("No provider");
+    }
+    const orecAddr = await this._ctx.getOrecAddr();
+
+    let fromBlock = config.fromBlock;
+    let toBlock = Math.min(
+      fromBlock + config.stepRange,
+      await provider.getBlockNumber()
+    );
+
+    do {
+      console.log("getLogs fromBlock: ", fromBlock, ", toBlock: ", toBlock);
+      const logs = await provider.getLogs({
+        fromBlock,
+        toBlock,
+        address: orecAddr
+      });
+
+      for (const log of logs) {
+        await this._processLog(log);
+      }
+
+      const latest = await provider.getBlockNumber();
+      fromBlock = Math.min(toBlock + 1, latest);
+      toBlock = Math.min(fromBlock + config.stepRange, latest);
+    } while (fromBlock !== toBlock);
+  }
+
+  private async _processLog(log: Log) {
+    const orec = await this._ctx.orec;
+    const ld = orec.interface.parseLog(log);
+    console.log("Processing: ", log);
+    switch (ld?.name) {
+      case "ProposalCreated": {
+        const propId = ld.args['propId'] as PropId
+        const eventLog = (
+          new EventLog(
+            log,
+            orec.interface,
+            orec.interface.getEvent("ProposalCreated")
+          ) as unknown
+        ) as TypedEventLog<ProposalCreatedEvent.Event>;
+
+        await this._propCreatedHandlerImpl(propId, eventLog);
+        break;
+      }
+      case "EmptyVoteIn": {
+        const propId = ld.args['propId'] as PropId;
+        const voter = ld.args['voter'] as EthAddress;
+        const vtype = ld.args['vtype'] as bigint;
+        const eventLog = (
+          new EventLog(
+            log,
+            orec.interface,
+            orec.interface.getEvent("EmptyVoteIn")
+          ) as unknown
+        ) as TypedEventLog<EmptyVoteInEvent.Event>;
+
+        await this._emptyVoteHandlerImpl(
+          propId,
+          voter,
+          vtype,
+          eventLog
+        );
+        break;
+      }
+      case "WeightedVoteIn": {
+        const propId = ld.args['propId'] as PropId;
+        const voter = ld.args['voter'] as EthAddress;
+        const vote = ld.args['vote'] as VoteStructOut;
+        const eventLog = (
+          new EventLog(
+            log,
+            orec.interface,
+            orec.interface.getEvent("WeightedVoteIn")
+          ) as unknown
+        ) as TypedEventLog<WeightedVoteInEvent.Event>;
+
+        await this._weightedVoteHandlerImpl(
+          propId,
+          voter,
+          vote,
+          eventLog
+        );
+        break;
+      }
+      case "Executed": {
+        const propId = ld.args['propId'] as PropId;
+        const retVal = ld.args['retVal'] as string;
+        const eventLog = (
+          new EventLog(
+            log,
+            orec.interface,
+            orec.interface.getEvent("Executed")
+          ) as unknown
+        ) as TypedEventLog<ExecutedEvent.Event>;
+
+        await this._propExecHandlerImpl(
+          propId,
+          retVal,
+          eventLog
+        );
+        break;
+      }
+      case "ExecutionFailed": {
+        const propId = ld.args['propId'] as PropId;
+        const retVal = ld.args['retVal'] as string;
+        const eventLog = (
+          new EventLog(
+            log,
+            orec.interface,
+            orec.interface.getEvent("ExecutionFailed")
+          ) as unknown
+        ) as TypedEventLog<ExecutionFailedEvent.Event>;
+
+        await this._propExecFailedHandlerImpl(
+          propId,
+          retVal,
+          eventLog
+        );
+        break;
+      }
+      case "Signal": {
+        const signalType = ld.args['signalType'];
+        const data = ld.args['data'];
+        const eventLog = (
+          new EventLog(
+            log,
+            orec.interface,
+            orec.interface.getEvent("Signal")
+          ) as unknown
+        ) as TypedEventLog<SignalEvent.Event>;
+
+        await this._signalEventHandlerImpl(
+          signalType,
+          data,
+          eventLog
+        );
+        break;
+      }
+    }
   }
 
   async putProposal(proposal: ProposalFull): Promise<ORNodePropStatus> {
@@ -250,7 +404,7 @@ export class ORNode implements IORNode {
     orec.on(orec.getEvent("EmptyVoteIn"), this._emptyVoteHandler);
   }
 
-  private _weightedVoteHandler: TypedListener<WeightedVoteInEvent.Event> =
+  private _weightedVoteHandlerImpl = 
     async (
       propId: PropId,
       voter: EthAddress,
@@ -262,9 +416,11 @@ export class ORNode implements IORNode {
       await this._handleVoteEvent(
         propId, voter, zVoteTypeToStr.parse(vote.vtype), zVoteWeight.parse(vote.weight), event
       );
-    }
+    };
+  private _weightedVoteHandler: TypedListener<WeightedVoteInEvent.Event> =
+    this._weightedVoteHandlerImpl;
 
-  private _emptyVoteHandler: TypedListener<EmptyVoteInEvent.Event> =
+  private _emptyVoteHandlerImpl = 
     async (
       propId: PropId,
       voter: EthAddress,
@@ -277,6 +433,9 @@ export class ORNode implements IORNode {
         propId, voter, zVoteTypeToStr.parse(vtype), 0, event
       );
     }
+
+  private _emptyVoteHandler: TypedListener<EmptyVoteInEvent.Event> =
+    this._emptyVoteHandlerImpl;
 
   private async _handleVoteEvent(
     propId: PropId,
@@ -317,7 +476,7 @@ export class ORNode implements IORNode {
     await this._db.votes.createVote(v);
   }
 
-  private _propCreatedHandler: TypedListener<ProposalCreatedEvent.Event> =
+  private _propCreatedHandlerImpl =
     async (propId: string, event: TypedEventLog<ProposalCreatedEvent.Event>) => {
       console.debug("this properties: ", Object.getOwnPropertyNames(this));
       if (!(this instanceof ORNode)) {
@@ -341,6 +500,9 @@ export class ORNode implements IORNode {
         console.error("Erorr while handling ProposalCreated event for prop ", propId, "Error: ", error);
       }
     }
+
+  private _propCreatedHandler: TypedListener<ProposalCreatedEvent.Event> =
+    this._propCreatedHandlerImpl;
   
 
   private _tokenEventsFromReceipt(
@@ -484,7 +646,7 @@ export class ORNode implements IORNode {
     }
   }
 
-  private _propExecHandler: TypedListener<ExecutedEvent.Event> =
+  private _propExecHandlerImpl =
     async (
       propId: string,
       retVal: string,
@@ -503,7 +665,10 @@ export class ORNode implements IORNode {
       await this._handleTokenEvents(propId, retVal, event, txHash);
     }
 
-  private _propExecFailedHandler: TypedListener<ExecutionFailedEvent.Event> =
+  private _propExecHandler: TypedListener<ExecutedEvent.Event> =
+    this._propExecHandlerImpl;
+
+  private _propExecFailedHandlerImpl =
     async (
       propId: string,
       retVal: string,
@@ -519,9 +684,11 @@ export class ORNode implements IORNode {
         txHash
       );
     }
+  private _propExecFailedHandler: TypedListener<ExecutionFailedEvent.Event> =
+    this._propExecFailedHandlerImpl;
 
-  private _signalEventHandler: TypedListener<SignalEvent.Event> =
-    async (signalType, data, event) => {
+  private _signalEventHandlerImpl =
+    async (signalType: bigint, data: string, event: TypedEventLog<SignalEvent.Event>) => {
       console.log("Signal event. signalType: ", signalType, "data: ", data, "event: ", event);
 
       try {
@@ -538,6 +705,9 @@ export class ORNode implements IORNode {
         console.error("Error while handling Signal event: ", err);
       }
     }
+
+  private _signalEventHandler: TypedListener<SignalEvent.Event> =
+    this._signalEventHandlerImpl;
 
   private async _handleTransferEvent(
     operator: EthAddress,
