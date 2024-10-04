@@ -38,6 +38,7 @@
     "gui-local": "cd $npm_package_config_ordao_gui && npm run preview -- --port 5175",
     "ornode": "node src/runOrnode.js",
     "ornode-sync": "node src/syncOrnode.js",
+    "ornode-no-listen": "node src/runOrnodeNoListen.js",
     "console": "cd $npm_package_config_ordao_console && npx http-server build/op-sepolia-1/dist/ -p 8080 -a localhost",
     "gui": "cd $npm_package_config_ordao_gui && npx http-server dist/ -p 9010 -a localhost",
     "ornode-swagger-ui": "cd $npm_package_config_ornode && ORNODE_CFG_PATH=$npm_package_config_ornode_to_home1_cfg_path npm run swagger-ui"
