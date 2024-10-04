@@ -1,6 +1,9 @@
 import { Networkish, WebSocketProvider } from "ethers";
 import WebSocket from "ws";
 
+// Thanks to: https://github.com/ethers-io/ethers.js/issues/1053#issuecomment-1745612729
+// With some modifications
+
 const EXPECTED_PONG_BACK = 15000;
 const KEEP_ALIVE_CHECK_INTERVAL = 60 * 1000; //7500;
 
