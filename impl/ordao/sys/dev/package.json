@@ -71,6 +71,7 @@
     "dev-console": "node src/devConsole.js",
     "dev-ornode": "node src/devOrnode.js",
     "dev-ornode-sync": "node src/devOrnode.js --sync",
+    "dev-ornode-no-listen": "node src/devOrnode.js --no-event-listen",
     "dev-ornode-swagger-ui": "cd $npm_package_config_ornode && sleep 30 && ORNODE_CFG_PATH=$npm_package_config_ornode_to_cfg_path npm run swagger-ui",
     "dev-servers": "npm run build-clean && concurrently --kill-others \"npm:dev-ornode\" \"npm:dev-gui\" \"npm:dev-console\" \"npm:watch-*\" \"npm:dev-ornode-swagger-ui\"",
     "dev-servers-no-vite": "npm run build-clean && concurrently --kill-others \"npm:dev-ornode\" \"npm:watch-*\" \"npm:dev-ornode-swagger-ui\"",

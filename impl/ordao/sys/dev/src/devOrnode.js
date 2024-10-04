@@ -20,12 +20,18 @@ async function main() {
     }
   };
 
-  const sync = process.argv[2] === '--sync';
+  console.log("Args: ", process.argv);
 
+  const sync = process.argv[2] === '--sync';
   if (sync) {
     config.ornode.sync = {
-      fromBlock: 480
+      fromBlock: process.argv[3],
+      toBlock: process.argv[4],
+      stepRange: 10
     }
+  } else {
+    // This is only relevant if we are not in sync mode
+    config.ornode.listenForEvents = process.argv[2] !== '--no-event-listen';
   }
 
   jsonfile.writeFileSync("./tmp/ornode-dev-cfg.json", config);

@@ -57,7 +57,7 @@ import {
   zTokenId,
   zFungibleTokenIdNum
 } from "ortypes/respect1155.js";
-import { BigNumberish, EventFragment, EventLog, Log, toBeHex, toBigInt, TransactionReceipt, ZeroAddress } from "ethers";
+import { BigNumberish, ContractRunner, EventFragment, EventLog, Log, Provider, toBeHex, toBigInt, TransactionReceipt, ZeroAddress } from "ethers";
 import {
   RespectAwardMt,
   BurnData,
@@ -67,6 +67,7 @@ import { expect } from "chai";
 import { stringify } from "ts-utils";
 import { LogDescription } from "ethers";
 import { TopicFilter } from "ethers";
+import { WebSocketProvider } from "ethers";
 
 export class IllegalEvent extends Error {
   event: any;
@@ -92,8 +93,7 @@ export interface ConstructorConfig {
 export interface Config extends ConstructorConfig {
   newRespect: EthAddress | Respect1155.Contract,
   orec: EthAddress | OrecContract,
-  providerUrl?: Url,
-  sync?: SyncConfig
+  contractRunner: Url | ContractRunner
 }
 
 type ORNodeContextConfig = Omit<ORContext.Config, "ornode">;
@@ -130,7 +130,7 @@ export class ORNode implements IORNode {
     const contextCfg: ORNodeContextConfig = {
       orec: config.orec,
       newRespect: config.newRespect,
-      contractRunner: config.providerUrl
+      contractRunner: config.contractRunner
     };
     const ctx = await ORContext.ORContext.create(contextCfg);
 
@@ -144,16 +144,10 @@ export class ORNode implements IORNode {
 
     const ornode = new ORNode(ctx, db, cfg);
 
-    if (config.sync !== undefined) {
-      await ornode._sync(config.sync);
-    } else {
-      // ornode._registerEventHandlers();
-    }
-
     return ornode
   }
 
-  private async _sync(config: SyncConfig) {
+  public async sync(config: SyncConfig) {
     console.log("starting sync");
     const provider = this._ctx.runner.provider;
     if (!provider) {
@@ -162,10 +156,26 @@ export class ORNode implements IORNode {
     const orecAddr = await this._ctx.getOrecAddr();
 
     let fromBlock = config.fromBlock;
-    let toBlock = Math.min(
-      fromBlock + config.stepRange,
-      await provider.getBlockNumber()
-    );
+
+    function calcToBlock(
+      fromBlock: number, lastBlockNum: number
+    ) {
+      if (config.toBlock === "latest") {
+        return Math.min(
+          fromBlock + config.stepRange,
+          lastBlockNum
+        );
+      } else {
+        return Math.min(
+          fromBlock + config.stepRange,
+          lastBlockNum,
+          config.toBlock
+        );
+      }
+    }
+
+    const lastBlock = await provider.getBlockNumber();
+    let toBlock = await calcToBlock(fromBlock, lastBlock);
 
     do {
       console.log("getLogs fromBlock: ", fromBlock, ", toBlock: ", toBlock);
@@ -179,10 +189,10 @@ export class ORNode implements IORNode {
         await this._processLog(log);
       }
 
-      const latest = await provider.getBlockNumber();
-      fromBlock = Math.min(toBlock + 1, latest);
-      toBlock = Math.min(fromBlock + config.stepRange, latest);
-    } while (fromBlock !== toBlock);
+      const lastBlockNum = await provider.getBlockNumber();
+      fromBlock = Math.min(toBlock + 1, lastBlockNum);
+      toBlock = calcToBlock(fromBlock, lastBlockNum);
+    } while (fromBlock < toBlock);
   }
 
   private async _processLog(log: Log) {
@@ -393,7 +403,7 @@ export class ORNode implements IORNode {
     return awards;
   }
 
-  private _registerEventHandlers() {
+  public registerEventHandlers() {
     const orec = this._ctx.orec;
 
     orec.on(orec.getEvent("ProposalCreated"), this._propCreatedHandler);
