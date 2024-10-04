@@ -1,7 +1,7 @@
 import jsonfile from "jsonfile";
 import shelljs from "shelljs";
 
-const config = jsonfile.readFileSync("../ornode-cfg.json");
+const config = jsonfile.readFileSync("./ornode-cfg.json");
 
 console.log("Args: ", process.argv);
 

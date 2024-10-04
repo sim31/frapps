@@ -1,14 +1,14 @@
 import jsonfile from "jsonfile";
 import shelljs from "shelljs";
 
-const config = jsonfile.readFileSync("../ornode-cfg.json");
+const config = jsonfile.readFileSync("./ornode-cfg.json");
 
 console.log("Args: ", process.argv);
 
 config.ornode.sync = {
   fromBlock: process.argv[2],
   toBlock: process.argv[3],
-  stepRange: process.argv[4]
+  stepRange: Number(process.argv[4])
 }
 
 jsonfile.writeFileSync("./tmp/ornode-sync-cfg.json", config);
