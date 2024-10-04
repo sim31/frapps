@@ -26,6 +26,8 @@
     "build": "cd $npm_package_config_dev && npm run build && cd - && npm run build-console && npm run build-gui",
     "setup": "npm install && cd $npm_package_config_dev && npm run setup",
     "ornode": "node src/runOrnode.js",
+    "ornode-sync": "node src/syncOrnode.js",
+    "ornode-no-listen": "node src/runOrnodeNoListen.js",
     "console": "cd $npm_package_config_ordao_console && npx http-server build/of2/dist/ -p 9020 -a localhost",
     "gui": "cd $npm_package_config_ordao_gui && npx http-server dist/ -p 9030 -a localhost"
   },
