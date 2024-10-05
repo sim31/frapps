@@ -23,6 +23,9 @@
     ".": {
       "default": "./dist/index.js"
     },
+    "./orContext": {
+      "default": "./dist/orContext.js"
+    },
     "./*": {
       "default": "./dist/*"
     }

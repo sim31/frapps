@@ -55,6 +55,10 @@
     {
       "name": "ordao-office-hours",
       "path": "./ordao/sys/oh"
+    },
+    {
+      "name": "ex-privy-nextjs-orclient",
+      "path": "./examples/privy-nextjs-orclient"
     }
 	],
 	"settings": {
