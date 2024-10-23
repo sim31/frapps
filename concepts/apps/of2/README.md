@@ -44,7 +44,7 @@ Respect distribution should be controlled by a fractal. So consensus of a fracta
 I propose ditching the arbitrary requirements for number of submissions from a breakout room and instead using a flexible onchain proposal mechanism ([Orec](../../OREC.md)), that adapts to levels of onchain participation, to distribute Respect according to consensus of a fractal.
 
 ### Fixes current problems with Respect token;
-[Respect1155](../../../impl/respect/sc/) fixes [main headaches](https://www.notion.so/edencreators/Improve-representation-of-Respect-on-block-explorers-1201d818ff3a430fa662e4d5e398fb79) with the current Respect contract of Optimism Fractal. It is ERC1155 contract with a fungible token representing fungible Respect and NTTs with value attribute that sums to balance of a fungible token.
+[Respect1155](../../../impl/respect1155/sc/) fixes [main headaches](https://www.notion.so/edencreators/Improve-representation-of-Respect-on-block-explorers-1201d818ff3a430fa662e4d5e398fb79) with the current Respect contract of Optimism Fractal. It is ERC1155 contract with a fungible token representing fungible Respect and NTTs with value attribute that sums to balance of a fungible token.
 
 ## Concept (intent)
 
