@@ -1,6 +1,0 @@
-{
-  "chainId": "0xAA37DC",
-  "rpcUrls": ["https://sepolia.optimism.io"],
-  "chainName": "OP Sepolia",
-  "blockExplorerUrl": "https://optimism-sepolia.blockscout.com/"
-}

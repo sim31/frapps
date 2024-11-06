@@ -1,4 +1,0 @@
-node_modules
-.env
-ornode-cfg*.json
-!ornode-cfg.template.json

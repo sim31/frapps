@@ -1,6 +1,15 @@
 [submodule "impl/ethers-decode-error"]
-	path = impl/ethers-decode-error
+	path = ordao/libs/ethers-decode-error
 	url = https://github.com/sim31/ethers-decode-error
 [submodule "impl/examples/privy-nextjs-orclient"]
-	path = impl/examples/privy-nextjs-orclient
+	path = ordao/examples/privy-nextjs-orclient
 	url = https://github.com/sim31/privy-nextjs-orclient
+[submodule "op-fractal-1/op-fractal-sc"]
+	path = op-fractal-1/op-fractal-sc
+	url = git@github.com:Optimystics/op-fractal-sc.git
+[submodule "op-fractal-1/op-fractal-frontend"]
+	path = op-fractal-1/op-fractal-frontend
+	url = git@github.com:Optimystics/op-fractal-frontend.git
+[submodule "op-fractal-1/fractalgram"]
+	path = op-fractal-1/fractalgram
+	url = git@github.com:Optimystics/fractalgram.git
