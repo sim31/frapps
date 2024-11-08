@@ -37,6 +37,8 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "ts-utils": "^1.0.0",
+    "ortypes": "^1.0.0",
     "@chainsafe/libp2p-gossipsub": "^13.0.0",
     "@types/jsonfile": "^6.1.4",
     "dotenv": "^16.4.5",

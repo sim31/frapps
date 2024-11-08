@@ -1,0 +1,75 @@
+{
+  "targetDefaults": {
+    "build": {
+      "cache": true,
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "prepare-full": {
+      "dependsOn": []
+    },
+    "prepare": {
+      "dependsOn": []
+    },
+    "test": {
+      "cache": true,
+      "dependsOn": [
+        "^test"
+      ]
+    },
+    "script": {
+      "dependsOn": []
+    },
+    "dev": {
+      "dependsOn": [
+        "^dev"
+      ]
+    },
+    "preview": {
+      "dependsOn": []
+    },
+    "serve": {
+      "dependsOn": []
+    },
+    "lint": {
+      "dependsOn": []
+    },
+    "clean": {
+      "dependsOn": []
+    },
+    "build-clean": {
+      "dependsOn": []
+    },
+    "build-watch": {
+      "dependsOn": []
+    },
+    "test-gas": {
+      "dependsOn": []
+    },
+    "start": {
+      "dependsOn": []
+    },
+    "prebuild": {
+      "dependsOn": []
+    },
+    "build:watch": {
+      "dependsOn": []
+    },
+    "prettier": {
+      "dependsOn": []
+    },
+    "semantic-release:dry-run": {
+      "dependsOn": []
+    },
+    "gen-client": {
+      "dependsOn": []
+    },
+    "swagger-ui": {
+      "dependsOn": []
+    },
+    "backup": {
+      "dependsOn": []
+    }
+  }
+}

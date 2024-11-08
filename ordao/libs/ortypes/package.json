@@ -38,6 +38,11 @@
   },
   "dependencies": {
     "chai": "^5.1.1",
+    "ts-utils": "^1.0.0",
+    "op-fractal-sc": "^0.1.0",
+    "ethers-decode-error": "^2.0.0",
+    "orec": "^1.0.0",
+    "respect1155": "^1.0.0",
     "ethers": "^6.13.0",
     "utility-types": "^3.11.0",
     "zod": "^3.23.8"

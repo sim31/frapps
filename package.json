@@ -1,16 +1,20 @@
 {
-	"private": true,
-	"workspaces": [
-		"op-fractal-1/op-fractal-sc",
-		"ordao/contracts/*",
-		"ordao/libs/ts-utils",
-		"ordao/libs/ethers-decode-error",
-		"ordao/libs/ortypes",
-		"ordao/libs/orclient",
-		"ordao/services/ornode",
-		"ordao/apps/*"
-	],
-	"scripts": {
-		"gen-ornode-client": "npm run gen-client -w ornode && cp ordao/services/ornode/tmp/ornodeClient.ts ordao/libs/orclient/src/ornodeClient/"
-	}
+  "private": true,
+  "workspaces": [
+    "op-fractal-1/op-fractal-sc",
+    "ordao/contracts/*",
+    "ordao/libs/ts-utils",
+    "ordao/libs/ethers-decode-error",
+    "ordao/libs/ortypes",
+    "ordao/libs/orclient",
+    "ordao/services/ornode",
+    "ordao/apps/*"
+  ],
+  "scripts": {
+    "gen-ornode-client": "npm run gen-client -w ornode && cp ordao/services/ornode/tmp/ornodeClient.ts ordao/libs/orclient/src/ornodeClient/"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "lerna": "^8.1.9"
+  }
 }
