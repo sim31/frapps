@@ -7,7 +7,7 @@ import {
 } from "@chakra-ui/react";
 import { useMemo } from "react";
 import { useRouteError } from "react-router-dom";
-import { stringify } from "ts-utils";
+import { stringify } from "@sim31/ts-utils";
 
 export default function Fallback() {
   // Call resetErrorBoundary() to reset the error boundary and retry the render.

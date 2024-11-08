@@ -18,7 +18,7 @@
   "author": "sim31",
   "license": "GPL-3.0",
   "dependencies": {
-    "ts-utils": "^1.0.0",
+    "@sim31/ts-utils": "^1.0.0",
     "ortypes": "^1.0.0",
     "orclient": "^1.0.0",
     "dotenv": "^16.4.5",

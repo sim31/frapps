@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "ts-utils": "^1.0.0",
+    "@sim31/ts-utils": "^1.0.0",
     "ortypes": "^1.0.0",
     "orclient": "^1.0.0",
     "@chakra-ui/icons": "^2.1.1",

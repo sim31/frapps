@@ -1,7 +1,7 @@
 import { Db, MongoClient } from "mongodb";
 import { IVoteStore, Vote, GetVotesSpec, zVote } from "../ordb/ivoteStore.js";
 import { PropId } from "ortypes";
-import { stringify, withoutUndefined } from "ts-utils";
+import { stringify, withoutUndefined } from "@sim31/ts-utils";
 import { withoutId } from "./utils.js";
 import { StoreConfig, zStoreConfig } from "./storeConfig.js";
 import { z } from "zod";

@@ -10,7 +10,7 @@ import { InvalidArgumentError, Url, zUrl } from "./common.js";
 import { Required } from "utility-types";
 import { expect } from "chai";
 import { testVersion } from "orec/utils";
-import { ErrorDecoder, DecodedError } from 'ethers-decode-error'
+import { ErrorDecoder, DecodedError } from "@sim31/ethers-decode-error"
 
 export class OnchainPropNotFound extends Error {
   name: string = "OnchainPropNotFound"

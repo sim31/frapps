@@ -1,2 +1,2 @@
 
-export { DecodedError, ErrorDecoder } from 'ethers-decode-error';
+export { DecodedError, ErrorDecoder } from "@sim31/ethers-decode-error";

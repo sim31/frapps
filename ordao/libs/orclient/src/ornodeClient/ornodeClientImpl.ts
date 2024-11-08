@@ -1,4 +1,4 @@
-import { stringify } from "ts-utils";
+import { stringify } from "@sim31/ts-utils";
 import { Implementation } from "./ornodeClient.js"
 import { jsonEndpoints } from "./ornodeClient.js"
 

@@ -1,6 +1,6 @@
 {
   "name": "ornode",
-  "version": "1.0.3",
+  "version": "1.0.2",
   "description": "Helper node for OREC (optimistic respect-based executive contract) based DAO",
   "type": "module",
   "main": "dist/index.js",
@@ -37,7 +37,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "ts-utils": "^1.0.0",
+    "@sim31/ts-utils": "^1.0.0",
     "ortypes": "^1.0.0",
     "@chainsafe/libp2p-gossipsub": "^13.0.0",
     "@types/jsonfile": "^6.1.4",

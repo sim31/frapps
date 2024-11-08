@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "ortypes": "^1.0.0",
-    "ts-utils": "^1.0.0",
+    "@sim31/ts-utils": "^1.0.0",
     "chai": "^5.1.1",
     "ethers": "^6.13.0",
     "zod": "^3.23.8",

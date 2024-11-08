@@ -1,6 +1,6 @@
 import { MongoClient, Db, ObjectId } from "mongodb";
 import { EthAddress } from "ortypes";
-import { stringify, withoutUndefined } from "ts-utils";
+import { stringify, withoutUndefined } from "@sim31/ts-utils";
 import { IAwardStore, RespectAwardMt, TokenId, zRespectAwardMt, BurnData } from "../ordb/iawardStore.js";
 import { withoutId } from "./utils.js";
 import { GetAwardsSpec } from "ortypes/ornode.js";

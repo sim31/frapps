@@ -13,7 +13,7 @@ import {
 import { zContractMetadata, zEthAddress, zPropId } from "ortypes";
 import { resultHandler } from "./resultHandler.js";
 import { getOrnode } from "./mongoOrnode.js";
-import { stringify } from "ts-utils";
+import { stringify } from "@sim31/ts-utils";
 import {
   zRespectAwardMt,
   zRespectFungibleMt,

@@ -10,7 +10,7 @@ import { ClientToNodeTransformer } from "ortypes/transformers/clientToNodeTransf
 import { ProposalFull as NProp, ORNodePropStatus } from "ortypes/ornode.js";
 import { Bytes, EthAddress, PropId, ProposalNotCreated, ProposalState, TxHash, zVote as zNVote, DecodedError, ExecutedEvent, ExecutionFailedEvent, zPropId, zBytes, encodeVoteMemo } from "ortypes";
 import { Method, Path, Input, Response } from "./ornodeClient/ornodeClient.js";
-import { sleep, stringify } from "ts-utils";
+import { sleep, stringify } from "@sim31/ts-utils";
 import { resultArrayToObj } from "ortypes/utils.js";
 import { RespectAwardMt, RespectFungibleMt, TokenId } from "ortypes/respect1155.js";
 import { Erc1155Mt } from "ortypes/erc1155.js";

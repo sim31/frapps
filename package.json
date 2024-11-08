@@ -1,5 +1,6 @@
 {
   "private": true,
+	"version": "1.0.2",
   "workspaces": [
     "op-fractal-1/op-fractal-sc",
     "ordao/contracts/*",

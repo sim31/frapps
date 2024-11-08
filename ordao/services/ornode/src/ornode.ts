@@ -64,7 +64,7 @@ import {
   TokenId
 } from "./ordb/iawardStore.js";
 import { expect } from "chai";
-import { stringify } from "ts-utils";
+import { stringify } from "@sim31/ts-utils";
 import { LogDescription } from "ethers";
 import { TopicFilter } from "ethers";
 import { WebSocketProvider } from "ethers";

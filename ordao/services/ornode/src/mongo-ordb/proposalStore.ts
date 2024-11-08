@@ -2,7 +2,7 @@ import { MongoClient, Db, ObjectId } from "mongodb";
 import { PropId, TxHash } from "ortypes";
 import { IProposalStore, GetProposalsSpec, Proposal, zProposal } from "../ordb/iproposalStore.js";
 import { withoutId } from "./utils.js";
-import { withoutUndefined, stringify } from "ts-utils";
+import { withoutUndefined, stringify } from "@sim31/ts-utils";
 import { StoreConfig, zStoreConfig } from "./storeConfig.js";
 import { z } from "zod";
 

@@ -1,6 +1,6 @@
 import { Integration } from "express-zod-api";
 import { routing } from "../routing.js";
-import { ErrorWithCause, stringify } from "ts-utils";
+import { ErrorWithCause, stringify } from "@sim31/ts-utils";
 import fs from "fs/promises";
 
 export async function writeClient(path: string): Promise<void> {

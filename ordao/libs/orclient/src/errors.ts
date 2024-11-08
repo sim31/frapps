@@ -1,7 +1,7 @@
 import { ContractTransactionResponse, TransactionReceipt } from "ethers";
 import { DecodedError } from "ortypes";
 import { Proposal as NProp } from "ortypes/ornode.js"
-import { stringify } from "ts-utils";
+import { stringify } from "@sim31/ts-utils";
 
 export class NotImplemented extends Error {
   constructor(message: string) {

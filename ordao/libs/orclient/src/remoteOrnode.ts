@@ -2,7 +2,7 @@ import { ContractMetadata, EthAddress, IORNode, PropId, ProposalInvalid, Proposa
 import { GetProposalsSpec, GetAwardsSpec, ORNodePropStatus, StoredProposal as Proposal, ProposalFull, zErrorType, Vote, GetVotesSpec } from "ortypes/ornode.js";
 import { OrnodeClient, createOrnodeClient } from "./ornodeClient/index.js";
 import { Input, Method, Path, Response } from "./ornodeClient/ornodeClient.js"
-import { stringify } from "ts-utils";
+import { stringify } from "@sim31/ts-utils";
 import { RespectAwardMt, RespectFungibleMt, TokenId } from "ortypes/respect1155.js";
 import { Erc1155Mt } from "ortypes/erc1155.js";
 

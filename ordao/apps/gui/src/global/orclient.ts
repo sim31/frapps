@@ -6,7 +6,7 @@ import { config } from "./config.ts";
 import { RemoteOrnode, ORClient } from "orclient";
 import { BrowserProvider } from "ethers";
 import { ORContext } from "ortypes/orContext.js";
-import { stringify } from "ts-utils";
+import { stringify } from "@sim31/ts-utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function switchChain(ethereum: any) {

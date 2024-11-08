@@ -1,6 +1,6 @@
 import { MongoClient, Db, ObjectId } from "mongodb";
 import { ITickStore, TickEvent } from "../ordb/itickStore.js";
-import { withoutUndefined } from "ts-utils";
+import { withoutUndefined } from "@sim31/ts-utils";
 
 export class TickStore implements ITickStore {
   private readonly db: Db;

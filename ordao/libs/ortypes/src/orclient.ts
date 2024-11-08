@@ -4,7 +4,7 @@ import { zCustomSignalType, zOnchainProp as zNOnchainProp, zPropId, zProposedMsg
 import { zMeetingNum, zMintType, zTokenId } from "./respect1155.js";
 import { zBytes, zEthAddress, zTxHash, zUint } from "./eth.js";
 import { zTimestamp } from "./common.js";
-import { ErrorType } from "ethers-decode-error";
+import { ErrorType } from "@sim31/ethers-decode-error";
 
 export const zProposalMetadata = z.object({
   propTitle: z.string().optional(),
