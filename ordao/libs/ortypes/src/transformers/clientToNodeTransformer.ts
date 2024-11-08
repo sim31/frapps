@@ -30,7 +30,7 @@ import { propId } from "orec/utils";
 import { addCustomIssue } from "../zErrorHandling.js";
 import { zBreakoutMintRequest, zGroupNum, zPropType, zRankNum } from "../fractal.js";
 import { zBigNumberish, zBigNumberishToBigint } from "../eth.js";
-import { packTokenId } from "respect1155-sc/utils/tokenId.js";
+import { packTokenId } from "respect1155/utils/tokenId.js";
 
 type ORContext = OrigORContext<ConfigWithOrnode>;
 

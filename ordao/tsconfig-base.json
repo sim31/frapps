@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "ethers": ["../node_modules/ethers/lib.commonjs/index.d.ts"]
+    },
+  }
+}

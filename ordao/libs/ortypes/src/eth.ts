@@ -5,14 +5,18 @@ import { addCustomIssue } from './zErrorHandling.js';
 export const zTxHash = z.string();
 export type TxHash = z.infer<typeof zTxHash>;
 
+function _isHexString(value: any, length?: number | boolean): boolean {
+  return isHexString(value, length);
+}
+
 export const zBytes = z.string().refine((val) => {
-  return isHexString(val);
+  return _isHexString(val);
 });
 export type Bytes = z.infer<typeof zBytes>;
 
 export const zBytes32 = z.string().refine((val) => {
-  return isHexString(val, 32);
-})
+  return _isHexString(val, 32);
+}).pipe(z.string());
 export type Bytes32 = z.infer<typeof zBytes32>;
 
 export const zBytesLike = z.string().or(z.instanceof(Uint8Array))

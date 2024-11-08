@@ -1,0 +1,42 @@
+{
+  "providerUrl": "wss://provider-url.io",
+  "contracts": {
+    "newRespect": "0xAA76B4397b0F79D5a16093c3040d8cf95951b9Ee",
+    "orec": "0x7Abe89De9172b3F8F122AA8756b0F9Ee989686b7"
+  },
+  "tokenMetadataCfg": {
+    "award": {
+      "name": "Optimism Fractal Respect Award",
+      "description": "Award for a contribution to Optimsim Fractal",
+      "image": "https://of2-ornode.frapps.xyz/static/of.png"
+    },
+    "fungible": {
+      "name": "Optimism Fractal Respect",
+      "description": "Awards for a contributions to Optimsim Fractal",
+      "image": "https://of2-ornode.frapps.xyz/static/of.png",
+      "decimals": 0
+    },
+    "contract": {
+      "name": "Optimism Fractal Respect",
+      "symbol": "OFR",
+      "description": "Awards for a contributions to Optimsim Fractal",
+      "image": "https://of2-ornode.frapps.xyz/static/of.png",
+      "banner_image": "https://of2-ornode.frapps.xyz/static/of.png",
+      "featured_image": "https://of2-ornode.frapps.xyz/static/of.png",
+      "external_link": "https://of-console.frapps.xyz"
+    }
+  },
+  "mongoCfg": {
+    "url": "mongodb+srv://some-db",
+    "dbName": "db-name"
+  },
+  "swaggerUI": {
+    "ornodeEndpoint": "https://ornode-endpoint.xyz"
+  },
+  "ornode": {
+    "startPeriodNum": 40,
+    "host": "localhost",
+    "port": 9040
+  }
+}
+                

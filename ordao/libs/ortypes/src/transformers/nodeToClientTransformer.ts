@@ -59,7 +59,7 @@ import { MeetingNum, Factory as Respect1155Factory, zBurnRespectArgs, zMeetingNu
 import { Orec__factory as OrecFactory } from "orec/typechain-types";
 import { zBreakoutMintRequest, zPropType } from "../fractal.js";
 import { expect } from "chai";
-import { unpackTokenId } from "respect1155-sc/utils/tokenId.js";
+import { unpackTokenId } from "respect1155/utils/tokenId.js";
 import {
   zCustomSignalType,
   zSignalArgs,

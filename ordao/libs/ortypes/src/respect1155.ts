@@ -1,7 +1,7 @@
 import { Result, ZeroAddress, zeroPadBytes } from "ethers";
-import { isTokenIdValid } from "respect1155-sc/utils/tokenId.js";
-import { Respect1155, Respect1155Interface } from "respect1155-sc/typechain-types/contracts/Respect1155.js";
-import { Respect1155__factory } from "respect1155-sc/typechain-types/index.js";
+import { isTokenIdValid } from "respect1155/utils/tokenId.js";
+import { Respect1155, Respect1155Interface } from "respect1155/typechain-types/contracts/Respect1155.js";
+import { Respect1155__factory } from "respect1155/typechain-types/index.js";
 import { zBigNumberish, zBytes32, zBytesLike, zEthAddress, zTxHash } from "./eth.js";
 import { z } from "zod";
 import { preprocessResultOrObj } from "./utils.js";
@@ -11,8 +11,8 @@ import { zTimestamp } from "./common.js";
 export {
   TransferBatchEvent,
   TransferSingleEvent
-} from "respect1155-sc/typechain-types/@openzeppelin/contracts/token/ERC1155/IERC1155.js";
-export * from "respect1155-sc/typechain-types/common.js";
+} from "respect1155/typechain-types/@openzeppelin/contracts/token/ERC1155/IERC1155.js";
+export * from "respect1155/typechain-types/common.js";
 
 export type Contract = Respect1155;
 export const Factory = Respect1155__factory;
@@ -186,4 +186,4 @@ export const zRespectAwardMtToPretty = zRespectAwardMt.transform(val => {
   return pretty;
 }).pipe(zRespectAwardPrettyMt);
 
-export * from "respect1155-sc/utils/tokenId.js";
+export * from "respect1155/utils/tokenId.js";
