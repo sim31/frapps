@@ -1,5 +1,6 @@
 {
   "name": "ordao-console",
+  "private": "true",
   "version": "1.0.0",
   "type": "module",
   "description": "Console for interacting with optimistic respect-based DAOs (ORDAO) and documentation for orclient.",

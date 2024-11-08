@@ -1,6 +1,6 @@
 {
   "name": "respect1155",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Solidity smart contract for Respect non-transferrable token. Based on ERC1155 standard.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,6 +1,6 @@
 {
   "name": "ornode",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Helper node for OREC (optimistic respect-based executive contract) based DAO",
   "type": "module",
   "main": "dist/index.js",
