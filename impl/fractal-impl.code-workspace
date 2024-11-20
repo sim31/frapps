@@ -49,8 +49,8 @@
       "path": "./ordao/sys/op-sepolia-1
     },
     {
-      "name": "ordao-sys-of2",
-      "path": "./ordao/sys/of2"
+      "name": "ordao-sys-of2-candidate-1",
+      "path": "./ordao/sys/of2-candidate-1"
     },
     {
       "name": "ordao-office-hours",
@@ -59,7 +59,15 @@
     {
       "name": "ex-privy-nextjs-orclient",
       "path": "./examples/privy-nextjs-orclient"
-    }
+    },
+    {
+      "name": "ordao-sys-op-sepolia",
+      "path": "./ordao/sys/op-sepolia
+    },
+    {
+      "name": "ordao-sys-of2",
+      "path": "./ordao/sys/of2"
+    },
 	],
 	"settings": {
 		"solidity.compileUsingRemoteVersion": "v0.8.24+commit.e11b9ed9",

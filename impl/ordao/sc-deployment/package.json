@@ -7,14 +7,17 @@
     "op_sepolia_1_params": "../sys/op-sepolia-1/deployment-params.json",
     "of2_params": "../sys/of2/deployment-params.json",
     "oh_params": "../sys/oh/deployment-params.json",
+    "op_sepolia_params": "../sys/op-sepolia/deployment-params.json",
     "orec_dbg": "../../orec/artifacts/contracts/Orec.sol/Orec.dbg.json",
     "orec_dbg_path_op_sepolia1": "ignition/deployments/op-sepolia-1/artifacts/Orec#Orec.dbg.json",
     "orec_dbg_path_of": "ignition/deployments/of/artifacts/Orec#Orec.dbg.json",
     "orec_dbg_path_oh": "ignition/deployments/oh/artifacts/Orec#Orec.dbg.json",
+    "orec_dbg_path_op_sepolia": "ignition/deployments/op-sepolia/artifacts/Orec#Orec.dbg.json",
     "respect1155_dbg": "../../respect1155/sc/artifacts/contracts/Respect1155.sol/Respect1155.dbg.json",
     "respect1155_dbg_path_op_sepolia1": "ignition/deployments/op-sepolia-1/artifacts/Ordao#Respect1155.dbg.json",
     "respect1155_dbg_path_of": "ignition/deployments/of/artifacts/Ordao#Respect1155.dbg.json",
     "respect1155_dbg_path_oh": "ignition/deployments/oh/artifacts/Ordao#Respect1155.dbg.json",
+    "respect1155_dbg_path_op_sepolia": "ignition/deployments/op-sepolia/artifacts/Ordao#Respect1155.dbg.json",
     "orec_build_info": "../../orec/artifacts/build-info/",
     "respect1155_build_info": "../../respect1155/sc/artifacts/build-info/",
     "orec": "../../orec/",
@@ -46,7 +49,14 @@
 
     "copy-orec-dbg-oh": "cp $npm_package_config_orec_dbg $npm_package_config_orec_dbg_path_oh",
     "copy-respect1155-dbg-oh": "cp $npm_package_config_respect1155_dbg $npm_package_config_respect1155_dbg_path_oh",
-    "verify-oh-ignition": "npm run copy-orec-dbg-oh && npm run copy-respect1155-dbg-oh && mkdir -p ignition/deployments/build-info && npm run copy-orec-buildinfo && npm run copy-respect1155-buildinfo && npx hardhat ignition verify oh --include-unrelated-contracts"
+    "verify-oh-ignition": "npm run copy-orec-dbg-oh && npm run copy-respect1155-dbg-oh && mkdir -p ignition/deployments/build-info && npm run copy-orec-buildinfo && npm run copy-respect1155-buildinfo && npx hardhat ignition verify oh --include-unrelated-contracts",
+
+    "deploy-op-sepolia": "npx hardhat ignition deploy --parameters $npm_package_config_op_sepolia_params --deployment-id op-sepolia --network opSepolia ignition/modules/Ordao.ts",
+    "deploy-op-sepolia-reset": "npx hardhat ignition deploy --parameters $npm_package_config_op_sepolia_params --deployment-id op-sepolia --reset --network opSepolia ignition/modules/Ordao.ts",
+
+    "copy-orec-dbg-op-sepolia": "cp $npm_package_config_orec_dbg $npm_package_config_orec_dbg_path_op_sepolia",
+    "copy-respect1155-dbg-op-sepolia": "cp $npm_package_config_respect1155_dbg $npm_package_config_respect1155_dbg_path_op_sepolia",
+    "verify-op-sepolia-ignition": "npm run copy-orec-dbg-op-sepolia && npm run copy-respect1155-dbg-op-sepolia && mkdir -p ignition/deployments/build-info && npm run copy-orec-buildinfo && npm run copy-respect1155-buildinfo && npx hardhat ignition verify op-sepolia --include-unrelated-contracts"
   },
   "author": "sim31",
   "license": "GPL-3.0",
