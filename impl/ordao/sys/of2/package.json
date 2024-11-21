@@ -1,5 +1,5 @@
 {
-  "name": "ordao-sys-optimismfractal2-candidate-1",
+  "name": "ordao-sys-optimismfractal2",
   "version": "1.0.0",
   "description": "Scripts for running / managing deployment of ORDAO for Optimism Fractal",
   "main": "index.js",
