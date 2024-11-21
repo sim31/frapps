@@ -16,7 +16,7 @@ async function main() {
       dbName: "ornode-dev"
     },
     ornode: {
-      startPeriodNum: 0,
+      startPeriodNum: 1,
     }
   };
 
