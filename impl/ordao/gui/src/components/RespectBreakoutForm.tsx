@@ -6,7 +6,8 @@ import {
   Button,
   Text,
   Link,
-  VStack
+  VStack,
+  Spinner
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RespectBreakoutRequest, zRespectBreakoutRequest } from "ortypes/orclient.js";
@@ -32,6 +33,7 @@ const resultDefaults: SearchParamsStateType = {
 
 export default function RespectBreakoutForm() {
   const [meeting, setMeeting] = useState<string>("");
+  const [initialized, setInitialized] = useState<boolean>(false);
   const [results, setResults] = useSearchParamsState(resultDefaults);
   const [errorStr, setErrorStr] = useState<string | undefined>(undefined);
   const [submitOpen, setSubmitOpen] = useState<boolean>(false);
@@ -49,6 +51,7 @@ export default function RespectBreakoutForm() {
     const f = async () => {
       const c = await orclient;
       setMeeting((await c.getNextMeetingNum()).toString());
+      setInitialized(true);
     }
     f();
   }, [])
@@ -142,7 +145,7 @@ export default function RespectBreakoutForm() {
 
   console.log("fieldsFilled: ", fieldsFilled);
 
-  return (
+  return initialized ? (
     <>
       <Stack direction="column" spacing="1em" width="34em">
 
@@ -179,7 +182,6 @@ export default function RespectBreakoutForm() {
             type="number"
             value={meeting}
             onChange={e => setMeeting(e.target.value)}
-            required
           />
         </FormControl>
 
@@ -248,11 +250,12 @@ export default function RespectBreakoutForm() {
 
         <Text color="red">{errorStr ?? ""}</Text>
 
-        <Button onClick={onSubmitClick} isDisabled={!fieldsFilled}>Submit</Button>
+        <Button onClick={onSubmitClick} isDisabled={!fieldsFilled || !initialized}>Submit</Button>
         {/* <Button>Share</Button> */}
 
 
       </Stack>
     </>
   )
+  : <Spinner size="xl"/>
 }
