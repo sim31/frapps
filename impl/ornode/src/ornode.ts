@@ -93,7 +93,8 @@ export interface ConstructorConfig {
 export interface Config extends ConstructorConfig {
   newRespect: EthAddress | Respect1155.Contract,
   orec: EthAddress | OrecContract,
-  contractRunner: Url | ContractRunner
+  contractRunner: Url | ContractRunner,
+  listenToEvents: boolean
 }
 
 type ORNodeContextConfig = Omit<ORContext.Config, "ornode">;
@@ -144,8 +145,26 @@ export class ORNode implements IORNode {
 
     const ornode = new ORNode(ctx, db, cfg);
 
+    if (config.listenToEvents) {
+      console.log("Registering event handlers");
+      ornode._registerEventHandlers();
+    }
+
     return ornode
   }
+
+
+  private _registerEventHandlers() {
+    const orec = this._ctx.orec;
+
+    orec.on(orec.getEvent("ProposalCreated"), this._propCreatedHandler);
+    orec.on(orec.getEvent("Executed"), this._propExecHandler);
+    orec.on(orec.getEvent("ExecutionFailed"), this._propExecFailedHandler);
+    orec.on(orec.getEvent("Signal"), this._signalEventHandler);
+    orec.on(orec.getEvent("WeightedVoteIn"), this._weightedVoteHandler);
+    orec.on(orec.getEvent("EmptyVoteIn"), this._emptyVoteHandler);
+  }
+
 
   public async sync(config: SyncConfig) {
     console.log("starting sync");
@@ -401,17 +420,6 @@ export class ORNode implements IORNode {
   ): Promise<RespectAwardMt[]> {
     const awards = await this._db.awards.getAwards(spec);
     return awards;
-  }
-
-  public registerEventHandlers() {
-    const orec = this._ctx.orec;
-
-    orec.on(orec.getEvent("ProposalCreated"), this._propCreatedHandler);
-    orec.on(orec.getEvent("Executed"), this._propExecHandler);
-    orec.on(orec.getEvent("ExecutionFailed"), this._propExecFailedHandler);
-    orec.on(orec.getEvent("Signal"), this._signalEventHandler);
-    orec.on(orec.getEvent("WeightedVoteIn"), this._weightedVoteHandler);
-    orec.on(orec.getEvent("EmptyVoteIn"), this._emptyVoteHandler);
   }
 
   private _weightedVoteHandlerImpl = 

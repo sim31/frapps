@@ -5,7 +5,7 @@ async function main() {
   const d = jsonfile.readFileSync("./tmp/dev-deployment.json");
   const tokenCfg = jsonfile.readFileSync("./dev-token-cfg.json");
   const config = {
-    providerUrl: d.providerUrl,
+    providerUrl: "http://localhost:8545",
     contracts: {
       newRespect: d.newRespectAddr,
       orec: d.orecAddr
@@ -16,7 +16,7 @@ async function main() {
       dbName: "ornode-dev"
     },
     ornode: {
-      startPeriodNum: 1,
+      startPeriodNum: 0,
     }
   };
 

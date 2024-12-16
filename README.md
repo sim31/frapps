@@ -19,3 +19,8 @@ Run everything locally (dev servers):
 ```
 cd impl/ordao/sys/dev/ && npm run dev
 ```
+
+## Sync command in case of missed events
+```
+npm run ornode-sync 129361897 <"latest" | block-num> 8000
+```

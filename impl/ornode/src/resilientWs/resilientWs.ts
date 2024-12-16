@@ -5,13 +5,13 @@ import WebSocket from "ws";
 // With some modifications
 
 const EXPECTED_PONG_BACK = 15000;
-const KEEP_ALIVE_CHECK_INTERVAL = 60 * 1000; //7500;
+const KEEP_ALIVE_CHECK_INTERVAL = 300 * 1000; // 5 minutes
 
 const debug = (message: string) => {
-  console.debug("ResilientWsProvider", message);
+  console.debug("ResilientWsProvider: ", message);
 };
 
-export const ResilientWebsocket = (
+export const ResilientWs = (
   url: string,
   onConnectedCb?: (provider: WebSocketProvider) => void,
   network?: Networkish,
@@ -82,6 +82,7 @@ export const ResilientWebsocket = (
   startConnection();
 
   return () => {
+    debug("Terminate called");
     terminate = true;
     if (keepAliveInterval) clearInterval(keepAliveInterval);
     if (pingTimeout) clearTimeout(pingTimeout);

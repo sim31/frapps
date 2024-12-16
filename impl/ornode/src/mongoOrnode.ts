@@ -2,19 +2,10 @@ import { Config, config } from "./config.js";
 import { ORNode } from "./ornode.js";
 import { MongoOrdb } from "./mongo-ordb/mongoOrdb.js";
 import { IORNode, Url } from "ortypes";
-import { ResilientWebsocket } from "./resilientWebsocket/index.js";
+import { ResettingResilientWs } from "./resilientWs/resetingResilientWs.js";
 import { ContractRunner, WebSocketProvider } from "ethers";
 
-export let ornode: Promise<IORNode>;
-
-export function registerEventHandlers(ornode: ORNode) {
-  if (config.ornode.listenForEvents) {
-    ornode.registerEventHandlers();
-    console.debug("Registered for events");
-  } else {
-    console.warn("Skipping registration to events");
-  }
-}
+let ornode: Promise<IORNode>;
 
 export async function createORNode(
   config: Config,
@@ -27,47 +18,32 @@ export async function createORNode(
       contractRunner,
       tokenCfg: config.tokenMetadataCfg,
       startPeriodNumber: config.ornode.startPeriodNum,
+      listenToEvents: config.ornode.listenForEvents
     }, mordb);
 }
 
+// Has to set ornode
 export async function createHttpOrnode(
   config: Config,
   mordb: MongoOrdb,
   providerUrl: Url
 ) {
   console.log("Creating http ornode");
-  const orn = await createORNode(config, mordb, providerUrl);
-  registerEventHandlers(orn);
-  return orn;
+  ornode = createORNode(config, mordb, providerUrl);
 }
 
+// Has to set ornode
 export async function createWebsocketOrnode(config: Config, mordb: MongoOrdb) {
-  return new Promise<IORNode>((resolve) => {
-    console.log("Creating ws ornode");
-    let ornPromise: Promise<ORNode> | undefined;
-    // TODO: use terminate when quiting?
-    const terminate = ResilientWebsocket(
-      config.providerUrl,
-      async (wsp: WebSocketProvider) => {
-        if (ornPromise === undefined) {
-          ornPromise = createORNode(config, mordb, wsp);
-
-          const orn = await ornPromise;
-          if (config.ornode.sync === undefined) {
-            console.log("registering event handlers for the first time")
-            registerEventHandlers(orn);
-          }
-          resolve(orn);
-        } else {
-          console.log("Reconnection. Re-registering event handlers")
-          if (config.ornode.sync === undefined) {
-            const orn = await ornPromise;
-            registerEventHandlers(orn);
-          }
-        }
-      }
-    )
-  })
+  const terminate = ResettingResilientWs(
+    config.providerUrl,
+    config.ornode.wsResetInterval,
+    async (wsp: WebSocketProvider) => {
+      // On reconnection - same mordb, new orcontext and corresponding ornode object
+      // But ornode variable is private here so it is not a problem.
+      ornode = createORNode(config, mordb, wsp);
+    }
+  )
+  return terminate;
 }
 
 export async function init() {
@@ -81,9 +57,9 @@ export async function init() {
 
   const url = new URL(config.providerUrl);
   if (url.protocol === "wss:") {
-    ornode = createWebsocketOrnode(config, mordb);
+    createWebsocketOrnode(config, mordb);
   } else {
-    ornode = createHttpOrnode(config, mordb, config.providerUrl);
+    createHttpOrnode(config, mordb, config.providerUrl);
   }
   await ornode;
 }
