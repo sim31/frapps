@@ -3,7 +3,7 @@ import { ResilientWs } from "./resilientWs.js";
 import { sleep } from "ts-utils";
 
 const log = (message: string) => {
-  console.log("ResettingResilientWs: ", message);
+  console.log("ResettingResilientWs:", message);
 };
 
 export const ResettingResilientWs = (

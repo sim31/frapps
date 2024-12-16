@@ -34,15 +34,19 @@ export async function createHttpOrnode(
 
 // Has to set ornode
 export async function createWebsocketOrnode(config: Config, mordb: MongoOrdb) {
-  const terminate = ResettingResilientWs(
+  let terminate: () => void;
+
+  const onConnect = async (wsp: WebSocketProvider) => {
+    // On reconnection - same mordb, new orcontext and corresponding ornode object
+    // But ornode variable is private here so it is not a problem.
+    ornode = createORNode(config, mordb, wsp);
+  };
+  terminate = ResettingResilientWs(
     config.providerUrl,
     config.ornode.wsResetInterval,
-    async (wsp: WebSocketProvider) => {
-      // On reconnection - same mordb, new orcontext and corresponding ornode object
-      // But ornode variable is private here so it is not a problem.
-      ornode = createORNode(config, mordb, wsp);
-    }
-  )
+    onConnect
+  );
+
   return terminate;
 }
 

@@ -57,8 +57,8 @@ export const zOrnodeCfg = z.object({
   voteStore: zVoteStoreConfig.default({}),
   sync: zSyncConfig.optional(),
   listenForEvents: z.boolean().default(true),
-  wsResetInterval: z.number().int().default(86400)
-    .describe("Interval in seconds for how often to reset wss connection. 0 for never.")
+  wsResetInterval: z.number().int().default(0)
+    .describe("Interval in seconds for how often to reset ws connection. 0 for never.")
 })
 export type OrnodeCfg = z.infer<typeof zOrnodeCfg>;
 

@@ -8,7 +8,7 @@ const EXPECTED_PONG_BACK = 15000;
 const KEEP_ALIVE_CHECK_INTERVAL = 300 * 1000; // 5 minutes
 
 const debug = (message: string) => {
-  console.debug("ResilientWsProvider: ", message);
+  console.debug("ResilientWsProvider:", message);
 };
 
 export const ResilientWs = (
