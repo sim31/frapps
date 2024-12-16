@@ -10,16 +10,18 @@ import {
   Spinner
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { RespectBreakoutRequest, zRespectBreakoutRequest } from "ortypes/orclient.js";
+import { RespectBreakoutRequest, zRespectBreakoutRequest } from "@ordao/ortypes/orclient.js";
 import { useSearchParamsState, SearchParamsStateType } from 'react-use-search-params-state'
 import { fromError } from 'zod-validation-error';
 import { hashObject } from "../utils/objectHash";
 import SubmitBreakoutResModal from "./SubmitBreakoutResModal";
-import { orclient } from "../global/orclient";
 import TxProgressModal from "./TxProgressModal";
 import { decodeError } from "../utils/decodeTxError";
 import { linkToTx } from "../utils/blockExplorerLink";
 import { ExternalLinkIcon } from '@chakra-ui/icons'
+import { useOrclient } from "@ordao/privy-react-orclient";
+import { deploymentInfo } from "../global/config";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 
 const resultDefaults: SearchParamsStateType = {
   groupnumber: { type: 'number', default: null },
@@ -44,17 +46,39 @@ export default function RespectBreakoutForm() {
   const [txProgressStatus, setTxProgressStatus] = 
     useState<'submitting' | 'submitted' | 'error' | undefined>()
   const [txHash, setTxHash] = useState("");
+  const { login, user, ready: privyReady, authenticated } = usePrivy();
+  const conWallets = useWallets();
 
-  // Runs only on initial render
-  // https://stackoverflow.com/a/55481525
+  // TODO: should figure out how to deal with multiple wallets.
+  // User should be able to select one of them.
+  const userWallet = useMemo(() =>{
+    if (conWallets && conWallets.ready) {
+      return conWallets.wallets.find(w => w.address === user?.wallet?.address);
+    }
+  }, [user, conWallets]);
+  
+  const orclient = useOrclient(deploymentInfo, userWallet);
+
+  // Not adding privy's login to dependency list because it causes an infinite loop
   useEffect(() => {
+    console.log("login effect. authenticated: ", authenticated);
+    if (!authenticated) {
+      console.log("logging in");
+      login();
+    }
+  }, [authenticated]);
+
+  useEffect(() => {
+    console.log("meeting number effect. privyRead: ", privyReady, ", authenticated: ", authenticated);
     const f = async () => {
-      const c = await orclient;
-      setMeeting((await c.getNextMeetingNum()).toString());
-      setInitialized(true);
+      if (orclient && authenticated && privyReady) {
+        const meetingNum = await orclient.getNextMeetingNum();
+        setMeeting(meetingNum.toString());
+        setInitialized(true);
+      }
     }
     f();
-  }, [])
+  }, [orclient, privyReady, authenticated])
 
   const closeSubmitModal = () => {
     setSubmitOpen(false);
@@ -76,13 +100,15 @@ export default function RespectBreakoutForm() {
     if (request === undefined) {
       throw new Error("Request undefined");
     }
+    if (orclient === undefined || !initialized) {
+      throw new Error("orclient not initialized");
+    }
     closeSubmitModal();
     setTxProgressStatus('submitting');
     setTxProgressStr("");
     setTxProgressOpen(true);
     try {
-      const c = await orclient;            
-      const res = await c.proposeBreakoutResult(request);
+      const res = await orclient.proposeBreakoutResult(request);
       // TODO: block explorer link
       setTxProgressStatus('submitted');
       setTxHash(res.txReceipt.hash);
@@ -98,7 +124,7 @@ export default function RespectBreakoutForm() {
         throw err;
       }
     }
-  }, [request])
+  }, [request, orclient, initialized])
 
   const onSubmitClick = async () => {
     const rankings: Array<string> = [];

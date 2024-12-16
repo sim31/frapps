@@ -445,7 +445,7 @@ export class ORNode implements IORNode {
       vtype: bigint,
       event: TypedEventLog<EmptyVoteInEvent.Event>
     ) => {
-      console.debug("WeightedVoteIn event. PropId: ", propId, "event: ", stringify(event));
+      console.debug("EmptyVoteIn event. PropId: ", propId, "event: ", stringify(event));
 
       await this._handleVoteEvent(
         propId, voter, zVoteTypeToStr.parse(vtype), 0, event
