@@ -1,19 +1,22 @@
 import {
   Box,
   Flex,
-  Avatar,
+  // Avatar,
   Button,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
-  MenuDivider,
+  // MenuDivider,
   // useDisclosure,
   useColorModeValue,
   Stack,
+  useToast,
   // useColorMode,
-  Center,
+  // Center,
 } from '@chakra-ui/react'
+import copy from 'copy-to-clipboard'
+import { useCallback } from 'react'
 
 // interface Props {
 //   children: React.ReactNode
@@ -39,16 +42,35 @@ import {
 // }
 
 export type AppBarProps = {
-  onNewPropClick: () => void;
+  // onNewPropClick: () => void;
+  title: string,
+  loggedInUser?: string,
+  onLogout: () => void,
+  onLogin: () => void
 }
 
 export default function AppBar(props: AppBarProps) {
   // const { colorMode, toggleColorMode } = useColorMode()
   // const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const toast = useToast();
+
+  const copyUsername = useCallback(() => {
+    if (props.loggedInUser) {
+      copy(props.loggedInUser)
+      toast({
+        title: 'Address copied to clipboard!',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+      })
+    }
+  }, [props, toast])
+
   return (
     <Box w="100%" bg={useColorModeValue('gray.100', 'gray.900')} px={4}>
       <Flex h={16} w="100%" alignItems={'center'} justifyContent={'space-between'}>
-        <Box as="b" fontSize="larger">Optimism Fractal</Box>
+        <Box paddingLeft="0.5em" as="b" fontSize="larger">{props.title}</Box>
 
         <Flex alignItems={'center'}>
           <Stack direction={'row'} spacing={7}>
@@ -56,38 +78,38 @@ export default function AppBar(props: AppBarProps) {
               {colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
             </Button> */}
 
-            <Button onClick={props.onNewPropClick}>Create Proposal</Button>
-
+            {/* <Button onClick={props.onNewPropClick}>Create Proposal</Button> */}
             <Menu>
-              <MenuButton
-                as={Button}
-                rounded={'full'}
-                variant={'link'}
-                cursor={'pointer'}
-                minW={0}>
-                <Avatar
-                  size={'sm'}
-                  src={'https://avatars.dicebear.com/api/male/username.svg'}
-                />
-              </MenuButton>
-              <MenuList alignItems={'center'}>
-                <br />
-                <Center>
-                  <Avatar
-                    size={'2xl'}
-                    src={'https://avatars.dicebear.com/api/male/username.svg'}
-                  />
-                </Center>
-                <br />
-                <Center>
-                  <p>Username BBA</p>
-                </Center>
-                <br />
-                <MenuDivider />
-                {/* <MenuItem>Your Servers</MenuItem> */}
-                {/* <MenuItem>Account Settings</MenuItem> */}
-                <MenuItem>Logout</MenuItem>
-              </MenuList>
+              { props.loggedInUser ? (
+                <>
+                  <MenuButton
+                    as={Button}
+                    rounded={'full'}
+                    variant={'link'}
+                    cursor={'pointer'}
+                    minW={0}
+                  >
+                    {props.loggedInUser}                
+                  </MenuButton>
+                  <MenuList alignItems={'center'}>
+                    {/* <MenuItem>Your Servers</MenuItem> */}
+                    {/* <MenuItem>Account Settings</MenuItem> */}
+                    <MenuItem onClick={copyUsername}>Copy</MenuItem>
+                    <MenuItem onClick={props.onLogout}>Logout</MenuItem>
+                  </MenuList>
+                </>
+              ) : (
+                <MenuButton
+                  as={Button}
+                  rounded={'full'}
+                  variant={'link'}
+                  cursor={'pointer'}
+                  minW={0}
+                  onClick={props.onLogin}
+                >
+                  Login
+                </MenuButton>
+              )}
             </Menu>
           </Stack>
         </Flex>

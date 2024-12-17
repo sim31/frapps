@@ -10,6 +10,8 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import Fallback from './components/Fallback'
+import { PrivyProvider } from '@privy-io/react-auth'
+import { config } from './global/config'
 
 console.debug = console.log;
 console.debug("debug test")
@@ -33,10 +35,21 @@ const router = createBrowserRouter(
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ChakraProvider>
-      <Container minHeight="100vh" minWidth="100vw">
-        <RouterProvider router={router} />
-      </Container>
-    </ChakraProvider>
+    <PrivyProvider
+      appId={config.privyAppId || ""}
+      config={{
+        embeddedWallets: {
+          // IMPORTANT: use this option if you don't want to deal with multiple wallets per user account
+          // and you want to prefer external wallet if user has one.
+          createOnLogin: "users-without-wallets",
+        },
+      }}
+    >
+      <ChakraProvider>
+        <Container minHeight="100vh" minWidth="100vw" padding="0px">
+          <RouterProvider router={router} />
+        </Container>
+      </ChakraProvider>
+    </PrivyProvider>
   </React.StrictMode>,
 )

@@ -7,10 +7,12 @@ import {
   Text,
   Link,
   VStack,
-  Spinner
+  Spinner,
+  useToast
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RespectBreakoutRequest, zRespectBreakoutRequest } from "@ordao/ortypes/orclient.js";
+import { ORClient } from "@ordao/orclient";
 import { useSearchParamsState, SearchParamsStateType } from 'react-use-search-params-state'
 import { fromError } from 'zod-validation-error';
 import { hashObject } from "../utils/objectHash";
@@ -19,9 +21,7 @@ import TxProgressModal from "./TxProgressModal";
 import { decodeError } from "../utils/decodeTxError";
 import { linkToTx } from "../utils/blockExplorerLink";
 import { ExternalLinkIcon } from '@chakra-ui/icons'
-import { useOrclient } from "@ordao/privy-react-orclient";
-import { deploymentInfo } from "../global/config";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import copy from "copy-to-clipboard";
 
 const resultDefaults: SearchParamsStateType = {
   groupnumber: { type: 'number', default: null },
@@ -33,7 +33,11 @@ const resultDefaults: SearchParamsStateType = {
   vote6: { type: 'string', default: "" },
 }
 
-export default function RespectBreakoutForm() {
+export type RespectBreakoutFormProps = {
+  orclient: ORClient
+}
+
+export default function RespectBreakoutForm({ orclient }: RespectBreakoutFormProps) {
   const [meeting, setMeeting] = useState<string>("");
   const [initialized, setInitialized] = useState<boolean>(false);
   const [results, setResults] = useSearchParamsState(resultDefaults);
@@ -46,39 +50,16 @@ export default function RespectBreakoutForm() {
   const [txProgressStatus, setTxProgressStatus] = 
     useState<'submitting' | 'submitted' | 'error' | undefined>()
   const [txHash, setTxHash] = useState("");
-  const { login, user, ready: privyReady, authenticated } = usePrivy();
-  const conWallets = useWallets();
 
-  // TODO: should figure out how to deal with multiple wallets.
-  // User should be able to select one of them.
-  const userWallet = useMemo(() =>{
-    if (conWallets && conWallets.ready) {
-      return conWallets.wallets.find(w => w.address === user?.wallet?.address);
-    }
-  }, [user, conWallets]);
-  
-  const orclient = useOrclient(deploymentInfo, userWallet);
-
-  // Not adding privy's login to dependency list because it causes an infinite loop
-  useEffect(() => {
-    console.log("login effect. authenticated: ", authenticated);
-    if (!authenticated) {
-      console.log("logging in");
-      login();
-    }
-  }, [authenticated]);
 
   useEffect(() => {
-    console.log("meeting number effect. privyRead: ", privyReady, ", authenticated: ", authenticated);
     const f = async () => {
-      if (orclient && authenticated && privyReady) {
-        const meetingNum = await orclient.getNextMeetingNum();
-        setMeeting(meetingNum.toString());
-        setInitialized(true);
-      }
+      const meetingNum = await orclient.getNextMeetingNum();
+      setMeeting(meetingNum.toString());
+      setInitialized(true);
     }
     f();
-  }, [orclient, privyReady, authenticated])
+  }, [orclient])
 
   const closeSubmitModal = () => {
     setSubmitOpen(false);
@@ -100,7 +81,7 @@ export default function RespectBreakoutForm() {
     if (request === undefined) {
       throw new Error("Request undefined");
     }
-    if (orclient === undefined || !initialized) {
+    if (!initialized) {
       throw new Error("orclient not initialized");
     }
     closeSubmitModal();
@@ -169,10 +150,22 @@ export default function RespectBreakoutForm() {
            && results.vote3 !== "";
   }, [meeting, results])
 
+  const toast = useToast();
+
+  const copyUrl = useCallback(() => {
+    copy(window.location.href);
+    toast({
+      title: 'Link copied to clipboard!',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+    })
+  }, [toast]);
+
   console.log("fieldsFilled: ", fieldsFilled);
 
-  return initialized ? (
-    <>
+  return (
+    initialized ? (
       <Stack direction="column" spacing="1em" width="34em">
 
         <SubmitBreakoutResModal
@@ -277,11 +270,10 @@ export default function RespectBreakoutForm() {
         <Text color="red">{errorStr ?? ""}</Text>
 
         <Button onClick={onSubmitClick} isDisabled={!fieldsFilled || !initialized}>Submit</Button>
-        {/* <Button>Share</Button> */}
-
+        <Button onClick={copyUrl}>Share</Button>
 
       </Stack>
-    </>
+    )
+    : <Spinner size="xl"/>
   )
-  : <Spinner size="xl"/>
 }
