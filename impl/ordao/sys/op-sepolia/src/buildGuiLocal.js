@@ -7,6 +7,7 @@ const dCfg = jsonfile.readFileSync("../../sc-deployment/ignition/deployments/op-
 const dparams = jsonfile.readFileSync("./deployment-params.json");
 const chainInfo = jsonfile.readFileSync("./chain-info.json")
 const privyCfg = jsonfile.readFileSync("./privy-cfg.json");
+const docsOrigin = "http://localhost:5173";
 
 const cmd = `cd $npm_package_config_ordao_gui && \
   VITE_OLD_RESPECT_ADDR=${dparams['Orec']['oldRespectAddr']} \
@@ -16,6 +17,8 @@ const cmd = `cd $npm_package_config_ordao_gui && \
   VITE_APP_TITLE="ORDAO (OP Sepolia)" \
   \
   VITE_PRIVY_APP_ID=${privyCfg['appId']}\
+  \
+  VITE_DOCS_ORIGIN=${docsOrigin}\
   \
   VITE_CHAIN_ID='${chainInfo.chainId}' \
   VITE_RPC_URLS='${JSON.stringify(chainInfo.rpcUrls)}' \

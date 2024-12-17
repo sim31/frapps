@@ -17,6 +17,7 @@ import {
 } from '@chakra-ui/react'
 import copy from 'copy-to-clipboard'
 import { useCallback } from 'react'
+import { formatEthAddress } from 'eth-address'
 
 // interface Props {
 //   children: React.ReactNode
@@ -89,7 +90,7 @@ export default function AppBar(props: AppBarProps) {
                     cursor={'pointer'}
                     minW={0}
                   >
-                    {props.loggedInUser}                
+                    {formatEthAddress(props.loggedInUser, 4)}
                   </MenuButton>
                   <MenuList alignItems={'center'}>
                     {/* <MenuItem>Your Servers</MenuItem> */}

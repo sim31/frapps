@@ -1,7 +1,8 @@
 import { zEthAddress, zUrl } from "@ordao/ortypes";
 import { zChainInfo } from "@ordao/ortypes/chainInfo.js";
 import { z } from "zod";
-import { DeploymentInfo } from "@ordao/orclient/createOrclient.js"
+import { CreateOrclientConfig, DeploymentInfo } from "@ordao/orclient/createOrclient.js"
+import { defaultConfig } from "@ordao/orclient";
 
 export const zContractsAddrs = z.object({
   oldRespect: zEthAddress.optional(),
@@ -15,7 +16,8 @@ export const zConfig = z.object({
   ornodeUrl: zUrl,
   appTitle: z.string(),
   chainInfo: zChainInfo,
-  privyAppId: z.string()
+  privyAppId: z.string(),
+  docsOrigin: z.string().url()
 });
 export type Config = z.infer<typeof zConfig>;
 
@@ -25,6 +27,7 @@ const orec = import.meta.env.VITE_OREC_ADDR;
 const ornodeUrl = import.meta.env.VITE_ORNODE_URL;
 const appTitle = import.meta.env.VITE_APP_TITLE;
 const privyAppId = import.meta.env.VITE_PRIVY_APP_ID;
+const docsOrigin = import.meta.env.VITE_DOCS_ORIGIN;
 
 const chainId = import.meta.env.VITE_CHAIN_ID;
 const rpcUrls = JSON.parse(import.meta.env.VITE_RPC_URLS);
@@ -45,8 +48,14 @@ export const config = zConfig.parse({
     chainName,
     blockExplorerUrl
   },
-  privyAppId
+  privyAppId,
+  docsOrigin
 });
+
+export const orclientConfig: CreateOrclientConfig = {
+  ...defaultConfig,
+  consoleConfig: { enabled: true, docsOrigin: docsOrigin }
+};
 
 export const deploymentInfo: DeploymentInfo = {
   ...config,

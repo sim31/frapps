@@ -1,7 +1,7 @@
 import { Button, Center, Spinner, } from "@chakra-ui/react";
 import RespectBreakoutForm from "./components/RespectBreakoutForm";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { config } from "./global/config.js";
+import { config, orclientConfig } from "./global/config.js";
 import { useOrclient } from "@ordao/privy-react-orclient";
 import { deploymentInfo } from "./global/config";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
@@ -22,7 +22,6 @@ export default function BreakoutSubmitApp() {
     return () => {
       window.removeEventListener("unhandledrejection", promiseRejectionHandler);
     };
-    /* eslint-disable react-hooks/exhaustive-deps */
   }, []);
 
   const {
@@ -41,7 +40,7 @@ export default function BreakoutSubmitApp() {
     }
   }, [user, conWallets, privyReady, authenticated]);
   
-  const orclient = useOrclient(deploymentInfo, userWallet);
+  const orclient = useOrclient(deploymentInfo, userWallet, orclientConfig);
 
   // Not adding privy's login to dependency list because it causes an infinite loop
   useEffect(() => {
