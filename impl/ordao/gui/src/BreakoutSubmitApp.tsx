@@ -22,7 +22,7 @@ export default function BreakoutSubmitApp() {
     return () => {
       window.removeEventListener("unhandledrejection", promiseRejectionHandler);
     };
-  }, []);
+  }, [promiseRejectionHandler]);
 
   const {
     login: privyLogin,
@@ -42,13 +42,14 @@ export default function BreakoutSubmitApp() {
   
   const orclient = useOrclient(deploymentInfo, userWallet, orclientConfig);
 
-  // Not adding privy's login to dependency list because it causes an infinite loop
   useEffect(() => {
     console.log("login effect. authenticated: ", authenticated);
     if (privyReady && !authenticated) {
       console.log("logging in");
       privyLogin();
     }
+  // Not adding privy's login to dependency list because it causes an infinite loop
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticated, userWallet, privyReady]);
 
   const login = useCallback(async () => {
@@ -56,6 +57,7 @@ export default function BreakoutSubmitApp() {
       await privyLogout();
     }
     privyLogin();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [privyLogout, authenticated, privyReady])
 
   return (
