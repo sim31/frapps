@@ -6,6 +6,8 @@ import shelljs from "shelljs";
 const dCfg = jsonfile.readFileSync("../../sc-deployment/ignition/deployments/of2/deployed_addresses.json");
 const dparams = jsonfile.readFileSync("./deployment-params.json");
 const chainInfo = jsonfile.readFileSync("./chain-info.json")
+const privyCfg = jsonfile.readFileSync("./privy-cfg.json");
+const docsOrigin = "https://of-console.frapps.xyz"
 
 const cmd = `cd $npm_package_config_ordao_gui && \
   VITE_OLD_RESPECT_ADDR=${dparams['Orec']['oldRespectAddr']} \
@@ -13,6 +15,10 @@ const cmd = `cd $npm_package_config_ordao_gui && \
   VITE_OREC_ADDR=${dCfg['Orec#Orec']} \
   VITE_ORNODE_URL=https://of2-ornode.frapps.xyz \
   VITE_APP_TITLE="ORDAO (Optimism Fractal)" \
+  \
+  VITE_PRIVY_APP_ID=${privyCfg['appId']}\
+  \
+  VITE_DOCS_ORIGIN=${docsOrigin}\
   \
   VITE_CHAIN_ID='${chainInfo.chainId}' \
   VITE_RPC_URLS='${JSON.stringify(chainInfo.rpcUrls)}' \
