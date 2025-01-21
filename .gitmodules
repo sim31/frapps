@@ -1,6 +1,3 @@
-[submodule "impl/ethers-decode-error"]
-	path = impl/ethers-decode-error
-	url = https://github.com/sim31/ethers-decode-error
-[submodule "impl/examples/privy-nextjs-orclient"]
-	path = impl/examples/privy-nextjs-orclient
-	url = https://github.com/sim31/privy-nextjs-orclient
+[submodule "apps/ordao"]
+	path = apps/ordao
+	url = git@github.com:sim31/ordao.git

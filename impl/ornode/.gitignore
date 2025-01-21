@@ -1,7 +1,0 @@
-node_modules
-.env
-orbitdb
-ipfs
-dist
-mongodump-cfg.json
-

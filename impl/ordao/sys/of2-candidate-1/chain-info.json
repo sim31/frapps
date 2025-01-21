@@ -1,6 +1,0 @@
-{
-  "chainId": "0xA",
-  "rpcUrls": ["https://mainnet.optimism.io/"],
-  "chainName": "Optimism",
-  "blockExplorerUrl": "https://optimism.blockscout.com"
-}
