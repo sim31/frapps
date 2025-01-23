@@ -8,7 +8,8 @@
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "init": "cd apps/ordao && npm install"
+    "init": "cd apps/ordao && npm install",
+    "start": "ts-node src/main.ts"
   },
   "repository": {
     "type": "git",
