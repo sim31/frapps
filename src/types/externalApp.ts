@@ -1,7 +1,9 @@
 import { z } from "zod";
-import { zBaseApp } from "./baseApp";
+import { zBaseFrapp } from "./baseFrapp";
 
-export const zExternalApp = zBaseApp.extend({
-  app: z.literal("external"),
+export const zExternalApp = zBaseFrapp.extend({
+  app: z.object({
+    appId: z.literal("externalApp")
+  }),
   url: z.string().url()
 });

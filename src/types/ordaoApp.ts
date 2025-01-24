@@ -12,9 +12,11 @@ export const zRespectMtCfg = z.object({
   fungible: zRespectFungibleMt,
   contract: zContractMetadata
 })
+export type RespectMtCfg = z.infer<typeof zRespectMtCfg>;
 
 export const zOrdaoApp = zBaseApp.extend({
-  app: z.literal("ordao"),
+  appId: z.literal("ordao"),
   startPeriodNum: z.number().int().gte(0),
   respect: zRespectMtCfg
 });
+export type OrdaoApp = z.infer<typeof zOrdaoApp>;

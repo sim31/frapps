@@ -1,5 +1,7 @@
 import { Command } from "commander";
+import { ordaoContractsCmd } from "./ordaoContractsCmd";
 
-export const ordaoCmd = new Command("ordao").action(() => {
-  console.log("Hello!")
-});
+export const ordaoCmd = new Command("ordao")
+
+ordaoCmd
+  .addCommand(ordaoContractsCmd);

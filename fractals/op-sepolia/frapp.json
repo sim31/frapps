@@ -1,0 +1,39 @@
+{
+  "id": "op-sepolia",
+  "fullName": "OP sepolia fractal",
+  "deploymentCfg": {
+    "network": "opSepolia",
+    "module": "OrdaoExisting",
+    "deployment": {
+      "oldRespect": "0x6b11FC2cec86edeEd1F3705880deB9010F0D584B",
+      "orec": "0x4f778568eCf156bee61825e152864D44C37167Fb",
+      "newRespect": "0x3449C30fF5191b9FC1A1eCD8EC90C4EbF54b1204"
+    }
+  },
+  "app": {
+    "appId": "ordao",
+    "startPeriodNum": 0,
+    "respect": {
+      "award": {
+        "name": "Optimism Fractal Respect Award",
+        "description": "Award for a contribution to Optimsim Fractal",
+        "image": "https://op-sepolia-ornode.frapps.xyz/static/of.png"
+      },
+      "fungible": {
+        "name": "Optimism Fractal Respect",
+        "description": "Awards for a contributions to Optimsim Fractal",
+        "image": "https://op-sepolia-ornode.frapps.xyz/static/of.png",
+        "decimals": 0
+      },
+      "contract": {
+        "name": "Optimism Fractal Respect",
+        "symbol": "OFR",
+        "description": "Awards for a contributions to Optimsim Fractal",
+        "image": "https://op-sepolia-ornode.frapps.xyz/static/of.png",
+        "banner_image": "https://op-sepolia-ornode.frapps.xyz/static/of.png",
+        "featured_image": "https://op-sepolia-ornode.frapps.xyz/static/of.png",
+        "external_link": "https://op-sepolia.frapps.xyz"
+      }
+    }
+  }
+}

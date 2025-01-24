@@ -1,0 +1,74 @@
+import { Command } from "commander";
+import { readFrapps } from "./readFrapps";
+import { Frapp } from "./types/frapp";
+import { zToIgnitionParams } from "./types/transformers/deploymentCfgToIgnition";
+import fs from "fs"
+import { stringify } from "@ordao/ts-utils";
+import path from "path";
+import { ignitionDir } from "./paths";
+
+export const ordaoContractsCmd = new Command("contracts")
+  .argument("[targets...]", "frapp ids for which to deploy. \'all\' stands for all frapps which target this app", "all")
+  .option("-c, --config", "configure (prepare) for deployment")
+  .option("-d, --deploy", "deploy")
+  .option("-v, --verify", "verify")
+  .option("-o, --output", "output deployment info")
+  .option("-a, --all", "shorthand for -cdov")
+  .showHelpAfterError()
+  .action((targets: string[], opts) => {
+    console.log("targets: ", targets, ", opts: ", opts);
+    /**
+     * * Read targets
+     * Based on flags:
+     * * Generate ignition config;
+     * * Deploy with ignition
+     * * Output deployment info (contract addresses)
+     */
+
+    const config = opts.all || opts.config;
+    const deploy = opts.all || opts.deploy;
+    const verify = opts.all || opts.verify;
+    const output = opts.all || opts.output;
+
+    const frapps = readFrapps().filter((frapp) => {
+      return frapp.app.appId === "ordao" && (targets.includes(frapp.id) || targets.includes('all'));
+    });
+
+    console.log("frapps: ", frapps.map(f => f.id));
+
+    for (const frapp of frapps) {
+      console.log("frapp: ", frapp);
+      if (config) {
+        mkIgnitionCfg(frapp);
+      }
+      if (deploy) {
+        deployIgnition();
+      }
+      if (verify) {
+        verifyIgnition();
+      }
+      if (output) {
+        writeDeploymentInfo();
+      }
+    }
+  });
+
+function mkIgnitionCfg(frapp: Frapp) {
+  const params = zToIgnitionParams.parse(frapp.deploymentCfg);
+  const p = path.join(ignitionDir, `${frapp.id}.json`); 
+  fs.writeFileSync(p, stringify(params));
+  console.log("Wrote ignition config: ", p);
+}
+
+function deployIgnition() {
+
+}
+
+function verifyIgnition() {
+  throw new Error("Function not implemented.");
+}
+
+function writeDeploymentInfo() {
+
+}
+
