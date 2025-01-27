@@ -5,9 +5,11 @@ import { zToIgnitionParams } from "./types/transformers/deploymentCfgToIgnition.
 import fs from "fs"
 import { stringify } from "@ordao/ts-utils";
 import path from "path";
-import { contractsDir, ignitionCfgPath, ignitionDir, ignitionModulePath } from "./paths.js";
+import { contractsDir, deploymentFile, ignitionCfgPath, ignitionDeployedAddrs, ignitionDir, ignitionModulePath, mkDeploymentsDir } from "./paths.js";
 import { $, execa, execaSync, parseCommandString } from "execa";
 import { OrdaoFrapp, zOrdaoFrapp } from "./types/ordaoFrapp.js";
+import { NotImplementedError } from "./NotImplementedError.js";
+import { OrdaoDeployment } from "./types/ordaoDeployment.js";
 
 // execJoinedCommand('echo "Testing execa" && sleep 3 && echo "Done"');
 
@@ -16,7 +18,7 @@ export const ordaoContractsCmd = new Command("contracts")
   .option("-c, --config", "configure (prepare) for deployment")
   .option("-d, --deploy", "deploy")
   .option("-v, --verify", "verify")
-  .option("-o, --output", "output deployment info")
+  .option("-o, --output", "output deployment info (to dist/deployments folder)")
   .option("-a, --all", "shorthand for -cdov")
   .showHelpAfterError()
   .action((targets: string[], opts) => {
@@ -58,10 +60,10 @@ export const ordaoContractsCmd = new Command("contracts")
         deployIgnition(frapp);
       }
       if (verify) {
-        verifyIgnition();
+        verifyIgnition(frapp);
       }
       if (output) {
-        writeDeploymentInfo();
+        writeDeploymentInfo(frapp);
       }
     }
   });
@@ -81,12 +83,38 @@ function deployIgnition(frapp: OrdaoFrapp) {
   exec(cmd, contractsDir);
 }
 
-function verifyIgnition() {
-  throw new Error("Function not implemented.");
+// Not sure if works yet. Only tested with OrdaoExisting,
+// but that's typically not when this is needed.
+function verifyIgnition(frapp: OrdaoFrapp) {
+  const cmd = `
+  npx hardhat verify ${frapp.id}`;
+  exec(cmd, contractsDir);
 }
 
-function writeDeploymentInfo() {
+function readDeploymentFromIgnition(frapp: OrdaoFrapp): OrdaoDeployment {
+  const addrsPath = ignitionDeployedAddrs(frapp.id);
+  const addrs = JSON.parse(fs.readFileSync(addrsPath, 'utf-8'));
+  switch (frapp.deploymentCfg.module) {
+    case 'OrdaoExisting': {
+      return {
+        oldRespect: addrs["OrdaoExisting#ERC20"],
+        orec: addrs["OrdaoExisting#Orec"],
+        newRespect: addrs["OrdaoExisting#Respect1155"]
+      }
+    }
+    default: {
+      throw new NotImplementedError(`Unimplemented deployment read for module: ${frapp.deploymentCfg.module}`);
+    }
+  }
 
+}
+
+function writeDeploymentInfo(frapp: OrdaoFrapp) {
+  mkDeploymentsDir();
+  const deployment = readDeploymentFromIgnition(frapp);
+  const p = deploymentFile(frapp.id);
+  fs.writeFileSync(p, stringify(deployment));
+  console.log("Wrote deployment info: ", p);
 }
 
 function execJoinedCommand(cmd: string, separator = "&&") {

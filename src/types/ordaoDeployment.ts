@@ -6,4 +6,4 @@ export const zOrdaoDeployment = z.object({
   newRespect: zEthAddress,
   orec: zEthAddress
 });
-export type OrdaoContracts = z.infer<typeof zOrdaoDeployment>;
+export type OrdaoDeployment = z.infer<typeof zOrdaoDeployment>;
