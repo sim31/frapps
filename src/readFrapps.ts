@@ -1,7 +1,7 @@
-import { Frapp, zFrapp } from "./types/frapp"
+import { Frapp, zFrapp } from "./types/frapp.js"
 import fs from "fs"
 import path from "path"
-import { fractalsDir } from "./paths"
+import { fractalsDir } from "./paths.js"
 
 export function readFrapps(): Frapp[] {
   const fractals = fs.readdirSync(fractalsDir)

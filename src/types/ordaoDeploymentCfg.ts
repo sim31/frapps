@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { zBaseDeploymentCfg } from "./baseDeploymentCfg";
+import { zBaseDeploymentCfg } from "./baseDeploymentCfg.js";
 import { zBytes, zEthAddress } from "@ordao/ortypes";
-import { zRespectHolders } from "./respectHolders";
-import { zOrdaoDeployment } from "./ordaoDeployment";
+import { zRespectHolders } from "./respectHolders.js";
+import { zOrdaoDeployment } from "./ordaoDeployment.js";
 
 export const zBaseNewOrdaoDeploymentCfg = zBaseDeploymentCfg.extend({
   voteLength: z.number(),

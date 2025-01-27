@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { zBaseApp } from "./baseApp";
+import { zBaseApp } from "./baseApp.js";
 import { zRespectFungibleMt } from "@ordao/ortypes/respect1155.js"
 import { zContractMetadata } from "@ordao/ortypes";
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { zOrdaoFrapp } from "./ordaoFrapp";
-import { zExternalApp } from "./externalApp";
+import { zOrdaoFrapp } from "./ordaoFrapp.js";
+import { zExternalApp } from "./externalApp.js";
 
 export const zFrapp = z.union([
   zOrdaoFrapp,

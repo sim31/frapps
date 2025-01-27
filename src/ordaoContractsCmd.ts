@@ -1,11 +1,14 @@
 import { Command } from "commander";
-import { readFrapps } from "./readFrapps";
-import { Frapp } from "./types/frapp";
-import { zToIgnitionParams } from "./types/transformers/deploymentCfgToIgnition";
+import { readFrapps } from "./readFrapps.js";
+import { Frapp } from "./types/frapp.js";
+import { zToIgnitionParams } from "./types/transformers/deploymentCfgToIgnition.js";
 import fs from "fs"
 import { stringify } from "@ordao/ts-utils";
 import path from "path";
-import { ignitionDir } from "./paths";
+import { ignitionDir } from "./paths.js";
+import { $, execa, execaSync, parseCommandString } from "execa";
+
+// execJoinedCommand('echo "Testing execa" && sleep 3 && echo "Done"');
 
 export const ordaoContractsCmd = new Command("contracts")
   .argument("[targets...]", "frapp ids for which to deploy. \'all\' stands for all frapps which target this app", "all")
@@ -42,7 +45,7 @@ export const ordaoContractsCmd = new Command("contracts")
         mkIgnitionCfg(frapp);
       }
       if (deploy) {
-        deployIgnition();
+        deployIgnition(frapp);
       }
       if (verify) {
         verifyIgnition();
@@ -60,8 +63,16 @@ function mkIgnitionCfg(frapp: Frapp) {
   console.log("Wrote ignition config: ", p);
 }
 
-function deployIgnition() {
+function deployIgnition(frapp: Frapp) {
+  const cmd = `echo "Will sleep for 3 seconds" && sleep 3 && echo "Done"`;
+  const cmds = cmd.split("&&");
+  cmds.forEach((cmd) => {
+    const cmdArr = parseCommandString(cmd);
+    execaSync({ stdio: "inherit" })`${cmdArr}`;
+  });
+  
 
+// npx hardhat ignition deploy --network opSepolia --deployment-id op-sepolia-1-test --parameters ignition/params.json ignition/modules/OrdaoExisting.ts
 }
 
 function verifyIgnition() {
@@ -71,4 +82,13 @@ function verifyIgnition() {
 function writeDeploymentInfo() {
 
 }
+
+function execJoinedCommand(cmd: string, separator = "&&") {
+  const cmds = cmd.split(separator);
+  cmds.forEach((cmd) => {
+    const cmdArr = parseCommandString(cmd);
+    execaSync({ stdio: "inherit" })`${cmdArr}`;
+  });
+}
+
 

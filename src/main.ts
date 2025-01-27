@@ -1,6 +1,6 @@
 import { Command } from "commander";
-import { ordaoCmd } from "./ordaoCmd";
-import { externalAppCmd } from "./externalAppCmd";
+import { ordaoCmd } from "./ordaoCmd.js";
+import { externalAppCmd } from "./externalAppCmd.js";
 
 // * Each app (repo within apps) should have a sub-command. It's up to that subcommand to take care of all of the steps involved in building, running, maintaining the app processes for fractals that request it.
 // * So each subcommand defines it's own options;

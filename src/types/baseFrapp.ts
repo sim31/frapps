@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { zBaseApp } from "./baseApp";
-import { zBaseDeploymentCfg } from "./baseDeploymentCfg";
+import { zBaseApp } from "./baseApp.js";
+import { zBaseDeploymentCfg } from "./baseDeploymentCfg.js";
 
 export const zBaseFrapp = z.object({
   id: z.string().describe("Short identifier for the fractal."),

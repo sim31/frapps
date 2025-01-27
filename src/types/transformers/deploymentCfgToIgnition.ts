@@ -1,6 +1,6 @@
-import { zOrdaoDeploymentCfg } from "../ordaoDeploymentCfg";
-import { zOrdaoExisting } from "../ordaoIgnitionParams";
-import { zOrdaoExisting as zOrdaoExistingCfg } from "../ordaoDeploymentCfg";
+import { zOrdaoDeploymentCfg } from "../ordaoDeploymentCfg.js";
+import { zOrdaoExisting } from "../ordaoIgnitionParams.js";
+import { zOrdaoExisting as zOrdaoExistingCfg } from "../ordaoDeploymentCfg.js";
 
 export const zToOrdaoExistingParams = zOrdaoExistingCfg.transform((val) => {
   return zOrdaoExisting.parse({ OrdaoExisting: val.deployment });

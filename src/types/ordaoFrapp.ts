@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { zBaseFrapp } from "./baseFrapp";
-import { zOrdaoDeploymentCfg } from "./ordaoDeploymentCfg";
-import { zOrdaoApp } from "./ordaoApp";
+import { zBaseFrapp } from "./baseFrapp.js";
+import { zOrdaoDeploymentCfg } from "./ordaoDeploymentCfg.js";
+import { zOrdaoApp } from "./ordaoApp.js";
 
 export const zOrdaoFrapp = zBaseFrapp.extend({
   deploymentCfg: zOrdaoDeploymentCfg,

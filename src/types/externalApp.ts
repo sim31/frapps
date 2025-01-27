@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { zBaseFrapp } from "./baseFrapp";
+import { zBaseFrapp } from "./baseFrapp.js";
 
 export const zExternalApp = zBaseFrapp.extend({
   app: z.object({
