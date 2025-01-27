@@ -5,8 +5,9 @@ import { zToIgnitionParams } from "./types/transformers/deploymentCfgToIgnition.
 import fs from "fs"
 import { stringify } from "@ordao/ts-utils";
 import path from "path";
-import { ignitionDir } from "./paths.js";
+import { contractsDir, ignitionCfgPath, ignitionDir, ignitionModulePath } from "./paths.js";
 import { $, execa, execaSync, parseCommandString } from "execa";
+import { OrdaoFrapp, zOrdaoFrapp } from "./types/ordaoFrapp.js";
 
 // execJoinedCommand('echo "Testing execa" && sleep 3 && echo "Done"');
 
@@ -36,10 +37,19 @@ export const ordaoContractsCmd = new Command("contracts")
     const frapps = readFrapps().filter((frapp) => {
       return frapp.app.appId === "ordao" && (targets.includes(frapp.id) || targets.includes('all'));
     });
+    // Verify that this is really ordao frapps and type it
+    const ordaoFrapps = frapps.map(frapp => {
+      const ordaoFrapp = zOrdaoFrapp.safeParse(frapp);
+      if (ordaoFrapp.success) {
+        return ordaoFrapp.data;
+      } else {
+        throw new Error(`Frapp ${frapp.id} is not an ordaoFrapp: ${ordaoFrapp.error.message}`)
+      }
+    })
 
     console.log("frapps: ", frapps.map(f => f.id));
 
-    for (const frapp of frapps) {
+    for (const frapp of ordaoFrapps) {
       console.log("frapp: ", frapp);
       if (config) {
         mkIgnitionCfg(frapp);
@@ -56,23 +66,19 @@ export const ordaoContractsCmd = new Command("contracts")
     }
   });
 
-function mkIgnitionCfg(frapp: Frapp) {
+function mkIgnitionCfg(frapp: OrdaoFrapp) {
   const params = zToIgnitionParams.parse(frapp.deploymentCfg);
-  const p = path.join(ignitionDir, `${frapp.id}.json`); 
+  const p = ignitionCfgPath(frapp.id);
   fs.writeFileSync(p, stringify(params));
   console.log("Wrote ignition config: ", p);
 }
 
-function deployIgnition(frapp: Frapp) {
-  const cmd = `echo "Will sleep for 3 seconds" && sleep 3 && echo "Done"`;
-  const cmds = cmd.split("&&");
-  cmds.forEach((cmd) => {
-    const cmdArr = parseCommandString(cmd);
-    execaSync({ stdio: "inherit" })`${cmdArr}`;
-  });
-  
-
-// npx hardhat ignition deploy --network opSepolia --deployment-id op-sepolia-1-test --parameters ignition/params.json ignition/modules/OrdaoExisting.ts
+function deployIgnition(frapp: OrdaoFrapp) {
+  const params = ignitionCfgPath(frapp.id);
+  const modulePath = ignitionModulePath(frapp.deploymentCfg.module);
+  const cmd = `
+  npx hardhat ignition deploy --network ${frapp.deploymentCfg.network} --deployment-id ${frapp.id} --parameters ${params} ${modulePath}`;
+  exec(cmd, contractsDir);
 }
 
 function verifyIgnition() {
@@ -86,9 +92,14 @@ function writeDeploymentInfo() {
 function execJoinedCommand(cmd: string, separator = "&&") {
   const cmds = cmd.split(separator);
   cmds.forEach((cmd) => {
-    const cmdArr = parseCommandString(cmd);
-    execaSync({ stdio: "inherit" })`${cmdArr}`;
+    exec(cmd);
   });
+}
+
+function exec(cmd: string, cwd?: string) {
+  console.log("Executing: ", cmd);
+  const cmdArr = parseCommandString(cmd);
+  execaSync({ stdio: "inherit", cwd })`${cmdArr}`;
 }
 
 
