@@ -60,5 +60,6 @@ Thumbs.db
 .nx/cache
 .nx/workspace-data
 
-# Private parts of json configs
+# Private configs
 *.private.json
+*.local.json

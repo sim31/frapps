@@ -1,12 +1,12 @@
 import { Command } from "commander";
-import { readFrapps } from "./readFrapps.js";
+import { readFrapps, readFrappType, readTargetFrappTypes } from "./readFrapps.js";
 import { Frapp } from "./types/frapp.js";
 import { zToIgnitionParams } from "./types/transformers/deploymentCfgToIgnition.js";
 import fs from "fs"
 import { stringify } from "@ordao/ts-utils";
 import path from "path";
 import { contractsDir, deploymentFile, ignitionCfgPath, ignitionDeployedAddrs, ignitionDir, ignitionModulePath, mkDeploymentsDir } from "./paths.js";
-import { $, execa, execaSync, parseCommandString } from "execa";
+import { exec, execJoinedCommand } from "./exec.js";
 import { OrdaoFrapp, zOrdaoFrapp } from "./types/ordaoFrapp.js";
 import { NotImplementedError } from "./NotImplementedError.js";
 import { OrdaoDeployment } from "./types/ordaoDeployment.js";
@@ -15,6 +15,7 @@ import { OrdaoDeployment } from "./types/ordaoDeployment.js";
 
 export const ordaoContractsCmd = new Command("contracts")
   .argument("[targets...]", "frapp ids for which to deploy. \'all\' stands for all frapps which target this app", "all")
+  .option("-b, --build", "build contracts")
   .option("-c, --config", "configure (prepare) for deployment")
   .option("-d, --deploy", "deploy")
   .option("-v, --verify", "verify")
@@ -35,24 +36,17 @@ export const ordaoContractsCmd = new Command("contracts")
     const deploy = opts.all || opts.deploy;
     const verify = opts.all || opts.verify;
     const output = opts.all || opts.output;
+    const build = opts.all  || opts.build;
 
-    const frapps = readFrapps().filter((frapp) => {
-      return frapp.app.appId === "ordao" && (targets.includes(frapp.id) || targets.includes('all'));
-    });
-    // Verify that this is really ordao frapps and type it
-    const ordaoFrapps = frapps.map(frapp => {
-      const ordaoFrapp = zOrdaoFrapp.safeParse(frapp);
-      if (ordaoFrapp.success) {
-        return ordaoFrapp.data;
-      } else {
-        throw new Error(`Frapp ${frapp.id} is not an ordaoFrapp: ${ordaoFrapp.error.message}`)
-      }
-    })
+    const ordaoFrapps = readTargetFrappTypes(zOrdaoFrapp, targets);
 
-    console.log("frapps: ", frapps.map(f => f.id));
+    console.log("frapps: ", ordaoFrapps.map(f => f.id));
 
     for (const frapp of ordaoFrapps) {
       console.log("frapp: ", frapp);
+      if (build) {
+        buildContracts(frapp);
+      }
       if (config) {
         mkIgnitionCfg(frapp);
       }
@@ -109,25 +103,19 @@ function readDeploymentFromIgnition(frapp: OrdaoFrapp): OrdaoDeployment {
 
 }
 
+// TODO: Test
+function buildContracts(frapp: OrdaoFrapp) {
+  const cmd = `
+  npx hardhat compile`;
+  exec(cmd, contractsDir);
+}
+
 function writeDeploymentInfo(frapp: OrdaoFrapp) {
   mkDeploymentsDir();
   const deployment = readDeploymentFromIgnition(frapp);
   const p = deploymentFile(frapp.id);
   fs.writeFileSync(p, stringify(deployment));
   console.log("Wrote deployment info: ", p);
-}
-
-function execJoinedCommand(cmd: string, separator = "&&") {
-  const cmds = cmd.split(separator);
-  cmds.forEach((cmd) => {
-    exec(cmd);
-  });
-}
-
-function exec(cmd: string, cwd?: string) {
-  console.log("Executing: ", cmd);
-  const cmdArr = parseCommandString(cmd);
-  execaSync({ stdio: "inherit", cwd })`${cmdArr}`;
 }
 
 

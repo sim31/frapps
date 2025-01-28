@@ -8,4 +8,3 @@ export const zFrapp = z.union([
 ]);
 export type Frapp = z.infer<typeof zFrapp>;
 
-

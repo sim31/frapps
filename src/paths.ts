@@ -7,7 +7,11 @@ export const ignitionDir = path.join(contractsDir, "ignition");
 export const ignitionModulesDir = path.join(ignitionDir, "modules");
 export const ignitionDeploymentsDir = path.join(ignitionDir, "deployments");
 
-export const deploymentsDir = path.join(import.meta.dirname, "../dist/deployments");
+export const distDir = path.join(import.meta.dirname, "../dist");
+export const deploymentsDir = path.join(distDir, "deployments");
+export const procDir = path.join(distDir, "proc");
+
+export const appsDir = path.join(import.meta.dirname, "../apps");
 
 export function ignitionCfgPath(frappId: string) {
   return path.join(ignitionDir, `${frappId}.json`); 
@@ -27,7 +31,37 @@ export function mkDeploymentsDir() {
   }
 }
 
+export function mkProcDir(frappId: string) {
+  if (!fs.existsSync(frappProcDir(frappId))) {
+    fs.mkdirSync(frappProcDir(frappId), { recursive: true });
+  }
+}
+
 export function deploymentFile(frappId: string) {
   return path.join(deploymentsDir, `${frappId}.json`);
+}
+
+export function frappProcDir(frappId: string) {
+  return path.join(procDir, frappId);
+}
+
+export function procFilename(frappId: string, procFileName: string) {
+  return path.join(frappProcDir(frappId), `${procFileName}.json`);
+}
+
+export function appDir(appId: string) {
+  return path.join(appsDir, appId);
+}
+
+export function fractalDir(fractalId: string) {
+  return path.join(fractalsDir, fractalId);
+}
+
+export function frappFile(frappId: string) {
+  return path.join(fractalDir(frappId), "frapp.json")
+}
+
+export function localFrappFile(frappId: string) {
+  return path.join(fractalDir(frappId), "frapp.local.json");
 }
 

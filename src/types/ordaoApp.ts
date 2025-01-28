@@ -3,6 +3,7 @@ import { zBaseApp } from "./baseApp.js";
 import { zRespectFungibleMt } from "@ordao/ortypes/respect1155.js"
 import { zContractMetadata } from "@ordao/ortypes";
 
+// TODO: @ordao import from ornode
 export const zRespectMtCfg = z.object({
   award: z.object({
     name: z.string(),
