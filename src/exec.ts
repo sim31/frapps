@@ -1,4 +1,5 @@
 import { execaSync, parseCommandString } from "execa";
+import { SyncOptions } from "execa";
 
 export function execJoinedCommand(cmd: string, separator = "&&") {
   const cmds = cmd.split(separator);
@@ -7,8 +8,12 @@ export function execJoinedCommand(cmd: string, separator = "&&") {
   });
 }
 
-export function exec(cmd: string, cwd?: string) {
-  console.log("Executing: ", cmd, "from: ", cwd);
+export function exec(cmd: string, opts?: SyncOptions) {
+  const options = {
+    stdio: opts?.stdio ?? "inherit",
+    ...opts
+  }
+  console.log("Executing: ", cmd, "with options: ", options);
   const cmdArr = parseCommandString(cmd);
-  execaSync({ stdio: "inherit", cwd })`${cmdArr}`;
+  execaSync(options)`${cmdArr}`;
 }

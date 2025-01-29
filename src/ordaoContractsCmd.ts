@@ -74,7 +74,7 @@ function deployIgnition(frapp: OrdaoFrapp) {
   const modulePath = ignitionModulePath(frapp.deploymentCfg.module);
   const cmd = `
   npx hardhat ignition deploy --network ${frapp.deploymentCfg.network} --deployment-id ${frapp.id} --parameters ${params} ${modulePath}`;
-  exec(cmd, contractsDir);
+  exec(cmd, { cwd: contractsDir });
 }
 
 // Not sure if works yet. Only tested with OrdaoExisting,
@@ -82,7 +82,7 @@ function deployIgnition(frapp: OrdaoFrapp) {
 function verifyIgnition(frapp: OrdaoFrapp) {
   const cmd = `
   npx hardhat verify ${frapp.id}`;
-  exec(cmd, contractsDir);
+  exec(cmd, { cwd: contractsDir });
 }
 
 function readDeploymentFromIgnition(frapp: OrdaoFrapp): OrdaoDeployment {
@@ -107,7 +107,7 @@ function readDeploymentFromIgnition(frapp: OrdaoFrapp): OrdaoDeployment {
 function buildContracts(frapp: OrdaoFrapp) {
   const cmd = `
   npx hardhat compile`;
-  exec(cmd, contractsDir);
+  exec(cmd, { cwd: contractsDir });
 }
 
 function writeDeploymentInfo(frapp: OrdaoFrapp) {

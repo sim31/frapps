@@ -5,6 +5,7 @@ export const zNetworkId = z.union([
   z.literal("opSepolia"),
   z.literal("base"),
 ]);
+export type NetworkId = z.infer<typeof zNetworkId>;
 
 export const zBaseDeploymentCfg = z.object({
   module: z.string(),

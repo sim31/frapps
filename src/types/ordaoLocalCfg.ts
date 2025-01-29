@@ -9,4 +9,5 @@ export const zOrdaoLocalCfg = z.object({
   providerUrl: z.string().url(),
   mongoCfg: zMongoConfig,
   ornode: zOrnodeCfg,
+  privyAppId: z.string()
 })

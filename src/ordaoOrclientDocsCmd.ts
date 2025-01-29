@@ -4,6 +4,8 @@ import { orclientDocsBuildDir, orclientDocsDir, ordaoDir, ornodeDir } from "./or
 import { endent } from "./endent.js";
 import { mkSitesDir, siteFile } from "./paths.js";
 import fs from "fs";
+import { createStaticSite } from "./sites.js";
+import { orclientDocsSiteName } from "./ordaoUrls.js";
 
 export const ordaoOrclientDocsCmd = new Command("orclient-docs")
   .option("-n, --domain <domain>", "domain name", "frapps.xyz")
@@ -24,12 +26,12 @@ export const ordaoOrclientDocsCmd = new Command("orclient-docs")
     if (clean) {
       console.log("Cleaning ornode build");
       // TODO: @ordao implement this command
-      exec("npm run clean", orclientDocsDir);
+      exec("npm run clean", { cwd: orclientDocsDir });
     }
     if (build) {
       console.log("Building orclient-docs");
       // TODO: build only orclient-docs and not the whole ordao monorepo
-      exec("npm run build", ordaoDir);
+      exec("npm run build", { cwd: ordaoDir });
     }
     if (config) {
       configure(domain);
@@ -38,19 +40,6 @@ export const ordaoOrclientDocsCmd = new Command("orclient-docs")
 
 function configure(domain: string) {
   console.log("Configuring orclient-docs");
-  mkSitesDir();
-  const s = endent`
-  server {
-    listen 443 ssl;
-    server_name orclient-docs.${domain};
 
-    location / {
-      root ${orclientDocsBuildDir}
-      index index.html;
-    }
-  }
-  `
-  const p = siteFile("orclient-docs"); 
-  fs.writeFileSync(p, s);
-  console.log("Wrote nginx server block for orclient-docs: ", p);
+  createStaticSite(orclientDocsBuildDir, domain, orclientDocsSiteName);
 }

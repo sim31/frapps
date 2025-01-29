@@ -12,6 +12,9 @@ import { mkProcDir, mkSitesDir, procFilename, siteFile } from "./paths.js";
 import { stringify } from "@ordao/ts-utils";
 import { endent } from "./endent.js";
 import fs from "fs";
+import { createProxySite } from "./sites.js";
+import { readFullCfg } from "./readFullOrdaoCfg.js";
+import { frappOrnodeSiteName } from "./ordaoUrls.js";
 
 export const ordaoOrnodeCmd = new Command("ornode")
   .argument("[targets...]", "frapp ids for which to apply commands (see options). \'all\' stands for all frapps which target this app", "all")
@@ -43,11 +46,11 @@ export const ordaoOrnodeCmd = new Command("ornode")
     // Commands for all frapps
     if (clean) {
       console.log("Cleaning ornode build");
-      exec("npm run clean", ornodeDir);
+      exec("npm run clean", { cwd: ornodeDir });
     }
     if (build) {
       console.log("Building ornode");
-      exec("npm run build", ordaoDir);
+      exec("npm run build", { cwd: ordaoDir });
     }
 
     // Commands for specific frapps
@@ -71,24 +74,7 @@ function configureOrnode(frapp: OrdaoFrapp, domain: string) {
   const fullCfg = readFullCfg(frapp);
 
   createOrnodeCfg(fullCfg);
-  createNginxBlock(fullCfg, domain);  
-}
-
-function readFullCfg(frapp: OrdaoFrapp) {
-  const localCfg = readLocalFrappCfg(frapp.id, zOrdaoLocalCfg);
-  if (localCfg === undefined) {
-    throw new Error("Could not find local config for " + frapp.id);
-  }
-  const deployment = readDeployment(frapp.id, zOrdaoDeployment);
-  if (deployment === undefined) {
-    throw new Error("Could not find deployment file for " + frapp.id);
-  }
-  const fullCfg: OrdaoFrappFull = {
-    ...frapp,
-    localOnly: localCfg,
-    deployment
-  }
-  return fullCfg;
+  createOrnodeSite(fullCfg, domain);  
 }
 
 function createOrnodeCfg(frapp: OrdaoFrappFull) {
@@ -98,22 +84,10 @@ function createOrnodeCfg(frapp: OrdaoFrappFull) {
   console.log("Wrote ornode config: ", p);
 }
 
-function createNginxBlock(frapp: OrdaoFrappFull, domain: string) {
-  const s = endent`
-  server {
-    listen 443 ssl;
-    server_name ${frapp.id}-ornode.${domain};
-
-    location / {
-      proxy_pass http://localhost:${frapp.localOnly.ornode.port};
-    }
-  }
-  `
-  mkSitesDir();
-
-  const p = siteFile("ornode", frapp.id);
-  fs.writeFileSync(p, s);
-  console.log("Wrote nginx server block for ornode: ", p);
+function createOrnodeSite(frapp: OrdaoFrappFull, domain: string) {
+  const procAddr = `http://localhost:${frapp.localOnly.ornode.port}`;
+  const siteName = frappOrnodeSiteName(frapp.id);
+  createProxySite(procAddr, domain, siteName);
 }
 
 
