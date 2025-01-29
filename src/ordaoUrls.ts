@@ -12,3 +12,11 @@ export function orclientDocsUrl(domain: string) {
   return `${orclientDocsSiteName}.${domain}`;
 }
 
+export function guiSiteName(frappId: string) {
+  return `${frappId}`;
+}
+
+export function guiUrl(frappId: string, domain: string) {
+  return `${guiSiteName(frappId)}.${domain}`;
+}
+

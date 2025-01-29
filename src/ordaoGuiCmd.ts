@@ -10,7 +10,7 @@ import { zToOrnodeCfg } from "./types/transformers/ordaoFullToOrnodeCfg.js";
 import { mkProcDir, mkSitesDir, procFilename, siteFile } from "./paths.js";
 import { stringify } from "@ordao/ts-utils";
 import fs from "fs";
-import { createProxySite } from "./sites.js";
+import { createProxySite, createStaticSite } from "./sites.js";
 import { readFullCfg } from "./readFullOrdaoCfg.js";
 import { frappOrnodeUrl, orclientDocsUrl } from "./ordaoUrls.js";
 import { chainInfos } from "./chainInfos.js";
@@ -26,13 +26,6 @@ export const ordaoGuiCmd = new Command("gui")
   .showHelpAfterError()
   .action((targets: string[], opts) => {
     console.log("targets: ", targets, ", opts: ", opts);
-    /**
-     * * Read targets
-     * Based on flags:
-     * * Generate ignition config;
-     * * Deploy with ignition
-     * * Output deployment info (contract addresses)
-     */
 
     const clean = opts.all || opts.clean;
     const config = opts.all || opts.config;
@@ -46,6 +39,9 @@ export const ordaoGuiCmd = new Command("gui")
     for (const frapp of frapps) {
       console.log("frapp: ", frapp);
 
+      if (clean) {
+        exec(`rm -rf ${guiBuildDir(frapp.id)}`);
+      }
       if (config) {
         const fullCfg = readFullCfg(frapp);
         configure(fullCfg, domain);
@@ -53,8 +49,17 @@ export const ordaoGuiCmd = new Command("gui")
       if (build) {
         buildGui(frapp);
       }
+      if (configSite) {
+        configureSite(frapp, domain);
+      }
     }
   });
+
+
+function configureSite(frapp: OrdaoFrapp, domain: string) {
+  console.log("Configuring gui site for: ", frapp.id);
+  createStaticSite(guiBuildDir(frapp.id), domain, frapp.id);
+}
 
 function configure(frapp: OrdaoFrappFull, domain: string) {
   console.log("Configuring gui env");
