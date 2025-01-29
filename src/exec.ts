@@ -8,7 +8,7 @@ export function execJoinedCommand(cmd: string, separator = "&&") {
 }
 
 export function exec(cmd: string, cwd?: string) {
-  console.log("Executing: ", cmd);
+  console.log("Executing: ", cmd, "from: ", cwd);
   const cmdArr = parseCommandString(cmd);
   execaSync({ stdio: "inherit", cwd })`${cmdArr}`;
 }

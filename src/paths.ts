@@ -10,6 +10,7 @@ export const ignitionDeploymentsDir = path.join(ignitionDir, "deployments");
 export const distDir = path.join(import.meta.dirname, "../dist");
 export const deploymentsDir = path.join(distDir, "deployments");
 export const procDir = path.join(distDir, "proc");
+export const sitesDir = path.join(distDir, "sites");
 
 export const appsDir = path.join(import.meta.dirname, "../apps");
 
@@ -35,6 +36,17 @@ export function mkProcDir(frappId: string) {
   if (!fs.existsSync(frappProcDir(frappId))) {
     fs.mkdirSync(frappProcDir(frappId), { recursive: true });
   }
+}
+
+export function mkSitesDir() {
+  if (!fs.existsSync(sitesDir)) {
+    fs.mkdirSync(sitesDir, { recursive: true });
+  }
+}
+
+export function siteFile(siteFileName: string, frappId?: string) {
+  const filename = frappId ? `${siteFileName}.${frappId}.conf` : `${siteFileName}.conf`;
+  return path.join(sitesDir, filename);
 }
 
 export function deploymentFile(frappId: string) {
