@@ -6,6 +6,8 @@ export const ordaoDir = appDir("ordao");
 export const ornodeDir = path.join(ordaoDir, "services/ornode");
 export const orclientDocsDir = path.join(ordaoDir, "apps/orclient-docs");
 export const orclientDocsBuildDir = path.join(orclientDocsDir, "dist");
+export const ornodeBuildDir = path.join(ornodeDir, "dist");
+export const ornodeIndexFile = path.join(ornodeBuildDir, "index.js");
 
 export const guiDir = path.join(ordaoDir, "apps/gui");
 // Making it different from "dist" so that it is different from what ordao repo uses for dev / test builds
@@ -37,4 +39,3 @@ export function mkGuiBuildDir(frappId: string) {
   }
   return p;
 }
-

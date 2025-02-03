@@ -3,27 +3,29 @@ import { readDeployment, readLocalFrappCfg, readTargetFrappTypes as readTargetFr
 import { zOrdaoApp } from "./types/ordaoApp.js";
 import { OrdaoFrapp, zOrdaoFrapp } from "./types/ordaoFrapp.js";
 import { exec } from "./exec.js";
-import { ordaoDir, ornodeDir } from "./ordaoPaths.js";
+import { ordaoDir, ornodeDir, ornodeIndexFile } from "./ordaoPaths.js";
 import { zOrdaoLocalCfg } from "./types/ordaoLocalCfg.js";
 import { OrdaoFrappFull } from "./types/ordaoFrappDeployed.js";
 import { zOrdaoDeployment } from "./types/ordaoDeployment.js";
 import { zToOrnodeCfg } from "./types/transformers/ordaoFullToOrnodeCfg.js";
-import { mkProcDir, mkSitesDir, procFilename, siteFile } from "./paths.js";
+import { mkProcDir, mkSitesDir, procFilename as procFilepath, siteFile } from "./paths.js";
 import { stringify } from "@ordao/ts-utils";
 import { endent } from "./endent.js";
 import fs from "fs";
 import { createProxySite } from "./sites.js";
 import { readFullCfg } from "./readFullOrdaoCfg.js";
 import { frappOrnodeSiteName } from "./ordaoUrls.js";
+import { cwd } from "process";
+import { StartOptions } from "pm2"
 
 export const ordaoOrnodeCmd = new Command("ornode")
   .argument("[targets...]", "frapp ids for which to apply commands (see options). \'all\' stands for all frapps which target this app", "all")
   .option("-n, --domain <domain>", "domain name", "frapps.xyz")
   .option("-l, --clean", "clean ornode build")
   .option("-b, --build", "build ornode")
-  .option("-c --config", "configure ornode instances")
-  .option("-r, --run", "run ornode instances")
-  .option("-a, --all", "shorthand for -lbcr")
+  .option("-c, --config", "configure ornode instances")
+  .option("-p, --config-process", "create pm2 start options for ornode instances")
+  .option("-a, --all", "shorthand for -lbcp")
   .showHelpAfterError()
   .action((targets: string[], opts) => {
     console.log("targets: ", targets, ", opts: ", opts);
@@ -38,7 +40,7 @@ export const ordaoOrnodeCmd = new Command("ornode")
     const clean = opts.all || opts.clean;
     const build = opts.all || opts.build;
     const config = opts.all || opts.config;
-    const run = opts.all || opts.run;
+    const configProc = opts.all || opts.configProcess;
     const domain = opts.domain;
 
     const frapps = readTargetFrappType(zOrdaoFrapp, targets);
@@ -62,8 +64,8 @@ export const ordaoOrnodeCmd = new Command("ornode")
       if (config) {
         configureOrnode(frapp, domain);
       }
-      if (run) {
-        console.log("Running ornode for ", frapp.id);
+      if (configProc) {
+        createProcCfg(frapp);
       }
     }
   });
@@ -79,7 +81,7 @@ function configureOrnode(frapp: OrdaoFrapp, domain: string) {
 
 function createOrnodeCfg(frapp: OrdaoFrappFull) {
   const ornodeCfg = zToOrnodeCfg.parse(frapp);
-  const p = procFilename(frapp.id, "ornode");
+  const p = procFilepath(frapp.id, "ornode");
   fs.writeFileSync(p, stringify(ornodeCfg));
   console.log("Wrote ornode config: ", p);
 }
@@ -90,7 +92,24 @@ function createOrnodeSite(frapp: OrdaoFrappFull, domain: string) {
   createProxySite(procAddr, domain, siteName);
 }
 
+function createProcCfg(frapp: OrdaoFrapp) {
+  const env = {
+    ORNODE_CFG_PATH: procFilepath(frapp.id, "ornode"),
+  }
+  const procName = `${frapp.id}-ornode`;
 
+  const pm2Opts: StartOptions = {
+    name: procName,
+    script: ornodeIndexFile,
+    cwd: ornodeDir,
+    env,
+    time: true
+  };
 
+  const p = procFilepath(frapp.id, "ornode.pm2");
 
+  fs.writeFileSync(p, stringify(pm2Opts));
+  console.log("Wrote pm2 config: ", p);
+  console.log("Start: ", `pm2 start ${p}`);
+}
 
