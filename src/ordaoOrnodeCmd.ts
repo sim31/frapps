@@ -24,6 +24,7 @@ export const ordaoOrnodeCmd = new Command("ornode")
   .option("-l, --clean", "clean ornode build")
   .option("-b, --build", "build ornode")
   .option("-c, --config", "configure ornode instances")
+  .option("-s, --config-sites", "configure nginx server blocks to serve ornode(s)")
   .option("-p, --config-process", "create pm2 start options for ornode instances")
   .option("-a, --all", "shorthand for -lbcp")
   .showHelpAfterError()
@@ -40,6 +41,7 @@ export const ordaoOrnodeCmd = new Command("ornode")
     const clean = opts.all || opts.clean;
     const build = opts.all || opts.build;
     const config = opts.all || opts.config;
+    const configSites = opts.all || opts.configSites;
     const configProc = opts.all || opts.configProcess;
     const domain = opts.domain;
 
@@ -61,8 +63,17 @@ export const ordaoOrnodeCmd = new Command("ornode")
 
       mkProcDir(frapp.id);
 
+      let fullCfg: OrdaoFrappFull | undefined;
+
       if (config) {
-        configureOrnode(frapp, domain);
+        fullCfg = readFullCfg(frapp);
+        configureOrnode(fullCfg, domain);
+      }
+      if (configSites) {
+        if (fullCfg === undefined) {
+          fullCfg = readFullCfg(frapp);
+        }
+        createOrnodeSite(fullCfg, domain);
       }
       if (configProc) {
         createProcCfg(frapp);
@@ -70,13 +81,10 @@ export const ordaoOrnodeCmd = new Command("ornode")
     }
   });
 
-function configureOrnode(frapp: OrdaoFrapp, domain: string) {
+function configureOrnode(frapp: OrdaoFrappFull, domain: string) {
   console.log("Configuring ornode for ", frapp.id);
 
-  const fullCfg = readFullCfg(frapp);
-
-  createOrnodeCfg(fullCfg);
-  createOrnodeSite(fullCfg, domain);  
+  createOrnodeCfg(frapp);
 }
 
 function createOrnodeCfg(frapp: OrdaoFrappFull) {
@@ -87,6 +95,7 @@ function createOrnodeCfg(frapp: OrdaoFrappFull) {
 }
 
 function createOrnodeSite(frapp: OrdaoFrappFull, domain: string) {
+  console.log("Creating ornode site: ", frapp.id);
   const procAddr = `http://localhost:${frapp.localOnly.ornode.port}`;
   const siteName = frappOrnodeSiteName(frapp.id);
   createProxySite(procAddr, domain, siteName);

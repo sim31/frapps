@@ -10,8 +10,8 @@ import { orclientDocsSiteName } from "./ordaoUrls.js";
 export const ordaoOrclientDocsCmd = new Command("orclient-docs")
   .option("-n, --domain <domain>", "domain name", "frapps.xyz")
   .option("-l, --clean", "clean build")
-  .option("-b, --build", "build ornode")
-  .option("-c --config", "configure nginx server blocks to serve this app")
+  .option("-b, --build", "build orclient-docs")
+  .option("-s --config-sites", "configure nginx server blocks to serve this app")
   .option("-a, --all", "shorthand for all options")
   .showHelpAfterError()
   .action((opts) => {
@@ -19,7 +19,7 @@ export const ordaoOrclientDocsCmd = new Command("orclient-docs")
 
     const clean = opts.all || opts.clean;
     const build = opts.all || opts.build;
-    const config = opts.all || opts.config;
+    const config = opts.all || opts.configSites;
     const domain = opts.domain;
 
     // Commands for all frapps

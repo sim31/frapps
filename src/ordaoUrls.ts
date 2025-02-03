@@ -4,12 +4,12 @@ export function frappOrnodeSiteName(frappId: string) {
 }
 
 export function frappOrnodeUrl(frappId: string, domain: string) {
-  return `${frappOrnodeSiteName(frappId)}.${domain}`;
+  return `http://${frappOrnodeSiteName(frappId)}.${domain}`;
 }
 
 export const orclientDocsSiteName = "orclient-docs";
 export function orclientDocsUrl(domain: string) {
-  return `${orclientDocsSiteName}.${domain}`;
+  return `http://${orclientDocsSiteName}.${domain}`;
 }
 
 export function guiSiteName(frappId: string) {
@@ -17,6 +17,6 @@ export function guiSiteName(frappId: string) {
 }
 
 export function guiUrl(frappId: string, domain: string) {
-  return `${guiSiteName(frappId)}.${domain}`;
+  return `http://${guiSiteName(frappId)}.${domain}`;
 }
 

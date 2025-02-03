@@ -2,21 +2,24 @@ import { endent } from "./endent.js";
 import { mkSitesDir, siteFile } from "./paths.js";
 import fs from "fs";
 
+
 export function createStaticSite(
   rootDir: string,
   domain: string,
   siteName: string,
+  root: boolean = false,
   indexFile: string = "index.html"
 ) {
   mkSitesDir();
+  const serverName = root ? domain : `${siteName}.${domain}`;
   const s = endent`
   server {
-    listen 443 ssl;
-    server_name ${siteName}.${domain};
+    listen ${domain === "localhost" ? "80" : "443 ssl"};
+    server_name ${serverName};
 
     location / {
-      root ${rootDir}
-      index ${indexFile}
+      root ${rootDir};
+      index ${indexFile};
     }
   }
   `
@@ -34,7 +37,7 @@ export function createProxySite(
   mkSitesDir();
   const s = endent`
   server {
-    listen 443 ssl;
+    listen ${domain === "localhost" ? "80" : "443 ssl"};
     server_name ${siteName}.${domain};
 
     location / {
