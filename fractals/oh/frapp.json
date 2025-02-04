@@ -1,0 +1,39 @@
+{
+  "id": "oh",
+  "fullName": "ORDAO office hours",
+  "deploymentCfg": {
+    "network": "optimism",
+    "module": "OrdaoExisting",
+    "deployment": {
+      "oldRespect": "0x53C9E3a44B08E7ECF3E8882996A500eb06c0C5CC",
+      "orec": "0xCD1fA63b85a708f039c4954af72E85CDd494B6cA",
+      "newRespect": "0xF6B17Fa1eD95F21E1eAdff6F96ce80E5a562D548"
+    }
+  },
+  "app": {
+    "appId": "ordao",
+    "startPeriodNum": 4,
+    "respect": {
+      "award": {
+        "name": "ORDAO Office Hours Award",
+        "description": "Award for participating in ORDAO Office Hours",
+        "image": "https://ordao-ornode.frapps.xyz/static/ordao.png"
+      },
+      "fungible": {
+        "name": "ORDAO Office Hours Respect",
+        "description": "Respect for participating in ORDAO Office Hours",
+        "image": "https://ordao-ornode.frapps.xyz/static/ordao.png",
+        "decimals": 0
+      },
+      "contract": {
+        "name": "Ordao Office Hours Respect",
+        "symbol": "OOH",
+        "description": "Awards for participating in ORDAO Office Hours",
+        "image": "https://ordao-ornode.frapps.xyz/static/ordao.png",
+        "banner_image": "https://ordao-ornode.frapps.xyz/static/ordao.png",
+        "featured_image": "https://ordao-ornode.frapps.xyz/static/ordao.png",
+        "external_link": "https://ordao-console.frapps.xyz"
+      }
+    }
+  }
+}
