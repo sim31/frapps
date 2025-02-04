@@ -65,6 +65,7 @@ function configureSite(frapp: OrdaoFrapp, domain: string) {
 function configure(frapp: OrdaoFrappFull, domain: string) {
   console.log("Configuring gui env");
   const chainInfo = chainInfos[frapp.deploymentCfg.network];
+  const https = domain === "localhost" ? false : true;
   // * chain id - can hardcode based on network
   // * rpc urls - based on network
   // * chain name - based on network
@@ -74,10 +75,10 @@ function configure(frapp: OrdaoFrappFull, domain: string) {
     VITE_OLD_RESPECT_ADDR: frapp.deployment.oldRespect,
     VITE_NEW_RESPECT_ADDR: frapp.deployment.newRespect,
     VITE_OREC_ADDR: frapp.deployment.orec,
-    VITE_ORNODE_URL: frappOrnodeUrl(frapp.id, domain),
+    VITE_ORNODE_URL: frappOrnodeUrl(frapp.id, domain, https),
     VITE_APP_TITLE: `${frapp.fullName}`,
     VITE_PRIVY_APP_ID: frapp.localOnly.privyAppId,
-    VITE_DOCS_ORIGIN: orclientDocsUrl(domain),
+    VITE_DOCS_ORIGIN: orclientDocsUrl(domain, https),
     VITE_CHAIN_ID: chainInfo.chainId,
     VITE_RPC_URLS: chainInfo.rpcUrls.join(","),
     VITE_CHAIN_NAME: chainInfo.chainName,
