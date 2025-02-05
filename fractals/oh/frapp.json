@@ -1,6 +1,7 @@
 {
   "id": "oh",
   "fullName": "ORDAO office hours",
+  "frappsSubdomains": ["oh", "ordao"],
   "deploymentCfg": {
     "network": "optimism",
     "module": "OrdaoExisting",

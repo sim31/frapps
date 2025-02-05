@@ -41,5 +41,5 @@ export const ordaoOrclientDocsCmd = new Command("orclient-docs")
 function configure(domain: string) {
   console.log("Configuring orclient-docs");
 
-  createStaticSite(orclientDocsBuildDir, domain, orclientDocsSiteName);
+  createStaticSite(orclientDocsBuildDir, domain, [orclientDocsSiteName]);
 }

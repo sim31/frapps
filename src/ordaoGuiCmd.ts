@@ -10,7 +10,7 @@ import { zToOrnodeCfg } from "./types/transformers/ordaoFullToOrnodeCfg.js";
 import { mkProcDir, mkSitesDir, procFilename, siteFile } from "./paths.js";
 import { stringify } from "@ordao/ts-utils";
 import fs from "fs";
-import { createProxySite, createStaticSite } from "./sites.js";
+import { createStaticSite } from "./sites.js";
 import { readFullCfg } from "./readFullOrdaoCfg.js";
 import { frappOrnodeUrl, orclientDocsUrl } from "./ordaoUrls.js";
 import { chainInfos } from "./chainInfos.js";
@@ -58,8 +58,8 @@ export const ordaoGuiCmd = new Command("gui")
 
 function configureSite(frapp: OrdaoFrapp, domain: string) {
   console.log("Configuring gui site for: ", frapp.id);
-  const root: boolean = domain === "localhost" ? true : false;
-  createStaticSite(guiBuildDir(frapp.id), domain, frapp.id, root);
+  const subdomains = domain === "localhost" ? [""] : frapp.frappsSubdomains;
+  createStaticSite(guiBuildDir(frapp.id), domain, subdomains);
 }
 
 function configure(frapp: OrdaoFrappFull, domain: string) {

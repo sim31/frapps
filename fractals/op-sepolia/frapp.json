@@ -1,6 +1,7 @@
 {
   "id": "op-sepolia",
   "fullName": "OP sepolia fractal",
+  "frappsSubdomains": ["op-sepolia"],
   "deploymentCfg": {
     "network": "opSepolia",
     "module": "OrdaoExisting",

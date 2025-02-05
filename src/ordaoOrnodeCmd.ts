@@ -97,8 +97,8 @@ function createOrnodeCfg(frapp: OrdaoFrappFull) {
 function createOrnodeSite(frapp: OrdaoFrappFull, domain: string) {
   console.log("Creating ornode site: ", frapp.id);
   const procAddr = `http://localhost:${frapp.localOnly.ornode.port}`;
-  const siteName = frappOrnodeSiteName(frapp.id);
-  createProxySite(procAddr, domain, siteName);
+  const siteNames = frapp.frappsSubdomains.map(d => frappOrnodeSiteName(d));
+  createProxySite(procAddr, domain, siteNames);
 }
 
 function createProcCfg(frapp: OrdaoFrapp) {
