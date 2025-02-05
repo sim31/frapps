@@ -63,3 +63,4 @@ Thumbs.db
 # Private configs
 *.private.json
 *.local.json
+.env*
