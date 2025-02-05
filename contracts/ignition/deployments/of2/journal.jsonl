@@ -1,0 +1,5 @@
+
+{"chainId":10,"type":"DEPLOYMENT_INITIALIZE"}
+{"artifactId":"OrdaoExisting#ERC20","contractAddress":"0x53C9E3a44B08E7ECF3E8882996A500eb06c0C5CC","contractName":"ERC20","dependencies":[],"futureId":"OrdaoExisting#ERC20","futureType":"NAMED_ARTIFACT_CONTRACT_AT","strategy":"basic","strategyConfig":{},"type":"CONTRACT_AT_EXECUTION_STATE_INITIALIZE"}
+{"artifactId":"OrdaoExisting#Orec","contractAddress":"0x73eb8B61E6Eb65aFAAE972874bB4EB5689d1cCE3","contractName":"Orec","dependencies":[],"futureId":"OrdaoExisting#Orec","futureType":"NAMED_ARTIFACT_CONTRACT_AT","strategy":"basic","strategyConfig":{},"type":"CONTRACT_AT_EXECUTION_STATE_INITIALIZE"}
+{"artifactId":"OrdaoExisting#Respect1155","contractAddress":"0x07418B51196045EB360F31d8881326858Ed25121","contractName":"Respect1155","dependencies":[],"futureId":"OrdaoExisting#Respect1155","futureType":"NAMED_ARTIFACT_CONTRACT_AT","strategy":"basic","strategyConfig":{},"type":"CONTRACT_AT_EXECUTION_STATE_INITIALIZE"}
