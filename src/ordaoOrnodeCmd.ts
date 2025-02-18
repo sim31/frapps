@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { readDeployment, readLocalFrappCfg, readTargetFrappTypes as readTargetFrappType } from "./readFrapps.js";
+import { readDeployment, readLocalFrappCfg, readTargetFrappType } from "./readFrapps.js";
 import { zOrdaoApp } from "./types/ordaoApp.js";
 import { OrdaoFrapp, zOrdaoFrapp } from "./types/ordaoFrapp.js";
 import { exec } from "./exec.js";
@@ -8,7 +8,7 @@ import { zOrdaoLocalCfg } from "./types/ordaoLocalCfg.js";
 import { OrdaoFrappFull } from "./types/ordaoFrappDeployed.js";
 import { zOrdaoDeployment } from "./types/ordaoDeployment.js";
 import { zToOrnodeCfg } from "./types/transformers/ordaoFullToOrnodeCfg.js";
-import { mkProcDir, mkSitesDir, procFilename as procFilepath, siteFile } from "./paths.js";
+import { mkProcDir, mkSitesDir, procFilepath, siteFile } from "./paths.js";
 import { stringify } from "@ordao/ts-utils";
 import { endent } from "./endent.js";
 import fs from "fs";

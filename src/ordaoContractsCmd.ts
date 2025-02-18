@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { readFrapps, readFrappType, readTargetFrappTypes } from "./readFrapps.js";
+import { readFrapps, readFrappType, readTargetFrappType } from "./readFrapps.js";
 import { Frapp } from "./types/frapp.js";
 import { zToIgnitionParams } from "./types/transformers/deploymentCfgToIgnition.js";
 import fs from "fs"
@@ -22,7 +22,7 @@ export const ordaoContractsCmd = new Command("contracts")
   .option("-o, --output", "output deployment info (to dist/deployments folder)")
   .option("-a, --all", "shorthand for -cdov")
   .showHelpAfterError()
-  .action((targets: string[], opts) => {
+  .action((targets: string[], opts: any) => {
     console.log("targets: ", targets, ", opts: ", opts);
     /**
      * * Read targets
@@ -38,7 +38,7 @@ export const ordaoContractsCmd = new Command("contracts")
     const output = opts.all || opts.output;
     const build = opts.all  || opts.build;
 
-    const ordaoFrapps = readTargetFrappTypes(zOrdaoFrapp, targets);
+    const ordaoFrapps = readTargetFrappType(zOrdaoFrapp, targets);
 
     console.log("frapps: ", ordaoFrapps.map(f => f.id));
 

@@ -57,7 +57,7 @@ export function frappProcDir(frappId: string) {
   return path.join(procDir, frappId);
 }
 
-export function procFilename(frappId: string, procFileName: string) {
+export function procFilepath(frappId: string, procFileName: string) {
   return path.join(frappProcDir(frappId), `${procFileName}.json`);
 }
 

@@ -52,7 +52,7 @@ export function readFrappType<T extends z.ZodTypeAny>(frappType: T): z.infer<T>[
   return frapps.filter(frapp => frappType.safeParse(frapp).success);
 }
 
-export function readTargetFrappTypes<T extends z.ZodTypeAny>(frappType: T, targets: string[] | "all"): z.infer<T>[] {
+export function readTargetFrappType<T extends z.ZodTypeAny>(frappType: T, targets: string[] | "all"): z.infer<T>[] {
   const frapps = readTargetFrapps(targets);
   return frapps.filter(frapp => frappType.safeParse(frapp).success);
 }

@@ -1,4 +1,4 @@
-import { appDir } from "./paths.js"
+import { appDir, frappProcDir } from "./paths.js"
 import path from "path";
 import fs from "fs";
 
