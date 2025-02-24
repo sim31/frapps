@@ -81,7 +81,7 @@ function deployIgnition(frapp: OrdaoFrapp) {
 // but that's typically not when this is needed.
 function verifyIgnition(frapp: OrdaoFrapp) {
   const cmd = `
-  npx hardhat verify ${frapp.id}`;
+  npx hardhat ignition verify ${frapp.id}`;
   exec(cmd, { cwd: contractsDir });
 }
 
@@ -96,14 +96,21 @@ function readDeploymentFromIgnition(frapp: OrdaoFrapp): OrdaoDeployment {
         newRespect: addrs["OrdaoExisting#Respect1155"]
       }
     }
+    case 'OrdaoNew': {
+      return {
+        oldRespect: addrs["Orec#ERC20"],
+        orec: addrs["Orec#Orec"],
+        newRespect: addrs["OrdaoNew#Respect1155"]
+      }
+    }
     default: {
-      throw new NotImplementedError(`Unimplemented deployment read for module: ${frapp.deploymentCfg.module}`);
+      const n: never = frapp.deploymentCfg;
+      return n;
     }
   }
 
 }
 
-// TODO: Test
 function buildContracts(frapp: OrdaoFrapp) {
   const cmd = `
   npx hardhat compile`;
