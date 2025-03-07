@@ -21,6 +21,9 @@ tags
 
 # compiled output
 dist
+!dist/deployments/
+!dist/deployments/**
+
 tmp
 /out-tsc
 
