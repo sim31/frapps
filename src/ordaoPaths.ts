@@ -1,4 +1,4 @@
-import { appDir, frappProcDir } from "./paths.js"
+import { appDir, fractalDir, frappProcDir } from "./paths.js"
 import path from "path";
 import fs from "fs";
 
@@ -38,4 +38,12 @@ export function mkGuiBuildDir(frappId: string) {
     fs.mkdirSync(p, { recursive: true });
   }
   return p;
+}
+
+export function rsplitCsvFilePath(frappId: string) {
+  return path.join(frappProcDir(frappId), "rsplit.csv");
+}
+
+export function accountsCsvFilePath(frappId: string) {
+  return path.join(fractalDir(frappId), "accounts.csv");
 }

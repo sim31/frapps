@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { zBaseFrapp } from "./baseFrapp.js";
+import { zBaseFrapp, zFrappId } from "./baseFrapp.js";
 import { zOrdaoDeploymentCfg } from "./ordaoDeploymentCfg.js";
 import { zOrdaoApp } from "./ordaoApp.js";
 
@@ -9,6 +9,7 @@ export const zSubdomain = z.string().regex(/^[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A
 export const zOrdaoFrapp = zBaseFrapp.extend({
   frappsSubdomains: z.array(zSubdomain).describe("Subdomains of this fractal. Must be unique. Empty string means fractal will take the place of the root domain."),
   deploymentCfg: zOrdaoDeploymentCfg,
-  app: zOrdaoApp
+  app: zOrdaoApp,
+  parentFrappId: zFrappId.optional(),
 });
 export type OrdaoFrapp = z.infer<typeof zOrdaoFrapp>;

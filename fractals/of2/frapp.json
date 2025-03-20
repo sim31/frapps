@@ -11,6 +11,7 @@
       "orec": "0x73eb8B61E6Eb65aFAAE972874bB4EB5689d1cCE3"
     }
   },
+  "parentFrappId": "of1",
   "app": {
     "appId": "ordao",
     "startPeriodNum": 48,
