@@ -1,9 +1,9 @@
 import { Command } from "commander";
 import { readTargetFrappType } from "./readFrapps.js";
 import { OrdaoFrapp, zOrdaoFrapp } from "./types/ordaoFrapp.js";
-import { accountsCsvFilePath, rsplitCsvFilePath } from "./ordaoPaths.js";
+import { rsplitCsvFilePath } from "./ordaoPaths.js";
+import { readAccountsCsv } from "./ordaoAccountsCsv.js";
 import fs, { write } from "fs";
-import { parse } from "csv-parse";
 import { stringify } from 'csv-stringify';
 import { pipeline } from 'stream/promises';
 
@@ -47,45 +47,6 @@ export const ordaoRSplitsCmd = new Command("rsplits")
 
         console.log("Wrote csv file: ", p);
       }
-      
     }
   });
 
-type Account = {
-  address: string;
-  balance: number;
-};
-
-async function readAccountsCsv(frapp: OrdaoFrapp): Promise<{ accounts: Account[], totalRespect: number }> {
-  if (frapp.parentFrappId === undefined) {
-    throw new Error("Frapp has no parent frapp");
-  }
-
-  const p = accountsCsvFilePath(frapp.parentFrappId);
-
-  if (!fs.existsSync(p)) {
-    throw new Error("Parent frapp has no accounts file");
-  }
-
-  const csvData = fs.readFileSync(p);
-  const records = parse(csvData, {
-    columns: true,
-    skip_empty_lines: true
-  });
-
-  const accounts: Account[] = [];
-  let totalRespect = 0;
-  for await (const record of records) {
-    const balance = Number(record.balance);
-    accounts.push({
-      address: record.address,
-      balance: balance
-    });
-    totalRespect += balance;
-  }
-
-  return {
-    accounts,
-    totalRespect
-  }
-}

@@ -1,0 +1,10 @@
+{
+  "id": "of1",
+  "fullName": "Optimism Fractal",
+  "symbol": "OPF",
+  "address": "0x53C9E3a44B08E7ECF3E8882996A500eb06c0C5CC",
+  "app": {
+    "appId": "externalApp",
+    "url": "https://optimismfractal.web.app"
+  }
+}

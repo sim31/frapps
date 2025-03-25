@@ -20,7 +20,6 @@ tags
 [._]*.un~
 
 # compiled output
-dist
 tmp
 /out-tsc
 
@@ -64,3 +63,6 @@ Thumbs.db
 *.private.json
 *.local.json
 .env*
+
+dist/*
+!dist/deployments/

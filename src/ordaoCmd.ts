@@ -6,6 +6,7 @@ import { ordaoOrclientDocsCmd } from "./ordaoOrclientDocsCmd.js";
 import { ordaoGuiCmd } from "./ordaoGuiCmd.js";
 import { ordaoOrnodeSyncCmd } from "./ordaoOrnodeSyncCmd.js";
 import { ordaoRSplitsCmd } from "./ordaoRSplit.js";
+import { ordaoParentDeployCmd } from "./ordaoParentDeployCmd.js";
 
 export const ordaoCmd = new Command("ordao")
 
@@ -17,3 +18,4 @@ ordaoCmd
   .addCommand(ordaoGuiCmd)
   .addCommand(ordaoOrnodeSyncCmd)
   .addCommand(ordaoRSplitsCmd)
+  .addCommand(ordaoParentDeployCmd)

@@ -14,8 +14,12 @@ export const sitesDir = path.join(distDir, "sites");
 
 export const appsDir = path.join(import.meta.dirname, "../apps");
 
-export function ignitionCfgPath(frappId: string) {
-  return path.join(ignitionDir, `${frappId}.json`); 
+export function ignitionCfgPath(frappId: string, ext?: string) {
+  if (ext === undefined) {
+    return path.join(ignitionDir, `${frappId}.json`); 
+  } else {
+    return path.join(ignitionDir, `${frappId}.${ext}.json`);
+  }
 }
 
 export function ignitionModulePath(moduleName: string) {
