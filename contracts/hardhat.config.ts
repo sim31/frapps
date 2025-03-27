@@ -19,13 +19,20 @@ const config: HardhatUserConfig = {
       accounts: [
         process.env.OPSEPOLIA_PRIV_KEY!,
       ],
+    },
+    base: {
+      url: `https://base-mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
+      accounts: [
+        process.env.BASE_PRIV_KEY!,
+      ],
     }
   },
   etherscan: {
     apiKey: {
       optimisticEthereum: process.env.OP_ETHERSCAN_KEY!,
       opSepolia: process.env.OPSEPOLIA_ETHERSCAN_KEY!,
-      optimism: process.env.OP_ETHERSCAN_KEY!
+      optimism: process.env.OP_ETHERSCAN_KEY!,
+      base: process.env.BASE_ETHERSCAN_KEY!,
     },
     customChains: [
       {
