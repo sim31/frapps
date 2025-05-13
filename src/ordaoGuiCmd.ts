@@ -59,7 +59,7 @@ export const ordaoGuiCmd = new Command("gui")
 function configureSite(frapp: OrdaoFrapp, domain: string) {
   console.log("Configuring gui site for: ", frapp.id);
   const subdomains = domain === "localhost" ? [""] : frapp.frappsSubdomains;
-  createStaticSite(guiBuildDir(frapp.id), domain, subdomains);
+  createStaticSite(guiBuildDir(frapp.id), domain, subdomains, 'spa');
 }
 
 function configure(frapp: OrdaoFrappFull, domain: string) {
