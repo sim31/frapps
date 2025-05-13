@@ -82,7 +82,11 @@ function configure(frapp: OrdaoFrappFull, domain: string) {
     VITE_CHAIN_ID: chainInfo.chainId,
     VITE_RPC_URLS: chainInfo.rpcUrls.join(","),
     VITE_CHAIN_NAME: chainInfo.chainName,
-    VITE_BLOCKEXP_URL: chainInfo.blockExplorerUrl
+    VITE_BLOCKEXP_URL: chainInfo.blockExplorerUrl,
+    VITE_PARENT_RESPECT_LINK: frapp.app.parentRespectLink,
+    VITE_CHILD_RESPECT_LINK: frapp.app.childRespectLink,
+    VITE_RESPECT_GAME_LINK: frapp.app.respectGameLink,
+    VITE_DEFAULT_PROP_QUERY_SIZE: frapp.app.defaultPropQuerySize
   };
 
   mkGuiBuildsDir();

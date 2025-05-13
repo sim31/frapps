@@ -18,6 +18,10 @@ export type RespectMtCfg = z.infer<typeof zRespectMtCfg>;
 export const zOrdaoApp = zBaseApp.extend({
   appId: z.literal("ordao"),
   startPeriodNum: z.number().int().gte(0),
-  respect: zRespectMtCfg
+  respect: zRespectMtCfg,
+  parentRespectLink: z.string().url(),
+  childRespectLink: z.string().url(),
+  respectGameLink: z.string().url(),
+  defaultPropQuerySize: z.coerce.number().int().gt(0).optional()
 });
 export type OrdaoApp = z.infer<typeof zOrdaoApp>;

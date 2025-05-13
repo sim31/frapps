@@ -10,7 +10,7 @@ export const chainInfos: Record<NetworkId, Omit<ChainInfo, "nativeCurrency">> = 
   },
   "opSepolia": {
     "chainId": "0xAA37DC",
-    "rpcUrls": ["https://sepolia.optimism.io"],
+    "rpcUrls": ["https://optimism-sepolia-rpc.publicnode.com", "https://op-sepolia-testnet.rpc.thirdweb.com/", "https://sepolia.optimism.io"],
     "chainName": "OP Sepolia",
     "blockExplorerUrl": "https://optimism-sepolia.blockscout.com/"
   },
