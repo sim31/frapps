@@ -4,7 +4,7 @@ import { NetworkId } from "./types/baseDeploymentCfg.js";
 export const chainInfos: Record<NetworkId, Omit<ChainInfo, "nativeCurrency">> = {
   "optimism": {
     "chainId": "0xA",
-    "rpcUrls": ["https://mainnet.optimism.io/"],
+    "rpcUrls": ["https://1rpc.io/op", "https://optimism.publicnode.com", "https://mainnet.optimism.io/"],
     "chainName": "Optimism",
     "blockExplorerUrl": "https://optimism.blockscout.com",
   },

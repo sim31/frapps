@@ -14,6 +14,9 @@
   "app": {
     "appId": "ordao",
     "startPeriodNum": 4,
+    "parentRespectLink": "https://optimism.blockscout.com/token/0x53C9E3a44B08E7ECF3E8882996A500eb06c0C5CC?tab=holders",
+    "childRespectLink": "https://optimism.blockscout.com/token/0xF6B17Fa1eD95F21E1eAdff6F96ce80E5a562D548/instance/0?tab=holders",
+    "respectGameLink": "https://respect-game.vercel.app",
     "respect": {
       "award": {
         "name": "ORDAO Office Hours Award",
