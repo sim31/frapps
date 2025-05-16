@@ -22,6 +22,7 @@ export const zOrdaoApp = zBaseApp.extend({
   parentRespectLink: z.string().url(),
   childRespectLink: z.string().url(),
   respectGameLink: z.string().url(),
-  defaultPropQuerySize: z.coerce.number().int().gt(0).optional()
+  defaultPropQuerySize: z.coerce.number().int().gt(0).optional(),
+  fractalDocsUrl: z.string().url().optional()
 });
 export type OrdaoApp = z.infer<typeof zOrdaoApp>;

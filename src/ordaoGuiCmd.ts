@@ -86,7 +86,8 @@ function configure(frapp: OrdaoFrappFull, domain: string) {
     VITE_PARENT_RESPECT_LINK: frapp.app.parentRespectLink,
     VITE_CHILD_RESPECT_LINK: frapp.app.childRespectLink,
     VITE_RESPECT_GAME_LINK: frapp.app.respectGameLink,
-    VITE_DEFAULT_PROP_QUERY_SIZE: frapp.app.defaultPropQuerySize
+    VITE_DEFAULT_PROP_QUERY_SIZE: frapp.app.defaultPropQuerySize,
+    VITE_FRACTAL_DOCS_URL: frapp.app.fractalDocsUrl
   };
 
   mkGuiBuildsDir();

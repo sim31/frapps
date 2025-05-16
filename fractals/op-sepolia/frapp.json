@@ -17,6 +17,7 @@
     "parentRespectLink": "https://optimism-sepolia.blockscout.com/token/0x6b11FC2cec86edeEd1F3705880deB9010F0D584B?tab=holders",
     "childRespectLink": "https://optimism-sepolia.blockscout.com/token/0x3449C30fF5191b9FC1A1eCD8EC90C4EbF54b1204?tab=holders",
     "respectGameLink": "https://respect-game.vercel.app",
+    "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/stage/fractals/op-sepolia/",
     "respect": {
       "award": {
         "name": "Optimism Fractal Respect Award",
