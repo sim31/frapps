@@ -1,7 +1,8 @@
 {
   "id": "oh",
   "fullName": "ORDAO office hours",
-  "frappsSubdomains": ["oh", "ordao"],
+  "frappsSubdomains": ["oh", "ordao-oh"],
+  "symbol": "OH",
   "deploymentCfg": {
     "network": "optimism",
     "module": "OrdaoExisting",
@@ -21,12 +22,12 @@
       "award": {
         "name": "ORDAO Office Hours Award",
         "description": "Award for participating in ORDAO Office Hours",
-        "image": "https://ordao-ornode.frapps.xyz/static/ordao.png"
+        "image": "https://oh-ornode.frapps.xyz/static/ordao.png"
       },
       "fungible": {
         "name": "ORDAO Office Hours Respect",
         "description": "Respect for participating in ORDAO Office Hours",
-        "image": "https://ordao-ornode.frapps.xyz/static/ordao.png",
+        "image": "https://oh-ornode.frapps.xyz/static/ordao.png",
         "decimals": 0
       },
       "contract": {

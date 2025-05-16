@@ -87,7 +87,9 @@ function mkIgnitionCfg(
 
 function deployIgnition(frapp: OrdaoFrapp, network: NetworkId) {
   const params = ignitionCfgPath(frapp.id, `parent-${network}`);
+  console.log("Using params: ", params);
   const modulePath = ignitionModulePath("SolidRespect");
+  console.log("Using module path: ", modulePath);
   const cmd = `
   npx hardhat ignition deploy --network ${network} --deployment-id ${ignitionId(frapp, network)} --parameters ${params} ${modulePath}`;
   exec(cmd, { cwd: contractsDir });
