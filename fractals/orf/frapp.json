@@ -7,8 +7,8 @@
     "network": "base",
     "module": "OrdaoNew",
     "oldRespectAddr": "0x8616c0c2b50FE863d45d9AEd8e3219EDa3fb8313",
-    "votePeriod": 259200,
-    "vetoPeriod": 259200,
+    "votePeriod": 240,
+    "vetoPeriod": 240,
     "voteThreshold": 256,
     "maxLiveYesVotes": 6,
     "ornodeOrigin": "https://orf-ornode.frapps.xyz"
@@ -17,7 +17,7 @@
     "appId": "ordao",
     "startPeriodNum": 0,
     "parentRespectLink": "https://base.blockscout.com/address/0x8616c0c2b50FE863d45d9AEd8e3219EDa3fb8313",
-    "childRespectLink": "https://base.blockscout.com/address/0x4523F5ffF61820b3568de4755FD736CE9D3Be4e2",
+    "childRespectLink": "https://base.blockscout.com/address/0x5a1d3940397b395cb93441812b4c2D6E6271F305",
     "respectGameLink": "https://respect-game.vercel.app",
     "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/stage/fractals/orf/",
     "respect": {
