@@ -16,7 +16,7 @@
   "app": {
     "appId": "ordao",
     "startPeriodNum": 0,
-    "parentRespectLink": "https://base.blockscout.com/address/0x8616c0c2b50FE863d45d9AEd8e3219EDa3fb8313",
+    "parentRespectLink": "https://optimism.blockscout.com/token/0xF6B17Fa1eD95F21E1eAdff6F96ce80E5a562D548/instance/0?tab=holders",
     "childRespectLink": "https://base.blockscout.com/address/0x5a1d3940397b395cb93441812b4c2D6E6271F305",
     "respectGameLink": "https://respect-game.vercel.app",
     "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/stage/fractals/orf/",
@@ -27,8 +27,8 @@
         "image": "https://orf-ornode.frapps.xyz/static/ordao.png"
       },
       "fungible": {
-        "name": "ORDAO Fractal Respect Award",
-        "description": "Respect for participating in ORDAO Fractal",
+        "name": "ORDAO Fractal Respect",
+        "description": "Respect score for participating in ORDAO Fractal",
         "image": "https://orf-ornode.frapps.xyz/static/ordao.png",
         "decimals": 0
       },

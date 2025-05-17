@@ -10,6 +10,8 @@ Before using the app, it helps to understand a few key concepts:
 - **OREC**: Optimistic Respect-based Executive Contract - the core smart contract that enables secure governance with low participation requirements
 - **Proposals**: Suggested onchain actions that can be approved by the community
 - **Parent/Child Respect**: A mechanism for managing respect tokens and enabling system upgrades
+- **Parent Respect**: Respect token that is used when voting on proposals. Your votes in ORDAO are weighted by the amount of Parent Respect you have;
+- **Child Respect**: Respect token that ORDAO system controls. This is the token that can be issued or burned by passing ORDAO proposals;
 
 ## Interface Overview
 
@@ -41,7 +43,7 @@ Proposals go through several states:
 
 - **Voting**: Community members can vote yes or no
 - **Veto**: Only no votes can be cast (protection mechanism)
-- **Ready**: Proposal has passed and can be executed
+- **Execution**: Proposal has passed and can be executed
 - **Executed**: Proposal has been successfully executed
 - **Failed**: Proposal did not meet requirements or was vetoed
 
