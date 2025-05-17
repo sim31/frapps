@@ -9,7 +9,6 @@ Before using the app, it helps to understand a few key concepts:
 - **Respect Tokens**: Non-transferable reputation tokens earned by participating in the Respect Game, where community members evaluate each other's contributions
 - **OREC**: Optimistic Respect-based Executive Contract - the core smart contract that enables secure governance with low participation requirements
 - **Proposals**: Suggested onchain actions that can be approved by the community
-- **Parent/Child Respect**: A mechanism for managing respect tokens and enabling system upgrades
 - **Parent Respect**: Respect token that is used when voting on proposals. Your votes in ORDAO are weighted by the amount of Parent Respect you have;
 - **Child Respect**: Respect token that ORDAO system controls. This is the token that can be issued or burned by passing ORDAO proposals;
 
