@@ -16,7 +16,7 @@
     "appId": "ordao",
     "startPeriodNum": 120,
     "parentRespectLink": "https://optimism.blockscout.com/token/0x53C9E3a44B08E7ECF3E8882996A500eb06c0C5CC?tab=holders",
-    "childRespectLink": "https://base.blockscout.com/address/todo",
+    "childRespectLink": "https://eden-claim-test.frapps.xyz",
     "respectGameLink": "https://respect-game.vercel.app",
     "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/stage/fractals/of2-opsep/",
     "respect": {
