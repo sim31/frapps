@@ -1,8 +1,8 @@
 {
   "Orec": {
     "oldRespectAddr": "0xCFC9A3B77485f141c956d3a682aF6F2027E20270",
-    "votePeriod": 259200,
-    "vetoPeriod": 259200,
+    "votePeriod": 240,
+    "vetoPeriod": 240,
     "voteThreshold": 256,
     "maxLiveYesVotes": 4
   },

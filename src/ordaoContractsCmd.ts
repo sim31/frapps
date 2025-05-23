@@ -18,6 +18,7 @@ export const ordaoContractsCmd = new Command("contracts")
   .option("-b, --build", "build contracts")
   .option("-c, --config", "configure (prepare) for deployment")
   .option("-d, --deploy", "deploy")
+  .option("--reset", "Clear a previous deployment with a reset. *Only works with -d option!*")
   .option("-v, --verify", "verify")
   .option("-o, --output", "output deployment info (to dist/deployments folder)")
   .option("-a, --all", "shorthand for -cdov")
@@ -37,6 +38,7 @@ export const ordaoContractsCmd = new Command("contracts")
     const verify = opts.all || opts.verify;
     const output = opts.all || opts.output;
     const build = opts.all  || opts.build;
+    const reset = opts.reset;
 
     const ordaoFrapps = readTargetFrappType(zOrdaoFrapp, targets);
 
@@ -51,7 +53,7 @@ export const ordaoContractsCmd = new Command("contracts")
         mkIgnitionCfg(frapp);
       }
       if (deploy) {
-        deployIgnition(frapp);
+        deployIgnition(frapp, reset);
       }
       if (verify) {
         verifyIgnition(frapp);
@@ -69,11 +71,11 @@ function mkIgnitionCfg(frapp: OrdaoFrapp) {
   console.log("Wrote ignition config: ", p);
 }
 
-function deployIgnition(frapp: OrdaoFrapp) {
+function deployIgnition(frapp: OrdaoFrapp, reset?: boolean) {
   const params = ignitionCfgPath(frapp.id);
   const modulePath = ignitionModulePath(frapp.deploymentCfg.module);
   const cmd = `
-  npx hardhat ignition deploy --network ${frapp.deploymentCfg.network} --deployment-id ${frapp.id} --parameters ${params} ${modulePath}`;
+  npx hardhat ignition deploy --network ${frapp.deploymentCfg.network} --deployment-id ${frapp.id} --parameters ${params} ${modulePath} ${reset ? "--reset" : ""}`;
   exec(cmd, { cwd: contractsDir });
 }
 
