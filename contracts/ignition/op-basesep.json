@@ -1,0 +1,13 @@
+{
+  "Orec": {
+    "oldRespectAddr": "0xb81a664bb2dd2929C53F0264E0b81Cb832D833Dc",
+    "votePeriod": 240,
+    "vetoPeriod": 240,
+    "voteThreshold": 5,
+    "maxLiveYesVotes": 4
+  },
+  "OrdaoNew": {
+    "uri": "https://op-basesep-ornode.frapps.xyz/v1/token/{id}",
+    "contractURI": "https://op-basesep-ornode.frapps.xyz/v1/respectContractMetadata"
+  }
+}
