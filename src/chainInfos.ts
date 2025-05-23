@@ -19,5 +19,11 @@ export const chainInfos: Record<NetworkId, Omit<ChainInfo, "nativeCurrency">> = 
     "rpcUrls": ["https://0xrpc.io/base", "https://1rpc.io/base"],
     "chainName": "Base Mainnet",
     "blockExplorerUrl": "https://base.blockscout.com/"
+  },
+  "baseSepolia": {
+    "chainId": "0x14a34",
+    "rpcUrls": ["https://base-sepolia.drpc.org"],
+    "chainName": "Base Sepolia",
+    "blockExplorerUrl": "https://base-sepolia.blockscout.com/"
   }
 }

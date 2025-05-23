@@ -11,6 +11,7 @@
       "newRespect": "0x3449C30fF5191b9FC1A1eCD8EC90C4EbF54b1204"
     }
   },
+  "parentFrappId": "omf",
   "app": {
     "appId": "ordao",
     "startPeriodNum": 0,

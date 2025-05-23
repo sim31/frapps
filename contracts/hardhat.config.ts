@@ -25,6 +25,12 @@ const config: HardhatUserConfig = {
       accounts: [
         process.env.BASE_PRIV_KEY!,
       ],
+    },
+    baseSepolia: {
+      url: `https://base-sepolia.infura.io/v3/${process.env.INFURA_KEY}`,
+      accounts: [
+        process.env.BASESEPOLIA_PRIV_KEY!,
+      ],
     }
   },
   etherscan: {
@@ -33,6 +39,7 @@ const config: HardhatUserConfig = {
       opSepolia: process.env.OPSEPOLIA_ETHERSCAN_KEY!,
       optimism: process.env.OP_ETHERSCAN_KEY!,
       base: process.env.BASE_ETHERSCAN_KEY!,
+      baseSepolia: process.env.BASESEPOLIA_ETHERSCAN_KEY!,
     },
     customChains: [
       {
@@ -41,6 +48,15 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api-sepolia-optimistic.etherscan.io/api",
           browserURL: "https://sepolia-optimism.etherscan.io"
+        }
+      },
+      {
+        network: "baseSepolia",
+        chainId: 84532,
+        urls: {
+          apiURL: "https://api-sepolia.basescan.org/api",
+          browserURL: "https://sepolia.basescan.org"
+
         }
       }
     ]
