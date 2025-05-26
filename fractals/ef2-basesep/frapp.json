@@ -8,7 +8,7 @@
     "oldRespectAddr": "0x2046f3BEEAe2e4EC6ae35E0BFb3D9Fab2aD94267",
     "votePeriod": 480,
     "vetoPeriod": 480,
-    "voteThreshold": 5,
+    "voteThreshold": 1000,
     "maxLiveYesVotes": 4,
     "ornodeOrigin": "https://ef2-basesep-ornode.frapps.xyz"
   },
