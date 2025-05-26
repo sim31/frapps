@@ -16,9 +16,9 @@
     "appId": "ordao",
     "startPeriodNum": 120,
     "parentRespectLink": "https://op-basesep.frapps.xyz/eden",
-    "childRespectLink": "https://todo.com",
+    "childRespectLink": "https://base-sepolia.blockscout.com/address/0x0a041d1CE84fe4289b1bB63BFf20558bBd72F257?tab=index",
     "respectGameLink": "https://respect-game.vercel.app",
-    "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/stage/fractals/op-basesep/", 
+    "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/stage/fractals/ef2-basesep/", 
     "respect": {
       "award": {
         "name": "Eden Fractal Epoch 2 Respect Award",
