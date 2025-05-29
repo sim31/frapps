@@ -1,7 +1,7 @@
 {
   "id": "of2",
   "fullName": "Optimism Fractal",
-  "frappsSubdomains": ["of", "of2", "optimismfractal", "op-fractal"],
+  "frappsSubdomains": ["of", "of2", "optimism", "op-fractal"],
   "deploymentCfg": {
     "network": "optimism",
     "module": "OrdaoExisting",
@@ -15,6 +15,10 @@
   "app": {
     "appId": "ordao",
     "startPeriodNum": 48,
+    "parentRespectLink": "https://optimism.blockscout.com/token/0x53C9E3a44B08E7ECF3E8882996A500eb06c0C5CC?tab=holders",
+    "childRespectLink": "https://optimism.blockscout.com/token/0x07418B51196045EB360F31d8881326858Ed25121?tab=holders",
+    "respectGameLink": "https://respect-game.vercel.app",
+    "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/main/fractals/of2/",
     "respect": {
       "award": {
         "name": "Optimism Fractal Respect Award",

@@ -19,7 +19,7 @@
     "parentRespectLink": "https://optimism.blockscout.com/token/0xF6B17Fa1eD95F21E1eAdff6F96ce80E5a562D548/instance/0?tab=holders",
     "childRespectLink": "https://base.blockscout.com/address/0x5a1d3940397b395cb93441812b4c2D6E6271F305",
     "respectGameLink": "https://respect-game.vercel.app",
-    "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/stage/fractals/orf/",
+    "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/main/fractals/orf/",
     "respect": {
       "award": {
         "name": "ORDAO Fractal Respect Award",
