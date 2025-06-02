@@ -3,7 +3,7 @@
   "fullName": "Optimism Fractal on Base",
   "frappsSubdomains": ["of-base", "of2-base"],
   "deploymentCfg": {
-    "network": "Base",
+    "network": "base",
     "module": "OrdaoNew",
     "oldRespectAddr": "0xe4B4013B6D7de55f86Ff24A1406b85A4dFa591Ff",
     "votePeriod": 259200,
@@ -16,7 +16,7 @@
     "appId": "ordao",
     "startPeriodNum": 0,
     "parentRespectLink": "https://optimism.blockscout.com/token/0x53C9E3a44B08E7ECF3E8882996A500eb06c0C5CC?tab=holders",
-    "childRespectLink": "https://todo.frapps.xyz",
+    "childRespectLink": "https://base.blockscout.com/address/0xc74635243E379FD0F63f12CDD7cA7EEEbf25af5b",
     "respectGameLink": "https://respect-game.vercel.app",
     "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/of2-base/fractals/of2-base/", 
     "respect": {
