@@ -16,7 +16,7 @@ export const chainInfos: Record<NetworkId, Omit<ChainInfo, "nativeCurrency">> = 
   },
   "base": {
     "chainId": "0x2105",
-    "rpcUrls": ["https://0xrpc.io/base", "https://1rpc.io/base"],
+    "rpcUrls": ["https://base-rpc.publicnode.com", "https://0xrpc.io/base", "https://1rpc.io/base"],
     "chainName": "Base Mainnet",
     "blockExplorerUrl": "https://base.blockscout.com/"
   },
