@@ -1,4 +1,6 @@
 # Eden Fractal claim interface
+Problem:
+
 * Eden Fractal Respect exists on EOS. We are trying to move it to Base; 
 * EOS uses different account system, so we need to map EOS accounts of Eden Fractal users to EVM addresses;
 * Then we need to mint Respect token on Base;
@@ -44,22 +46,27 @@ As a member of an oracle (any member of Optimism Fractal who wants to help perfo
 
 1. Open link to block explorer referenced in "Reason" field and check that the signed statement matches the details in the proposal:
 
-![](./img/checklist-1.png)
+![1.](./img/checklist-1.png)
 
 2. Check that the transaction is signed by the account referenced in the "Title" field of proposal
 
-![](./img/checklist-2-1.png)
+2.1.
+![2.1.](./img/checklist-2-1.png)
 
-![](./img/checklist-2-2.png)
+2.2.
+![2.2.](./img/checklist-2-2.png)
 
 3. Check that the amount being minted matches the "EDEN" balance on EOS
 
-![](./img/checklist-3-1.png)
+3.1.
+![3.1.](./img/checklist-3-1.png)
 
-![](./img/checklist-3-2.png)
+3.2.
+![3.2.](./img/checklist-3-2.png)
 
-![](./img/checklist-3-3.png)
+3.3.
+![3.3.](./img/checklist-3-3.png)
 
 
 ### Requirements for Eden Fractal Epoch 2
-It recommended for Eden Fractal Epoch 2 ORDAO deployment should have `voting_period + veto_period` be at least twice as long as `voting_period + veto_period` of [Optimism Fractal on Base Orec deployment](./concept.md) (currently 6 days). This is to allow Eden Fractal members to participate in Eden Fractal Epoch 2 proposals even if they haven't claimed before these proposals were created (so that they still have time to vote after receiving their Epoch 1 Respect). Fortunately biweekly meeting structure should allow this.
+It is recommended for Eden Fractal Epoch 2 ORDAO deployment to have `voting_period + veto_period` be at least twice as long as `voting_period + veto_period` of [Optimism Fractal on Base Orec deployment](./concept.md) (currently 6 days). This is to allow Eden Fractal members to participate in Eden Fractal Epoch 2 proposals even if they haven't claimed before these proposals were created (so that they still have time to vote after receiving their Epoch 1 Respect). Fortunately biweekly meeting structure should create a suitable environment for this.
