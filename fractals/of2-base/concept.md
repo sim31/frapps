@@ -8,7 +8,7 @@ This is an interface for [Orec](https://github.com/sim31/ordao/tree/main/contrac
 3. `max_live_votes` = 6;
 4. `prop_weight_threshold` = 256;
 
-### Purpose: Oracle for Eden Fractal Epoch 1 Respect on Base
+### Function: Oracle for Eden Fractal Epoch 1 Respect on Base
 The primary function for this app is to serve as an oracle for claiming Eden Fractal Respect on Base. More info [here](https://github.com/sim31/frapps/blob/of2-base/fractals/of2-base/ef-claim.md).
 
 
