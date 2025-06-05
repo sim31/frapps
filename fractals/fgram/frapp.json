@@ -1,0 +1,9 @@
+{
+  "id": "fgram",
+  "fullName": "Fractalgram (production)",
+  "frappsSubdomains": ["fractalgram"],
+  "app": {
+    "appId": "externalApp",
+    "url": "https://fractgram.web.app/"
+  }
+}

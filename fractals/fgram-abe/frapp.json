@@ -1,0 +1,9 @@
+{
+  "id": "fgram-abe",
+  "fullName": "Abraham's Fractalgram",
+  "frappsSubdomains": ["fractalgram-abe"],
+  "app": {
+    "appId": "externalApp",
+    "url": "https://respect-game.vercel.app/"
+  }
+}

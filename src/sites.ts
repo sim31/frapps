@@ -110,3 +110,24 @@ export function createProxySite(
   console.log("Wrote nginx server block ", p);
   console.log("Reload nginx, running 'nginx -s reload'");
 }
+
+export function createRedirectSite(
+  redirectTo: string,
+  domain: string,
+  siteNames: string[],
+) {
+  mkSitesDir();
+  const serverNamesStr = serverNamesStrFromSiteNames(siteNames, domain);
+  const s = endent`
+  server {
+    listen ${domain === "localhost" ? "80" : "443 ssl"};
+    server_name ${serverNamesStr};
+    return 301 ${redirectTo}$request_uri;
+  }
+  `
+
+  const p = siteFile(siteNames[0] === "" ? "root" : siteNames[0]);
+  fs.writeFileSync(p, s);
+  console.log("Wrote nginx server block ", p);
+  console.log("Reload nginx, running 'nginx -s reload'");
+}

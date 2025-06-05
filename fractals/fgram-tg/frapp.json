@@ -1,0 +1,9 @@
+{
+  "id": "fgram-tg",
+  "fullName": "Fractalgram (Telegram client)",
+  "frappsSubdomains": ["fractalgram-tg"],
+  "app": {
+    "appId": "externalApp",
+    "url": "https://fractgram.web.app/"
+  }
+}
