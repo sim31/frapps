@@ -16,7 +16,7 @@
     "appId": "ordao",
     "startPeriodNum": 120,
     "parentRespectLink": "https://of-base.frapps.xyz/ef/accounts",
-    "childRespectLink": "https://optimism.blockscout.com/token/todo",
+    "childRespectLink": "https://base.blockscout.com/address/0xa3E495f17590946e53fa5F3C1497EF1367F230fA",
     "respectGameLink": "https://fractalgram.frapps.xyz",
     "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/main/fractals/ef2/",
     "respect": {
