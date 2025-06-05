@@ -23,21 +23,21 @@
       "award": {
         "name": "Eden Fractal Epoch 1 Respect Award",
         "description": "Respect award for a contributions to Eden Fractal in Epoch 1",
-        "image": "https://pink-squealing-leopon-501.mypinata.cloud/ipfs/bafkreicplum5kq5h42gp4svk4gbjotd3sd57xwvmmw3cfbepel2gnbwmd4"
+        "image": "https://ipfs.io/ipfs/bafkreicplum5kq5h42gp4svk4gbjotd3sd57xwvmmw3cfbepel2gnbwmd4"
       },
       "fungible": {
         "name": "Eden Fractal Epoch 1 Respect",
         "description": "Respect score for a contributions to Eden Fractal in Epoch 1",
-        "image": "https://pink-squealing-leopon-501.mypinata.cloud/ipfs/bafkreicplum5kq5h42gp4svk4gbjotd3sd57xwvmmw3cfbepel2gnbwmd4",
+        "image": "https://ipfs.io/ipfs/bafkreicplum5kq5h42gp4svk4gbjotd3sd57xwvmmw3cfbepel2gnbwmd4",
         "decimals": 0
       },
       "contract": {
         "name": "Eden Fractal Epoch 1 Respect",
         "symbol": "EDEN",
         "description": "Awards for a contributions to Eden Fractal in Epoch 1",
-        "image": "https://pink-squealing-leopon-501.mypinata.cloud/ipfs/bafkreicplum5kq5h42gp4svk4gbjotd3sd57xwvmmw3cfbepel2gnbwmd4",
-        "banner_image": "https://pink-squealing-leopon-501.mypinata.cloud/ipfs/bafkreicplum5kq5h42gp4svk4gbjotd3sd57xwvmmw3cfbepel2gnbwmd4",
-        "featured_image": "https://pink-squealing-leopon-501.mypinata.cloud/ipfs/bafkreicplum5kq5h42gp4svk4gbjotd3sd57xwvmmw3cfbepel2gnbwmd4",
+        "image": "https://ipfs.io/ipfs/bafkreicplum5kq5h42gp4svk4gbjotd3sd57xwvmmw3cfbepel2gnbwmd4",
+        "banner_image": "https://ipfs.io/ipfs/bafkreicplum5kq5h42gp4svk4gbjotd3sd57xwvmmw3cfbepel2gnbwmd4",
+        "featured_image": "https://ipfs.io/ipfs/bafkreicplum5kq5h42gp4svk4gbjotd3sd57xwvmmw3cfbepel2gnbwmd4",
         "external_link": "https://of-base.frapps.xyz"
       }
     }
