@@ -1,9 +1,9 @@
 {
-  "proposalId": "0x4d15251b3aa1d25ecad59492556e064821c0a127600a6ee10cb6445d2d5bafb9",
-  "weight": 675,
-  "voter": "0xAED620c450911c38714E666cd84137767e3D6286",
-  "vote": "Yes",
   "ts": 1726502441,
-  "memo": "",
-  "txHash": "0xc7b52db847666e92267b6fc1147f50b020d71891fc537eb618f3cb62f9022f60"
+  "txHash": "0xc7b52db847666e92267b6fc1147f50b020d71891fc537eb618f3cb62f9022f60",
+  "proposalId": "0x4d15251b3aa1d25ecad59492556e064821c0a127600a6ee10cb6445d2d5bafb9",
+  "voter": "0xAED620c450911c38714E666cd84137767e3D6286",
+  "weight": 675,
+  "vote": "Yes",
+  "memo": ""
 }

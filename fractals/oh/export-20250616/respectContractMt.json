@@ -2,8 +2,8 @@
   "name": "Ordao Office Hours Respect",
   "symbol": "OOH",
   "description": "Awards for participating in ORDAO Office Hours",
-  "image": "https://ordao-ornode.frapps.xyz/static/ordao.png",
-  "banner_image": "https://ordao-ornode.frapps.xyz/static/ordao.png",
-  "featured_image": "https://ordao-ornode.frapps.xyz/static/ordao.png",
-  "external_link": "https://ordao-console.frapps.xyz"
+  "image": "https:/gateway.pinata.cloud/ipfs/bafybeifcdqgkkyd7dcfhycylvds4vh6xn77zyt4pqmdorls4k2vlph67j4/contract.image.png",
+  "banner_image": "https:/gateway.pinata.cloud/ipfs/bafybeifcdqgkkyd7dcfhycylvds4vh6xn77zyt4pqmdorls4k2vlph67j4/contract.banner_image.png",
+  "featured_image": "https:/gateway.pinata.cloud/ipfs/bafybeifcdqgkkyd7dcfhycylvds4vh6xn77zyt4pqmdorls4k2vlph67j4/contract.featured_image.png",
+  "external_link": "https://oh.frapps.xyz"
 }

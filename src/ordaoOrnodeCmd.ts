@@ -32,7 +32,7 @@ export const ordaoOrnodeCmd = new Command("ornode")
   .option("-s, --config-sites", "configure nginx server blocks to serve ornode(s)")
   .option("-p, --config-process", "create pm2 start options for ornode instances")
   .option("-d, --db-backup", "backup ornode db")
-  .option("-e, --export", "export ornode db")
+  .option("-e, --export [img-dir-url]", "export ornode db")
   .option("-a, --all", "shorthand for -lbcp")
   .showHelpAfterError()
   .action(async (targets: string[], opts) => {
@@ -94,10 +94,12 @@ export const ordaoOrnodeCmd = new Command("ornode")
 
       if (exprt) {
         console.log("Exporting ornode db");
+        const imgDirUrl = typeof opts.export === 'string' ? opts.export : undefined;
+        console.log("imgDirUrl: ", imgDirUrl);
         if (fullCfg === undefined) {
           fullCfg = readFullCfg(frapp);
         }
-        exportDb(fullCfg);
+        exportDb(fullCfg, imgDirUrl);
       }
     }
   });
@@ -154,24 +156,38 @@ function backup() {
   exec(cmd)
 }
 
+interface ParseRes {
+  filename: string;
+  doc: unknown;
+}
+
 function exportDocs(
   dir: string,
   docs: unknown[],
-  filename: (doc: unknown) => string
+  parse: (doc: unknown) => ParseRes,
 ) {
   mkDir(dir);
 
   for (const doc of docs) {
-    const p = path.join(dir, filename(doc));
-    fs.writeFileSync(p, stringify(doc));
+    const pr = parse(doc);
+    const p = path.join(dir, pr.filename);
+    fs.writeFileSync(p, stringify(pr.doc));
   }
 }
 
-async function exportDb(frapp: OrdaoFrappFull) {
+async function exportDb(frapp: OrdaoFrappFull, imgDirUrl?: string) {
   const uri = frapp.localOnly.mongoCfg.url;
   const dbName = frapp.localOnly.mongoCfg.dbName;
   const mgClient = new MongoClient(uri);
   const db = mgClient.db(dbName);
+
+  const getImgUrl = (imgFilename: string) => {
+    if (imgDirUrl) {
+      return path.join(imgDirUrl, imgFilename);
+    } else {
+      return undefined;
+    }
+  }
 
   const awardsCollection = db.collection('awards');
   const awards = await awardsCollection.find({}, {projection: {_id: 0}}).toArray();
@@ -182,12 +198,21 @@ async function exportDb(frapp: OrdaoFrappFull) {
     awards,
     doc => {
       const award = zRespectAwardMt.parse(doc);
-      return `${award.properties.tokenId.substring(2)}.json`
+      const filename = `${award.properties.tokenId.substring(2)}.json`
+      const imgUrl = getImgUrl("award.image.png");
+      if (imgUrl !== undefined) {
+        award.image = imgUrl;
+      }
+      return { filename, doc: award };
     }
   );
   const fungible = frapp.app.respect.fungible;
   const fungiblePath = path.join(dir, `${zFungibleTokenId.value.substring(2)}.json`);
   console.log("Respect fungible token: ", fungible);
+  const imgUrl = getImgUrl("fungible.image.png");
+  if (imgUrl !== undefined) {
+    fungible.image = imgUrl;
+  }
   fs.writeFileSync(fungiblePath, stringify(fungible));
   console.log("Wrote fungible token: ", fungiblePath);
 
@@ -200,7 +225,10 @@ async function exportDb(frapp: OrdaoFrappFull) {
     proposals,
     doc => {
       const proposal = zStoredProposal.parse(doc);
-      return `${proposal.id}.json`
+      return {
+        filename: `${proposal.id}.json`,
+        doc: proposal
+      }
     }
   );
 
@@ -213,13 +241,28 @@ async function exportDb(frapp: OrdaoFrappFull) {
     votes,
     doc => {
       const vote = zVote.parse(doc);
-      return `${vote.txHash}.json`
+      return {
+        filename: `${vote.txHash}.json`,
+        doc: vote
+      }
     }
   );
 
   const contract = frapp.app.respect.contract;
   console.log("Respect contract metadata: ", contract); 
   const p = path.join(ornodeExportDir(frapp.id), `respectContractMt.json`);
+  const cImgUrl = getImgUrl("contract.image.png");
+  if (cImgUrl !== undefined) {
+    contract.image = cImgUrl;
+  }
+  const cBannerImgUrl = getImgUrl("contract.banner_image.png");
+  if (cBannerImgUrl !== undefined) {
+    contract.banner_image = cBannerImgUrl;
+  }
+  const cFeaturedImgUrl = getImgUrl("contract.featured_image.png");
+  if (cFeaturedImgUrl !== undefined) {
+    contract.featured_image = cFeaturedImgUrl;
+  }
   fs.writeFileSync(p, stringify(contract));
   console.log("Wrote contract metadata: ", p);
 

@@ -1,7 +1,7 @@
 {
   "name": "ORDAO Office Hours Award",
   "description": "Award for participating in ORDAO Office Hours",
-  "image": "https://ordao-ornode.frapps.xyz/static/ordao.png",
+  "image": "https:/gateway.pinata.cloud/ipfs/bafybeifcdqgkkyd7dcfhycylvds4vh6xn77zyt4pqmdorls4k2vlph67j4/award.image.png",
   "properties": {
     "tokenId": "0x000000000000000000000003aed620c450911c38714e666cd84137767e3d6286",
     "recipient": "0xAED620c450911c38714E666cd84137767e3D6286",

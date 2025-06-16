@@ -1,9 +1,9 @@
 {
-  "proposalId": "0xd15048e2d6f55e369a2e7ac1d9d6521e697ec43112800b74c03b52f2cbe4167c",
-  "weight": 730,
-  "voter": "0xAED620c450911c38714E666cd84137767e3D6286",
-  "vote": "No",
   "ts": 1726764249,
-  "memo": "Wrong address",
-  "txHash": "0xc696d8790490ee1f098be427d856a62a00d4b0331915fd0139649f04411e765a"
+  "txHash": "0xc696d8790490ee1f098be427d856a62a00d4b0331915fd0139649f04411e765a",
+  "proposalId": "0xd15048e2d6f55e369a2e7ac1d9d6521e697ec43112800b74c03b52f2cbe4167c",
+  "voter": "0xAED620c450911c38714E666cd84137767e3D6286",
+  "weight": 730,
+  "vote": "No",
+  "memo": "Wrong address"
 }
