@@ -1,0 +1,17 @@
+{
+  "name": "ORDAO Office Hours Award",
+  "description": "Award for participating in ORDAO Office Hours",
+  "image": "https://ordao-ornode.frapps.xyz/static/ordao.png",
+  "properties": {
+    "tokenId": "0x0000000000000000000000047f985b1764f79faa42a4622bb605b23c8eb5abea",
+    "recipient": "0x7f985b1764f79faA42a4622bB605b23C8Eb5AbEA",
+    "mintType": 0,
+    "mintTs": 1736341967,
+    "mintTxHash": "0x1365b8733f12705a94cbb99d85346103f6910d30ac8647aa05b00414d8f1c813",
+    "denomination": 34,
+    "periodNumber": 4,
+    "groupNum": 1,
+    "level": 5,
+    "burn": null
+  }
+}

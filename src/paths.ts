@@ -81,3 +81,11 @@ export function localFrappFile(frappId: string) {
   return path.join(fractalDir(frappId), "frapp.local.json");
 }
 
+export function mkDir(p: string) {
+  console.log("making dir: ", p);
+  if (!fs.existsSync(p)) {
+    fs.mkdirSync(p, { recursive: true });
+  }
+  return p;
+}
+

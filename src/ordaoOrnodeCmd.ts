@@ -3,12 +3,12 @@ import { readDeployment, readLocalFrappCfg, readTargetFrappType } from "./readFr
 import { zOrdaoApp } from "./types/ordaoApp.js";
 import { OrdaoFrapp, zOrdaoFrapp } from "./types/ordaoFrapp.js";
 import { exec } from "./exec.js";
-import { ordaoDir, ornodeDir, ornodeIndexFile } from "./ordaoPaths.js";
+import { ordaoDir, ornodeDir, ornodeExportDir, ornodeIndexFile } from "./ordaoPaths.js";
 import { zOrdaoLocalCfg } from "./types/ordaoLocalCfg.js";
 import { OrdaoFrappFull } from "./types/ordaoFrappDeployed.js";
 import { zOrdaoDeployment } from "./types/ordaoDeployment.js";
 import { zToOrnodeCfg } from "./types/transformers/ordaoFullToOrnodeCfg.js";
-import { mkProcDir, mkSitesDir, procFilepath, siteFile } from "./paths.js";
+import { mkDir, mkProcDir, mkSitesDir, procFilepath, siteFile } from "./paths.js";
 import { stringify } from "@ordao/ts-utils";
 import { endent } from "./endent.js";
 import fs from "fs";
@@ -17,6 +17,11 @@ import { readFullCfg } from "./readFullOrdaoCfg.js";
 import { frappOrnodeSiteName } from "./ordaoUrls.js";
 import { cwd } from "process";
 import { StartOptions } from "pm2"
+import { MongoClient, WithId } from "mongodb";
+import path from "path";
+import { zFungibleTokenId, zFungibleTokenIdNoPrefix, zRespectAwardMt } from "@ordao/ortypes/respect1155.js";
+import { zStoredProposal } from "@ordao/ortypes/ornode.js";
+import { zVote } from "@ordao/ortypes/ornode.js";
 
 export const ordaoOrnodeCmd = new Command("ornode")
   .argument("[targets...]", "frapp ids for which to apply commands (see options). \'all\' stands for all frapps which target this app", "all")
@@ -27,9 +32,10 @@ export const ordaoOrnodeCmd = new Command("ornode")
   .option("-s, --config-sites", "configure nginx server blocks to serve ornode(s)")
   .option("-p, --config-process", "create pm2 start options for ornode instances")
   .option("-d, --db-backup", "backup ornode db")
+  .option("-e, --export", "export ornode db")
   .option("-a, --all", "shorthand for -lbcp")
   .showHelpAfterError()
-  .action((targets: string[], opts) => {
+  .action(async (targets: string[], opts) => {
     console.log("targets: ", targets, ", opts: ", opts);
     /**
      * * Read targets
@@ -45,6 +51,7 @@ export const ordaoOrnodeCmd = new Command("ornode")
     const configSites = opts.all || opts.configSites;
     const configProc = opts.all || opts.configProcess;
     const dbBackup = opts.dbBackup;
+    const exprt = opts.export;
     const domain = opts.domain;
 
     const frapps = readTargetFrappType(zOrdaoFrapp, targets);
@@ -83,6 +90,14 @@ export const ordaoOrnodeCmd = new Command("ornode")
       }
       if (configProc) {
         createProcCfg(frapp);
+      }
+
+      if (exprt) {
+        console.log("Exporting ornode db");
+        if (fullCfg === undefined) {
+          fullCfg = readFullCfg(frapp);
+        }
+        exportDb(fullCfg);
       }
     }
   });
@@ -137,5 +152,78 @@ function backup() {
   const cmd = `mongodump --archive=${outFile} ${uri}`
 
   exec(cmd)
+}
+
+function exportDocs(
+  dir: string,
+  docs: unknown[],
+  filename: (doc: unknown) => string
+) {
+  mkDir(dir);
+
+  for (const doc of docs) {
+    const p = path.join(dir, filename(doc));
+    fs.writeFileSync(p, stringify(doc));
+  }
+}
+
+async function exportDb(frapp: OrdaoFrappFull) {
+  const uri = frapp.localOnly.mongoCfg.url;
+  const dbName = frapp.localOnly.mongoCfg.dbName;
+  const mgClient = new MongoClient(uri);
+  const db = mgClient.db(dbName);
+
+  const awardsCollection = db.collection('awards');
+  const awards = await awardsCollection.find({}, {projection: {_id: 0}}).toArray();
+  console.log("Award count: ", awards.length);
+  const dir = path.join(ornodeExportDir(frapp.id), "tokens");
+  exportDocs(
+    dir,
+    awards,
+    doc => {
+      const award = zRespectAwardMt.parse(doc);
+      return `${award.properties.tokenId.substring(2)}.json`
+    }
+  );
+  const fungible = frapp.app.respect.fungible;
+  const fungiblePath = path.join(dir, `${zFungibleTokenId.value.substring(2)}.json`);
+  console.log("Respect fungible token: ", fungible);
+  fs.writeFileSync(fungiblePath, stringify(fungible));
+  console.log("Wrote fungible token: ", fungiblePath);
+
+  const proposalsCollection = db.collection('proposals');
+  const proposals = await proposalsCollection.find({}, {projection: {_id: 0}}).toArray();
+  console.log("Proposal count: ", proposals.length);
+  const dir2 = path.join(ornodeExportDir(frapp.id), "proposals");
+  exportDocs(
+    dir2,
+    proposals,
+    doc => {
+      const proposal = zStoredProposal.parse(doc);
+      return `${proposal.id}.json`
+    }
+  );
+
+  const votesCollection = db.collection('votes');
+  const votes = await votesCollection.find({}, {projection: {_id: 0}}).toArray();
+  console.log("Vote count: ", votes.length);
+  const dir3 = path.join(ornodeExportDir(frapp.id), "votes");
+  exportDocs(
+    dir3,
+    votes,
+    doc => {
+      const vote = zVote.parse(doc);
+      return `${vote.txHash}.json`
+    }
+  );
+
+  const contract = frapp.app.respect.contract;
+  console.log("Respect contract metadata: ", contract); 
+  const p = path.join(ornodeExportDir(frapp.id), `respectContractMt.json`);
+  fs.writeFileSync(p, stringify(contract));
+  console.log("Wrote contract metadata: ", p);
+
+
+  mgClient.close();
 }
 

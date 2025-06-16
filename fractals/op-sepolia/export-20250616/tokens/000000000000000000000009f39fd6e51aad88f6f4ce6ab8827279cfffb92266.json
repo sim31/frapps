@@ -1,0 +1,17 @@
+{
+  "name": "Optimism Fractal Respect Award",
+  "description": "Award for a contribution to Optimsim Fractal",
+  "image": "https://op-sepolia-ornode.frapps.xyz/static/of.png",
+  "properties": {
+    "tokenId": "0x000000000000000000000009f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+    "recipient": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "mintType": 0,
+    "mintTs": 1741335922,
+    "mintTxHash": "0x0c2afb5fcd3a8a5f461c4f8c81e8353b8f6393cfd91b6c918368b192378506a9",
+    "denomination": 21,
+    "periodNumber": 9,
+    "groupNum": 1,
+    "level": 4,
+    "burn": null
+  }
+}

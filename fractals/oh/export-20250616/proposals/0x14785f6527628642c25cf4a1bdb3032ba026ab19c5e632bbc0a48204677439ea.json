@@ -1,0 +1,16 @@
+{
+  "id": "0x14785f6527628642c25cf4a1bdb3032ba026ab19c5e632bbc0a48204677439ea",
+  "createTs": 1728025979,
+  "createTxHash": "0xd5bcb6b8c9dce5de0dd32d6bc410c5cae901c7ddcda269e2ce8c9a45e029e325",
+  "status": "Executed",
+  "attachment": {
+    "propType": "customCall",
+    "propTitle": "Set voteLength to 2 days"
+  },
+  "content": {
+    "addr": "0xCD1fA63b85a708f039c4954af72E85CDd494B6cA",
+    "cdata": "0xbd5ab94f000000000000000000000000000000000000000000000000000000000002a300",
+    "memo": "0x77efd5ce8c574ca54648b3fb5d4b9a7e191b791d05486e0aa3f85530d557d515"
+  },
+  "executeTxHash": "0xab4674a49e9d0442b4db3d00a33f4d4e2c7f88e3c3b39e3359510cde83e1f56f"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0xc9438f2ed2238667db986cd753ea35ea7cdc452a1cab4c3fd8a91aa9f8a1b419",
+  "createTs": 1747151118,
+  "createTxHash": "0x37bb51af21152508029c59dcdb67fc81196f44d669d678d2ee3251fab57d5e76",
+  "status": "Executed",
+  "attachment": {
+    "propType": "respectAccount",
+    "propTitle": "Respect Jacob",
+    "propDescription": "He's a great guy",
+    "mintReason": "Redeem Jacob!!!",
+    "mintTitle": "ORDAO Office Hours Redemption",
+    "groupNum": 1,
+    "version": 2
+  },
+  "content": {
+    "addr": "0x3449C30fF5191b9FC1A1eCD8EC90C4EbF54b1204",
+    "cdata": "0xdfd469ed000000010000000000000007925ab41117bf35322209a7bb32eededb69a5165c000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000000",
+    "memo": "0x18ae0bda9bb1ea3bd1671b1564651eacc81138ea1dce74dafa56e3bee595fbce"
+  },
+  "executeTxHash": "0x9d44babc103610fd11792225946094e57d0745b5487e5198429f61c5f98f077f"
+}

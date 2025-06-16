@@ -1,0 +1,16 @@
+{
+  "id": "0x58507d2e4a690d61a61d8560276fa80c559b2a185723d75d47bf9218badee644",
+  "createTs": 1726561191,
+  "createTxHash": "0x5953b1bc57d1035f31ead521f92e9e556a0d5e8ee26a08b785fa9bdfc32f9267",
+  "status": "Executed",
+  "attachment": {
+    "propType": "customCall",
+    "propTitle": "Reduce vetLength to 8 hours"
+  },
+  "content": {
+    "addr": "0xCD1fA63b85a708f039c4954af72E85CDd494B6cA",
+    "cdata": "0xce5b3b390000000000000000000000000000000000000000000000000000000000007080",
+    "memo": "0x70c89e873ce00eb8202a3e486f6c993b1259b1d2f95585d67191a534ac2019fd"
+  },
+  "executeTxHash": "0x1d2f5053233325bda04971377646f11aa1a0e41de7bfef72b3fac4ecddbe601f"
+}

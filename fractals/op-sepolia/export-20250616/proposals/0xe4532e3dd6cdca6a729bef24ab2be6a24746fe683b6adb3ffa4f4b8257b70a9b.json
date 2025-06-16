@@ -1,0 +1,19 @@
+{
+  "id": "0xe4532e3dd6cdca6a729bef24ab2be6a24746fe683b6adb3ffa4f4b8257b70a9b",
+  "createTs": 1747124512,
+  "createTxHash": "0x878242c5a960c62ce3f0ba26e699e8f4df12d79e731e8fb5ddedffbf3ae0c30d",
+  "status": "NotExecuted",
+  "attachment": {
+    "propType": "respectAccount",
+    "propTitle": "",
+    "propDescription": "",
+    "mintReason": "Test",
+    "mintTitle": "Test",
+    "version": 2
+  },
+  "content": {
+    "addr": "0x3449C30fF5191b9FC1A1eCD8EC90C4EbF54b1204",
+    "cdata": "0xdfd469ed0000000100000000000000050806df7dcb21b50effd790c105ee57e58f76379e000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000000",
+    "memo": "0x78df0896fb38e1826d7bf16a21372606b642cf06c3e88dbb0188bbf9e8b9caa1"
+  }
+}

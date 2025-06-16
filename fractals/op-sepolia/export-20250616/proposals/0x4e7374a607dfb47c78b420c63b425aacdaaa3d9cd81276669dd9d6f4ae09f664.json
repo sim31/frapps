@@ -1,0 +1,16 @@
+{
+  "id": "0x4e7374a607dfb47c78b420c63b425aacdaaa3d9cd81276669dd9d6f4ae09f664",
+  "createTs": 1747457844,
+  "createTxHash": "0xaa435b1783da2ef8ca78dc8fba3d310d50c7533fcee6b8608e1bdbc957440be4",
+  "status": "NotExecuted",
+  "attachment": {
+    "propType": "customCall",
+    "propTitle": "Set minimum vote weight to pass a proposal",
+    "propDescription": "This sets `prop_min_weigth` in [OREC specification](https://github.com/sim31/ordao/blob/59b2fcb840048e8a212a04ce51f378404d4c8f6b/docs/OREC.md#specification)\n\nCurrently it is set to 256, which is inherited from previous deployments of ORDAO. Forgot to change this value on initial contract deployment for ORDAO fractal, to value previously announced in the [intent document for ordao fractal](https://ordao.frapps.xyz/about/intent)"
+  },
+  "content": {
+    "addr": "0x0B129e09EA16f9aD7d3FBC11f00983C0AB2c5ee4",
+    "cdata": "0x00",
+    "memo": "0xb09c6ed2a78481d11b4c9a89c73ed0dc986fddee487815f48a9628d7a26218db"
+  }
+}

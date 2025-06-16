@@ -1,0 +1,15 @@
+{
+  "id": "0xffec52943f23b9e186ed28fdd6b398c7e41cf804e822a23bb43701ed0905f809",
+  "createTs": 1747287560,
+  "createTxHash": "0xdd5a3d7c4e57a3aed35f090b3477e82182719d5cf468eaa05a4b143ead4ccc12",
+  "status": "Executed",
+  "attachment": {
+    "propType": "customCall"
+  },
+  "content": {
+    "addr": "0x53C9E3a44B08E7ECF3E8882996A500eb06c0C5CC",
+    "cdata": "0x00",
+    "memo": "0xc6ade0f53c42ef6ed389ff7706e7116309bb38acf0757b0f1485c10ea6e6910b"
+  },
+  "executeTxHash": "0x4c4e1b547fce3298cb4b6e824d2c9a20234554a3469dd414c7d06c3007a64dd7"
+}

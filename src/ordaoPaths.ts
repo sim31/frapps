@@ -47,3 +47,13 @@ export function rsplitCsvFilePath(frappId: string) {
 export function accountsCsvFilePath(frappId: string) {
   return path.join(fractalDir(frappId), "accounts.csv");
 }
+
+export function ornodeExportDir(frappId: string) {
+  const d = new Date();
+  const year = d.getFullYear().toString().padStart(4, '0');
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
+  const day = d.getDate().toString().padStart(2, '0');
+  return path.join(fractalDir(frappId), `export-${year}${month}${day}`);
+}
+
+

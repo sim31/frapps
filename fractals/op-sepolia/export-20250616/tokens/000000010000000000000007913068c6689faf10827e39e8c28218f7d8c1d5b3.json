@@ -1,0 +1,18 @@
+{
+  "name": "Optimism Fractal Respect Award",
+  "description": "Award for a contribution to Optimsim Fractal",
+  "image": "https://op-sepolia-ornode.frapps.xyz/static/of.png",
+  "properties": {
+    "tokenId": "0x000000010000000000000007913068c6689faf10827e39e8c28218f7d8c1d5b3",
+    "recipient": "0x913068c6689Faf10827e39e8c28218F7d8c1D5b3",
+    "mintType": 1,
+    "mintTs": 1747152228,
+    "mintTxHash": "0xa32a257f3aaca2fe726bd9115f1d5df2993b21fd7cf462416b35a37402c4be11",
+    "denomination": 100,
+    "periodNumber": 7,
+    "groupNum": 1,
+    "reason": "1. I helped redeem Jacob\n2. I am a good guy too\n3. I got the testnet to work \n4. I fully support ORDAO \n",
+    "title": "Dan's Redemption Arc",
+    "burn": null
+  }
+}
