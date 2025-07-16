@@ -1,0 +1,21 @@
+[submodule "apps/respect.games/contracts"]
+	path = apps/respect.games/contracts
+	url = https://github.com/Optimystics/Respect.Games-app-smart-contracts
+[submodule "apps/respect.games/ui"]
+	path = apps/respect.games/ui
+	url = https://github.com/Optimystics/respect.games-ui
+[submodule "apps/respect.games/graph"]
+	path = apps/respect.games/graph
+	url = https://github.com/Optimystics/respect.games-graph
+[submodule "apps/fractalgram-tg"]
+	path = apps/fractalgram-tg
+	url = https://github.com/sim31/fractalgram
+[submodule "apps/op-fractal/contracts"]
+	path = apps/op-fractal/contracts
+	url = https://github.com/Optimystics/op-fractal-sc
+[submodule "apps/op-fractal/ui"]
+	path = apps/op-fractal/ui
+	url = https://github.com/Optimystics/op-fractal-frontend
+[submodule "apps/ordao"]
+	path = apps/ordao
+	url = https://github.com/sim31/ordao
