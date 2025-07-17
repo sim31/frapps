@@ -11,6 +11,7 @@
   * [Meetings 1-14](./fractally_genesis_tally_2022-06-04-updated.pdf)
   * [Meetings 1-20](./fractally_genesis_tally_2022-07-16.pdf)
   * [Meetings 1-30](./fractally_genesis_tally_2022-09-24.pdf)
+* Respect accounting: excel spreadsheet based on breakout group results posted on [https://hive.blog/].
 
 ## Timeline
 * *2022-02-22:* Original vision of fractals published as [fractally whitepaper](./Fractally%20White%20Paper%201.0%20(English).pdf)
