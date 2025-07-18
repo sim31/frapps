@@ -1,13 +1,13 @@
 
 * Meeting structure
-  * Meetings 1 - X: [Respect Game](./);
-  * Meetings X - Y: [Respect Game](./) + Eden+Fractal;
-  * Meetings Y - Z: [Respect Game](./) + Eden+Fractal + Cagendas;
-  * Meetigns Z - W: No Respect game
+  * [Meetings 1 - 18](./meeting-str-1-18.md)
+  * [Meetings 19 - 28](./meeting-str-19-28.md)
+  * [Meetings 28 - 76](./meeting-str-28-76.md)
+  * [Meetings 76 - ](./meeting-str-76-.md)
 * Consensus process
-  * Meetings X - Z: [Eden+Fractal](./)
+  * Meetings 19 - 76: [Eden+Fractal](../../concepts/eden+fractal.md)
 * Consensus process output
-  * Meetings X - Z: excel sheet with delegates, councils and proposals
+  * Meetings 19 - : [excel sheet with delegates, councils and proposals](./EdenFractal%20delegates.xlsx)
   * Meetings Z - W: [vision statement](./) and [mission statement](./) [^1]
 * Smart contracts
   * Submissions
@@ -21,6 +21,20 @@
 * Executive process [^2]
   * R
 * [Respect distribution](./bloks)
+* [Playlist of meeting recordings](https://edenfractal.com/videos);
+
+## Respect game
+[../../concepts/respect-game.md](../../concepts/respect-game.md) with
+* `breakout_session_length` = 45 minutes;
+* `level_to_respect`:
+  * Level 6: 55 Respect
+  * Level 5: 34 Respect
+  * Level 4: 21 Respect
+  * Level 3: 13 Respect
+  * Level 2: 8 Respect
+  * Level 1: 5 Respect
+
+The prompt is implicit, but typically contributions centered about Eden Fractal, fractal ecosystem as a whole, Eden On EOS or EOS.
 
 ## Respect accounting mechanism
 
