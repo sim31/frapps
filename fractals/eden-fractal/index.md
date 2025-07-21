@@ -1,14 +1,14 @@
+<!-- omit in toc -->
 # Eden Fractal
 
-- [Eden Fractal](#eden-fractal)
-  - [Meeting structure](#meeting-structure)
-  - [Consensus process](#consensus-process)
-  - [Consensus process output](#consensus-process-output)
-  - [Smart contracts](#smart-contracts)
-  - [Tools](#tools)
-  - [Respect accounting mechanism](#respect-accounting-mechanism)
-  - [Executive process](#executive-process)
-  - [Other resources](#other-resources)
+- [Meeting structure](#meeting-structure)
+- [Consensus process](#consensus-process)
+- [Consensus process output](#consensus-process-output)
+- [Smart contracts](#smart-contracts)
+- [Tools](#tools)
+- [Respect accounting mechanism](#respect-accounting-mechanism)
+- [Executive process](#executive-process)
+- [Other resources](#other-resources)
 
 ## Meeting structure
 * [Meetings 1 - 18](./meeting-str-1-18.md)
