@@ -10,5 +10,5 @@
     * Level 2: 8 Respect
     * Level 1: 5 Respect
 * *1 hour:* window to pass proposals using [Eden+Fractal](../../concepts/eden+fractal.md) process
-    * [Moderator (definition)](./moderator-role.pdf)
+    * [Moderator (definition)](./moderator.pdf)
     * [Moderator guidelines](./moderator-guidelines.pdf)

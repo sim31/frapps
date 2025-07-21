@@ -7,10 +7,9 @@
 * Consensus process
   * Meetings 19 - 76: [Eden+Fractal](../../concepts/eden+fractal.md)
 * Consensus process output
-  * Meetings 19 - : [excel sheet with delegates, councils and proposals](./EdenFractal%20delegates.xlsx)
-  * Meetings Z - W: [vision statement](./) and [mission statement](./) [^1]
-* Smart contracts
-  * Submissions
+  * Meetings 19 - 76 : [excel sheet with delegates, councils and proposals](./EdenFractal%20delegates.xlsx)
+  * Meetings 76 - W: [vision statement](./vision.md) and [mission statement](./mission.md) [^1]
+* Smart contract
   * Token controlled by multisignature process
 * Tools
   * Meetings 1 - X: Submission frontend
