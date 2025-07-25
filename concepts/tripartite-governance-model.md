@@ -1,5 +1,4 @@
 # Tripartite governance model
-<!-- TODO: reference thinking fast, slow and that 2 system model? Or create a new concept -->
 <!-- https://en.wikipedia.org/wiki/Collective_intelligence -->
 <!-- TODO: judicial branch can't evaluate other processes - it evaluates sub-entities (individuals) within the organization.-->
 
@@ -8,7 +7,7 @@
 * Judicial - process to evaluate and regulate all other processes;
 
 ## Defining qualities of a legislative process
-How to recognize a legislative sub-process in your decision-making process (you should find at least some of the qualities):
+How to recognize a legislative process within your organization (you should find at least some of the qualities):
 
 * It is a first step in decision-making pipeline;
 * It deals in concepts highest-level of abstraction;
@@ -21,7 +20,7 @@ How to recognize a legislative sub-process in your decision-making process (you 
 * It is relied upon whenever something in executive process breaks down;
 
 ## Defining qualities of an executive process
-How to recognize an executive sub-process in your decision-making process (you should find at least some of the qualities):
+How to recognize an executive process within your organization (you should find at least some of the qualities):
 
 * It is a final step in decision-making process;
 * It executes what legislative process decides, taking care of the details;
@@ -39,11 +38,11 @@ How to recognize an executive sub-process in your decision-making process (you s
 * It can keep the organization running even when legislative process breaks down;
 
 ## Defining qualities of judicial process
-How to recognize an judicial sub-process in your decision-making process:
+How to recognize an judicial process within your organization:
 
 * It evaluates / judges;
 * It can evaluate contributions to legislative and executive processes;
-* It can make adjustments (regulate) legislative and executive processes;
+* It can make adjustments to (regulate) legislative and executive processes;
 
 ## Relationship to Kahneman's "Thinking Fast and Slow" model
 Daniel Kahneman, in his book ["Thinking Fast, Slow"](https://en.wikipedia.org/wiki/Thinking,_Fast_and_Slow) presents a thesis that there are two modes of thought: "System 1" is fast, instinctive and emotional; "System 2" is slower, more deliberative, and more logical. Since then it has been shown that this model is useful even in the field of AI and robotics ([source 1](https://medium.com/@ignacio.de.gregorio.noblejas/the-robotics-breakthrough-that-obsoleted-openai-075015d9fe91), [source 2](https://medium.com/@ignacio.de.gregorio.noblejas/energy-based-ais-too-good-to-be-true-54fe9cb47c72), [source 3](https://arxiv.org/abs/2212.05206)).
