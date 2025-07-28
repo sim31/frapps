@@ -51,8 +51,8 @@ Daniel Kahneman, in his book ["Thinking Fast, Slow"](https://en.wikipedia.org/wi
 
 ## Example
 <!-- TODO: link to docs here -->
-[Optimism Fractal](https://optimismfractal.com/details#block-130723a67adb4a8ea2eb78ddada84a0f):
-* [Consensus process](https://optimismfractal.com/details#block-150074f5adac80fb865cd646484cf582) (legislative process) - uses existing respect distribution to create councils which pass proposals within [snapshot](snapshot.box);
+[Optimism Fractal](../fractals/optimism-fractal/):
+* [Consensus process]() (legislative process) - uses existing respect distribution to create councils which pass proposals within [snapshot](snapshot.box);
 * [Executive process]()  takes care of implementing those proposals onchain and performing other routine tasks like Respect distribution;
 * [Respect game](./respect-game.md) (judicial process) - evaluates everyone's contributions on weekly basis minting more Respect for individuals contributing more value, thus regulating amount of power each individual has in legislative as well as in executive processes;
 

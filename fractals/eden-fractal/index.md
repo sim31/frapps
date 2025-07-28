@@ -54,4 +54,6 @@ Multisignature setup on [eden.fractal account](https://unicove.com/en/vaulta/acc
 ## Other resources
 * [Homepage](https://edenfractal.com/)
 * [Playlist of meeting recordings](https://edenfractal.com/videos)
+* [Telegram group](https://t.me/edenfractal)
+* [Discord channel](https://discord.com/channels/916846690626052146/981555062633549824)
 
