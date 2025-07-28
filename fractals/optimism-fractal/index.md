@@ -1,5 +1,4 @@
-<!-- omit in toc -->
-# Eden Fractal
+# Optimism Fractal
 
 - [Meeting structure](#meeting-structure)
 - [Consensus process](#consensus-process)
@@ -39,7 +38,7 @@
 * Consortium
   * [Smart contracts](https://github.com/n0umen0n/ConsortiumSC)
   * [Frontend](https://github.com/n0umen0n/ConsortiumWeb)
-* Fractalgram (from [meeting 35](https://edenfractal.com/35)) for playing [respect game](../../concepts/respect-game.md)
+* Fractalgram (from [meeting 35](https://edenfractal.com/35))
   * [URL](https://fractgram.web.app/)
   * [Code](../../apps/fractalgram-tg/)
 
@@ -49,9 +48,8 @@ Onchain token controlled by the multisignature setup (see ["Executive process](#
 ## Executive process
 <!-- TODO: create "tripartite governance structure" concept and reference it here -->
 
-Multisignature setup on [eden.fractal account](https://unicove.com/en/vaulta/account/eden.fractal) ([alternative block explorer](https://coffe.bloks.io/account/eden.fractal#keys)). It acted as means to execute onchain actions according to community consensus (typically expressed through [Eden+Fractal consensus process](../../concepts/eden+fractal.md) or respect game result submissions).
+Multisignature setup on [eden.fractal account](https://unicove.com/en/vaulta/account/eden.fractal). It acted as means to execute onchain actions according to community consensus (typically expressed through [Eden+Fractal consensus process](../../concepts/eden+fractal.md) or respect game result submissions).
 
 ## Other resources
 * [Homepage](https://edenfractal.com/)
 * [Playlist of meeting recordings](https://edenfractal.com/videos)
-
