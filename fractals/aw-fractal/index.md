@@ -13,7 +13,7 @@
 * Consortium
   * [Smart contracts](https://github.com/n0umen0n/ConsortiumWAX)
   * [Frontend](https://github.com/n0umen0n/ConsortiumWeb)
-* Fractalgram
+* [Fractalgram](../../concepts/fractalgram.md)
   * [URL](https://fractgram.web.app/)
   * [Code](https://github.com/sim31/fractalgram/tree/bae4cd9a8d627ab60a50b24d6915e07e211498f9)
 

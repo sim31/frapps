@@ -39,7 +39,7 @@
 * Consortium
   * [Smart contracts](https://github.com/n0umen0n/ConsortiumSC)
   * [Frontend](https://github.com/n0umen0n/ConsortiumWeb)
-* Fractalgram (from [meeting 35](https://edenfractal.com/35)) for playing [respect game](../../concepts/respect-game.md)
+* [Fractalgram](../../concepts/fractalgram.md) (from [meeting 35](https://edenfractal.com/35)) for playing [respect game](../../concepts/respect-game.md)
   * [URL](https://fractgram.web.app/)
   * [Code](https://github.com/sim31/fractalgram/tree/bae4cd9a8d627ab60a50b24d6915e07e211498f9)
 

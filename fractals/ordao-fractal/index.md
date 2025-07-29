@@ -1,5 +1,13 @@
-<!-- omit in toc -->
-# Optimism Fractal
+# ORDAO Fractal
+
+- [Concept document]
+- [Implementation]
+
+## Implementation
+* ORDAO
+* Fractalgram to play Respect game
+  * Old telegram-based
+  * 
 
 - [Intent document](#intent-document)
 - [Meeting structure](#meeting-structure)
@@ -53,7 +61,7 @@ Optimistic Respect-based executive contract ([OREC](../../concepts/orec.md)).
 * [Implementation](https://github.com/sim31/ordao/tree/8f983f84fa481714425ff0c067819be5e10ff25d/contracts/packages/orec)
 
 ## Tools / frontends
-* [Fractalgram](../../concepts/fractalgram.md) - used to play Respect game
+* Fractalgram - used to play Respect game
   * [Old telegram-based](https://github.com/sim31/fractalgram/tree/bae4cd9a8d627ab60a50b24d6915e07e211498f9)
   * [New, standalone respect-game app](https://respect-game.vercel.app/)
 * ORDAO frontend (available from around meeting 60)
@@ -75,7 +83,3 @@ This is where a lot of Optimism Fractal related topics are discussed by playing 
 * [Homepage](https://optimismfractal.com)
 * [Playlist of meeting recordings](https://www.youtube.com/watch?v=6Lc2W0wW37Y&list=PLa5URJF9l5lk5Aavi98CqFj7ryM42bvbP)
 * [Discord server](https://discord.gg/BtSNDRVQGJ)
-
-<!-- omit in toc -->
-## Footnotes
-[^1]: See ["Executive contract" in intent document](./of-intent-5.md#7-executive-contract)
