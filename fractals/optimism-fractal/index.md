@@ -23,7 +23,7 @@ Intent document describes how Optimism Fractal works in natural language (meetin
 * [Meetings 48 - 54](./of-intent-4.md)
 * [Meetings 54 - ](./of-intent-5.md)
 
-[Changelog](./intent-changelog.md)
+See [Historical notes (changelog)](./intent-changelog.md) for description of changes between versions.
 
 ## Meeting structure
 Sections 1 and 2 of [intent document](./of-intent-1.pdf).
@@ -34,31 +34,31 @@ Sections 1 and 2 of [intent document](./of-intent-1.pdf).
   * [Proposals in snapshot](https://snapshot.box/#/s:optimismfractal.eth)
 
 ## Smart contracts
-* [Meetings 1 - 48](../../apps/op-fractal/contracts/)
-* [Meeting 49 -](../../apps/ordao/contracts/packages/)
+* [Meetings 1 - 48](https://github.com/Optimystics/op-fractal-sc/tree/0ab15a1c2e3a242289b16bcce25acfb721e33c26)
+* [Meeting 49 -](https://github.com/sim31/ordao/tree/8f983f84fa481714425ff0c067819be5e10ff25d/contracts/packages)
 
 ## Respect token
-* [Meetings 1 - 48](../../apps/op-fractal/contracts/) (part of main onchain contract);
-* [Meetings 49 -](../../apps/ordao/contracts/packages/respect1155/)
+* [Meetings 1 - 48](https://github.com/Optimystics/op-fractal-sc/blob/0ab15a1c2e3a242289b16bcce25acfb721e33c26/contracts/FractalRespect.sol) (part of main onchain contract);
+* [Meetings 49 -](https://github.com/sim31/ordao/tree/8f983f84fa481714425ff0c067819be5e10ff25d/contracts/packages/respect1155)
 
 ## Executive process
 Executive process is used to execute the will of [consensus process](#consensus-process) and distribute respect according to respect game result submissions [^1].
 
 ### Meetings 1 - 48
-Multisignature account as the owner of [smart contract](#smart-contracts), plus executor function in contract which allows owner to delegate an account to perform respect distributions.
+Multisignature account as the owner of [smart contract](#smart-contracts), plus [executor](https://github.com/Optimystics/op-fractal-sc/blob/0ab15a1c2e3a242289b16bcce25acfb721e33c26/contracts/FractalRespect.sol#L67) function in contract which allows owner to delegate an account to perform respect distributions.
 
 ### Meeting 49 -
 Optimistic Respect-based executive contract ([OREC](../../concepts/orec.md)).
 
-* [Documentation](../../apps/ordao/docs/OREC.md)
-* [Implementation](../../apps/ordao/contracts/packages/orec/)
+* [Full whitepaper](https://github.com/sim31/ordao/blob/8f983f84fa481714425ff0c067819be5e10ff25d/docs/OREC.md)
+* [Implementation](https://github.com/sim31/ordao/tree/8f983f84fa481714425ff0c067819be5e10ff25d/contracts/packages/orec)
 
 ## Tools / frontends
 * Fractalgram - used to play Respect game
-  * [Old telegram-based](../../apps/fractalgram-tg/)
+  * [Old telegram-based](https://github.com/sim31/fractalgram/tree/bae4cd9a8d627ab60a50b24d6915e07e211498f9)
   * [New, standalone respect-game app](https://respect-game.vercel.app/)
 * ORDAO frontend (available from around meeting 60)
-  * [Codebase](../../apps/ordao/apps/gui/)
+  * [Codebase](https://github.com/sim31/ordao/tree/8f983f84fa481714425ff0c067819be5e10ff25d/apps/gui)
   * URL of deployment: https://of.frapps.xyz or https://optimism.frapps.xyz
 * [Snapshot](https://snapshot.box/#/s:optimismfractal.eth) - polling app used by [consensus process](#consensus-process)
 
@@ -78,4 +78,4 @@ This is where a lot of Optimism Fractal related topics are discussed by playing 
 * [Discord server](https://discord.gg/BtSNDRVQGJ)
 
 ## Footnotes
-[^1]: ["Executive contract" in intent document](./of-intent-5.md#7-executive-contract)
+[^1]: See ["Executive contract" in intent document](/fractals/optimism-fractal/of-intent-5.md#7-executive-contract)
