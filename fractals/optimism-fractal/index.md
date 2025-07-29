@@ -78,4 +78,4 @@ This is where a lot of Optimism Fractal related topics are discussed by playing 
 * [Discord server](https://discord.gg/BtSNDRVQGJ)
 
 ## Footnotes
-[^1]: See ["Executive contract" in intent document](/fractals/optimism-fractal/of-intent-5.md#7-executive-contract)
+[^1]: See ["Executive contract" in intent document](./of-intent-5.md#7-executive-contract)

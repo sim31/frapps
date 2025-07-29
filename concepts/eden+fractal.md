@@ -9,3 +9,7 @@
 7. Proposal is passed once at least 3 out of 4 active councils approve it, during the hour after break-out room session;
 
 ![Councils](./Eden+fractal-consensus.drawio.png)
+
+## Sources
+* [Specification published on Hive](https://peakd.com/fractally/@sim31/edenfractal-consensus-process)
+* [Historical info](https://edencreators.com/plus)
