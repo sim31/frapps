@@ -41,7 +41,7 @@
   * [Frontend](https://github.com/n0umen0n/ConsortiumWeb)
 * Fractalgram (from [meeting 35](https://edenfractal.com/35)) for playing [respect game](../../concepts/respect-game.md)
   * [URL](https://fractgram.web.app/)
-  * [Code](../../apps/fractalgram-tg/)
+  * [Code](https://github.com/sim31/fractalgram/tree/bae4cd9a8d627ab60a50b24d6915e07e211498f9)
 
 ## Respect accounting mechanism
 Onchain token controlled by the multisignature setup (see ["Executive process](#executive-process)). Signatories would manually create and execute onchain transaction based on respect game result votes submitted onchain;
@@ -53,7 +53,7 @@ Multisignature setup on [eden.fractal account](https://unicove.com/en/vaulta/acc
 
 ## Other resources
 * [Homepage](https://edenfractal.com/)
-* [Playlist of meeting recordings](https://edenfractal.com/videos)
+* [Playlist of meeting recordings](https://www.youtube.com/watch?v=yhU4D5KePpE&list=PLa5URJF9l5lkX4t8YMZ7wytDZggdXeFor)
 * [Telegram group](https://t.me/edenfractal)
 * [Discord channel](https://discord.com/channels/916846690626052146/981555062633549824)
 

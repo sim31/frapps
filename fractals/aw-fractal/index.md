@@ -15,7 +15,7 @@
   * [Frontend](https://github.com/n0umen0n/ConsortiumWeb)
 * Fractalgram
   * [URL](https://fractgram.web.app/)
-  * [Code](../../apps/fractalgram-tg/)
+  * [Code](https://github.com/sim31/fractalgram/tree/bae4cd9a8d627ab60a50b24d6915e07e211498f9)
 
 ## Respect accounting mechanism
 [Onchain token contract](https://waxblock.io/account/pollpollpoll#keys) controlled by owner / active permission, where "active" is top 6 most respected members over the last 6 meetings. 
