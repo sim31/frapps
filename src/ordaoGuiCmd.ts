@@ -75,7 +75,7 @@ function configure(frapp: OrdaoFrappFull, domain: string) {
     VITE_OLD_RESPECT_ADDR: frapp.deployment.oldRespect,
     VITE_NEW_RESPECT_ADDR: frapp.deployment.newRespect,
     VITE_OREC_ADDR: frapp.deployment.orec,
-    VITE_ORNODE_URL: frappOrnodeUrl(frapp.id, domain, https),
+    VITE_ORNODE_URL: frapp.deploymentCfg.ornodeOrigin,
     VITE_APP_TITLE: `${frapp.fullName}`,
     VITE_PRIVY_APP_ID: frapp.localOnly.privyAppId,
     VITE_DOCS_ORIGIN: orclientDocsUrl(domain, https),

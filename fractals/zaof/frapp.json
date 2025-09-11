@@ -14,9 +14,9 @@
   },
   "app": {
     "appId": "ordao",
-    "startPeriodNum": 68,
+    "startPeriodNum": 67,
     "parentRespectLink": "https://optimistic.etherscan.io/address/0x34cE89baA7E4a4B00E17F7E4C0cb97105C216957",
-    "childRespectLink": "https://optimistic.etherscan.io/address/0x34cE89baA7E4a4B00E17F7E4C0cb97105C216957",
+    "childRespectLink": "https://optimistic.etherscan.io/address/0x9885CCeEf7E8371Bf8d6f2413723D25917E7445c",
     "respectGameLink": "https://discord.gg/Uw8DwJ65?event=1380225229607010426",
     "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/main/fractals/zaof/",
     "respect": {
