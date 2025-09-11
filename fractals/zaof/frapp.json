@@ -8,37 +8,37 @@
     "oldRespectAddr": "0x34cE89baA7E4a4B00E17F7E4C0cb97105C216957",
     "votePeriod": 259200,
     "vetoPeriod": 259200,
-    "voteThreshold": 0,
+    "voteThreshold": 500,
     "maxLiveYesVotes": 6,
     "ornodeOrigin": "https://zao-ornode.frapps.xyz"
   },
   "app": {
     "appId": "ordao",
-    "startPeriodNum": 1,
-    "parentRespectLink": "https://explorer.optimism.io/address/0x34cE89baA7E4a4B00E17F7E4C0cb97105C216957",
-    "childRespectLink": "TODO",
-    "respectGameLink": "https://respect-game.vercel.app",
+    "startPeriodNum": 68,
+    "parentRespectLink": "https://optimistic.etherscan.io/address/0x34cE89baA7E4a4B00E17F7E4C0cb97105C216957",
+    "childRespectLink": "https://optimistic.etherscan.io/address/0x34cE89baA7E4a4B00E17F7E4C0cb97105C216957",
+    "respectGameLink": "https://discord.gg/Uw8DwJ65?event=1380225229607010426",
     "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/main/fractals/zaof/",
     "respect": {
       "award": {
         "name": "ZAO Fractal Respect Award",
         "description": "Respect award for a contribution to ZAO Fractal",
-        "image": "TODO"
+        "image": "https://gateway.pinata.cloud/ipfs/bafybeif3752k3uuqbp3qn4qlky4kv5tslnsswhijx27l2eqsw4yetxxvxm"
       },
       "fungible": {
         "name": "ZAO Fractal Respect",
         "description": "Respect score for a contributions to ZAO Fractal",
-        "image": "TODO",
+        "image": "https://gateway.pinata.cloud/ipfs/bafybeif3752k3uuqbp3qn4qlky4kv5tslnsswhijx27l2eqsw4yetxxvxm",
         "decimals": 0
       },
       "contract": {
         "name": "ZAO Fractal Respect",
         "symbol": "ZAO",
         "description": "Awards for a contributions to ZAO Fractal",
-        "image": "TODO",
-        "banner_image": "TODO",
-        "featured_image": "TODO",
-        "external_link": "TODO"
+        "image": "https://gateway.pinata.cloud/ipfs/bafybeif3752k3uuqbp3qn4qlky4kv5tslnsswhijx27l2eqsw4yetxxvxm",
+        "banner_image": "https://gateway.pinata.cloud/ipfs/bafybeif3752k3uuqbp3qn4qlky4kv5tslnsswhijx27l2eqsw4yetxxvxm",
+        "featured_image": "https://gateway.pinata.cloud/ipfs/bafybeif3752k3uuqbp3qn4qlky4kv5tslnsswhijx27l2eqsw4yetxxvxm",
+        "external_link": "https://gateway.pinata.cloud/ipfs/bafybeif3752k3uuqbp3qn4qlky4kv5tslnsswhijx27l2eqsw4yetxxvxm"
       }
     }
   }
