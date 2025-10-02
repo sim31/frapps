@@ -17,7 +17,7 @@
 * [Meetings 76 - ](./meeting-str-76-.md)
 
 ## Consensus process
-* Meetings 19 - 76: [Eden+Fractal](../../concepts/eden+fractal.md)
+* Meetings 19 - 76: [Eden+Fractal](/concepts/eden+fractal.md)
 * Meetings 76 - : Informal, requiring all currently participating members to agree;
 
 ## Consensus process output
@@ -39,7 +39,7 @@
 * Consortium
   * [Smart contracts](https://github.com/n0umen0n/ConsortiumSC)
   * [Frontend](https://github.com/n0umen0n/ConsortiumWeb)
-* [Fractalgram](../../concepts/fractalgram.md) (from [meeting 35](https://edenfractal.com/35)) for playing [respect game](../../concepts/respect-game.md)
+* [Fractalgram](/concepts/fractalgram.md) (from [meeting 35](https://edenfractal.com/35)) for playing [respect game](/concepts/respect-game.md)
   * [URL](https://fractgram.web.app/)
   * [Code](https://github.com/sim31/fractalgram/tree/bae4cd9a8d627ab60a50b24d6915e07e211498f9)
 
@@ -49,11 +49,13 @@ Onchain token controlled by the multisignature setup (see ["Executive process](#
 ## Executive process
 <!-- TODO: create "tripartite governance structure" concept and reference it here -->
 
-Multisignature setup on [eden.fractal account](https://unicove.com/en/vaulta/account/eden.fractal) ([alternative block explorer](https://coffe.bloks.io/account/eden.fractal#keys)). It acted as means to execute onchain actions according to community consensus (typically expressed through [Eden+Fractal consensus process](../../concepts/eden+fractal.md) or respect game result submissions).
+Multisignature setup on [eden.fractal account](https://unicove.com/en/vaulta/account/eden.fractal) ([alternative block explorer](https://coffe.bloks.io/account/eden.fractal#keys)). It acted as means to execute onchain actions according to community consensus (typically expressed through [Eden+Fractal consensus process](/concepts/eden+fractal.md) or respect game result submissions).
 
 ## Other resources
 * [Homepage](https://edenfractal.com/)
 * [Playlist of meeting recordings](https://www.youtube.com/watch?v=yhU4D5KePpE&list=PLa5URJF9l5lkX4t8YMZ7wytDZggdXeFor)
 * [Telegram group](https://t.me/edenfractal)
 * [Discord channel](https://discord.com/channels/916846690626052146/981555062633549824)
+
+062633549824)
 

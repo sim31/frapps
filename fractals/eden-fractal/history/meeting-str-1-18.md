@@ -1,6 +1,6 @@
 # Meeting structure (meetings 1-18)
 
-* [Respect Game](../../concepts/respect-game.md) session with parameters:
+* [Respect Game](/concepts/respect-game.md) session with parameters:
   * `breakout_session_length` = 45 minutes;
   * `level_to_respect`:
     * Level 6: 55 Respect
