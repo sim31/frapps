@@ -15,7 +15,8 @@ export const zBaseNewOrdaoDeploymentCfg = zBaseDeploymentCfg.extend({
 
 export const zOrdaoExisting = zBaseDeploymentCfg.extend({
   module: z.literal("OrdaoExisting"),
-  deployment: zOrdaoDeployment
+  deployment: zOrdaoDeployment,
+  ornodeOrigin: z.string().url().optional()
 });
 
 export const zOrdaoNew = zBaseNewOrdaoDeploymentCfg.extend({
