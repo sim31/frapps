@@ -20,6 +20,8 @@
     "respectGameLink": "https://discord.gg/Uw8DwJ65?event=1380225229607010426",
     "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/main/fractals/zaof/",
     "respect": {
+      "oldRespectDecimals": 18,
+      "defBreakoutType": "respectBreakoutX2",
       "award": {
         "name": "ZAO Fractal Respect Award",
         "description": "Respect award for a contribution to ZAO Fractal",
