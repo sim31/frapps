@@ -13,6 +13,8 @@
     "ornodeOrigin": "https://zao-ornode.frapps.xyz"
   },
   "app": {
+    "oldRespectDecimals": 18,
+    "defBreakoutType": "respectBreakoutX2",
     "appId": "ordao",
     "startPeriodNum": 67,
     "parentRespectLink": "https://optimistic.etherscan.io/address/0x34cE89baA7E4a4B00E17F7E4C0cb97105C216957",
@@ -20,8 +22,6 @@
     "respectGameLink": "https://discord.gg/Uw8DwJ65?event=1380225229607010426",
     "fractalDocsUrl": "https://raw.githubusercontent.com/sim31/frapps/refs/heads/main/fractals/zaof/",
     "respect": {
-      "oldRespectDecimals": 18,
-      "defBreakoutType": "respectBreakoutX2",
       "award": {
         "name": "ZAO Fractal Respect Award",
         "description": "Respect award for a contribution to ZAO Fractal",
