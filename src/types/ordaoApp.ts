@@ -23,6 +23,11 @@ export const zOrdaoApp = zBaseApp.extend({
   childRespectLink: z.string().url(),
   respectGameLink: z.string().url(),
   defaultPropQuerySize: z.coerce.number().int().gt(0).optional(),
-  fractalDocsUrl: z.string().url().optional()
+  defaultAwardQuerySize: z.coerce.number().int().gt(0).optional(),
+  fractalDocsUrl: z.string().url().optional(),
+  oldRespectDecimals: z.number().int().optional(),
+  // TODO: import from ortypes (have to publish new version first)
+  defBreakoutType: z.enum(["respectBreakout", "respectBreakoutX2"]).optional()
+
 });
 export type OrdaoApp = z.infer<typeof zOrdaoApp>;

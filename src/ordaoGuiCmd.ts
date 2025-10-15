@@ -87,7 +87,10 @@ function configure(frapp: OrdaoFrappFull, domain: string) {
     VITE_CHILD_RESPECT_LINK: frapp.app.childRespectLink,
     VITE_RESPECT_GAME_LINK: frapp.app.respectGameLink,
     VITE_DEFAULT_PROP_QUERY_SIZE: frapp.app.defaultPropQuerySize,
-    VITE_FRACTAL_DOCS_URL: frapp.app.fractalDocsUrl
+    VITE_FRACTAL_DOCS_URL: frapp.app.fractalDocsUrl,
+    VITE_OLD_RESPECT_DECIMALS: frapp.app.oldRespectDecimals,
+    VITE_DEF_BREAKOUT_TYPE: frapp.app.defBreakoutType,
+    VITE_DEFAULT_AWARDS_QUERY_SIZE: frapp.app.defaultAwardQuerySize
   };
 
   mkGuiBuildsDir();

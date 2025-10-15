@@ -5,7 +5,10 @@ export const zToOrnodeCfg = zOrdaoFrappFull.transform((val) => {
   const c: Omit<OrnodeCfg, "swaggerUI"> = {
     contracts: val.deployment,
     tokenMetadataCfg: val.app.respect,
-    ornode: val.localOnly.ornode,
+    ornode: {
+      ...val.localOnly.ornode,
+      defBreakoutType: val.app.defBreakoutType
+    },
     mongoCfg: val.localOnly.mongoCfg,
     providerUrl: val.localOnly.providerUrl
   }
