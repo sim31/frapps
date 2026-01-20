@@ -1,0 +1,13 @@
+{
+  "Orec": {
+    "oldRespectAddr": "0x6b11FC2cec86edeEd1F3705880deB9010F0D584B",
+    "votePeriod": 240,
+    "vetoPeriod": 240,
+    "voteThreshold": 10,
+    "maxLiveYesVotes": 4
+  },
+  "OrdaoNew": {
+    "uri": "https://op-sepolia-3-ornode.frapps.xyz/v1/token/{id}",
+    "contractURI": "https://op-sepolia-3-ornode.frapps.xyz/v1/respectContractMetadata"
+  }
+}
