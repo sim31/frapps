@@ -1,5 +1,5 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
-import OrecModule from "./Orec";
+import OrecModule from "./Orec.js";
 
 export default buildModule("OrdaoNew", (m) => {
   const { orec, oldRespect } = m.useModule(OrecModule)

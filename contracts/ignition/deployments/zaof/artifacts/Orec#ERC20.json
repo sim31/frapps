@@ -1,5 +1,5 @@
 {
-  "_format": "hh-sol-artifact-1",
+  "_format": "hh3-artifact-1",
   "contractName": "ERC20",
   "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
   "abi": [
@@ -315,5 +315,8 @@
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "linkReferences": {},
-  "deployedLinkReferences": {}
+  "deployedLinkReferences": {},
+  "inputSourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+  "immutableReferences": {},
+  "buildInfoId": "solc-0_8_28-33916b96e7916072da853e00a22a64a1"
 }

@@ -83,7 +83,7 @@ function deployIgnition(frapp: OrdaoFrapp, reset?: boolean) {
 // but that's typically not when this is needed.
 function verifyIgnition(frapp: OrdaoFrapp) {
   const cmd = `
-  npx hardhat ignition verify ${frapp.id}`;
+  npx hardhat ignition verify ${frapp.id} --network ${frapp.deploymentCfg.network}`;
   exec(cmd, { cwd: contractsDir });
 }
 
@@ -115,7 +115,7 @@ function readDeploymentFromIgnition(frapp: OrdaoFrapp): OrdaoDeployment {
 
 function buildContracts(frapp: OrdaoFrapp) {
   const cmd = `
-  npx hardhat compile`;
+  npx hardhat build`;
   exec(cmd, { cwd: contractsDir });
 }
 

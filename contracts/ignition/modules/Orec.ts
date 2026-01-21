@@ -8,7 +8,7 @@ export default buildModule("Orec", (m) => {
   const maxLiveYesVotes = m.getParameter("maxLiveYesVotes");
 
   // Contract type is irrelevant here - could be ERC20 or Respect1155
-  const oldRespect = m.contractAt("ERC20", oldRespectAddr);
+  const oldRespect = m.contractAt("Respect1155", oldRespectAddr);
 
   const orec = m.contract("Orec", [
     oldRespectAddr,
