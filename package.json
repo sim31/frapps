@@ -11,7 +11,7 @@
     "init": "git submodule update --init --recursive && npm install",
     "update": "git submodule update --recursive && npm install",
     "init-apps": "cd apps/ordao && npm install && NODE_OPTIONS=--max-old-space-size=2048 npm run build",
-    "start": "ORNODE_CFG_PATH=./apps/ordao/services/ornode/dev-config.json tsx src/main.ts"
+    "start": "NODE_OPTIONS=--max-old-space-size=2048 ORNODE_CFG_PATH=./apps/ordao/services/ornode/dev-config.json tsx src/main.ts"
   },
   "repository": {
     "type": "git",
