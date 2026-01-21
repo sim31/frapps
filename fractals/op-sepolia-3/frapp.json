@@ -10,7 +10,7 @@
     "vetoPeriod": 240,
     "voteThreshold": 10,
     "maxLiveYesVotes": 4,
-    "ornodeOrigin": "https://op-sepolia-3-ornode.frapps.xyz"
+    "ornodeOrigin": "http://op-sepolia-3-ornode.localhost"
   },
   "parentFrappId": "omf",
   "app": {

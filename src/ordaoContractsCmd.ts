@@ -93,14 +93,14 @@ function readDeploymentFromIgnition(frapp: OrdaoFrapp): OrdaoDeployment {
   switch (frapp.deploymentCfg.module) {
     case 'OrdaoExisting': {
       return {
-        oldRespect: addrs["OrdaoExisting#ERC20"],
+        oldRespect: addrs["OrdaoExisting#Respect1155"],
         orec: addrs["OrdaoExisting#Orec"],
         newRespect: addrs["OrdaoExisting#Respect1155"]
       }
     }
     case 'OrdaoNew': {
       return {
-        oldRespect: addrs["Orec#ERC20"],
+        oldRespect: addrs["Orec#Respect1155"],
         orec: addrs["Orec#Orec"],
         newRespect: addrs["OrdaoNew#Respect1155"]
       }
