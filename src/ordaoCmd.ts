@@ -8,14 +8,13 @@ import { ordaoOrnodeSyncCmd } from "./ordaoOrnodeSyncCmd.js";
 import { ordaoRSplitsCmd } from "./ordaoRSplit.js";
 import { ordaoParentDeployCmd } from "./ordaoParentDeployCmd.js";
 
-export const ordaoCmd = new Command("ordao")
-
-ordaoCmd
-  .addCommand(ordaoInit) // TODO: test
-  .addCommand(ordaoContractsCmd)
-  .addCommand(ordaoOrnodeCmd)
-  .addCommand(ordaoOrclientDocsCmd)
-  .addCommand(ordaoGuiCmd)
-  .addCommand(ordaoOrnodeSyncCmd)
-  .addCommand(ordaoRSplitsCmd)
-  .addCommand(ordaoParentDeployCmd)
+export const ordaoCommands: Command[] = [
+  ordaoInit,
+  ordaoContractsCmd,
+  ordaoOrnodeCmd,
+  ordaoOrclientDocsCmd,
+  ordaoGuiCmd,
+  ordaoOrnodeSyncCmd,
+  ordaoRSplitsCmd,
+  ordaoParentDeployCmd,
+];

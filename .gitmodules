@@ -1,6 +1,5 @@
-[submodule "apps/ordao"]
-	path = apps/ordao
+
+[submodule "ordao"]
+	path = ordao
 	url = git@github.com:sim31/ordao.git
-[submodule "apps/ordao-testing"]
-	path = apps/ordao-testing
-	url = https://github.com/sim31/ordao
+

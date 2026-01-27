@@ -12,8 +12,6 @@ export const deploymentsDir = path.join(distDir, "deployments");
 export const procDir = path.join(distDir, "proc");
 export const sitesDir = path.join(distDir, "sites");
 
-export const appsDir = path.join(import.meta.dirname, "../apps");
-
 export function ignitionCfgPath(frappId: string, ext?: string) {
   if (ext === undefined) {
     return path.join(ignitionDir, `${frappId}.json`); 
@@ -63,10 +61,6 @@ export function frappProcDir(frappId: string) {
 
 export function procFilepath(frappId: string, procFileName: string) {
   return path.join(frappProcDir(frappId), `${procFileName}.json`);
-}
-
-export function appDir(appId: string) {
-  return path.join(appsDir, appId);
 }
 
 export function fractalDir(fractalId: string) {

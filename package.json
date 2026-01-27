@@ -10,8 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "init": "git submodule update --init --recursive && npm install",
     "update": "git submodule update --recursive && npm install",
-    "init-apps": "cd apps/ordao && npm install && NODE_OPTIONS=--max-old-space-size=2048 npm run build",
-    "start": "NODE_OPTIONS=--max-old-space-size=2048 ORNODE_CFG_PATH=./apps/ordao/services/ornode/dev-config.json tsx src/main.ts"
+    "init-apps": "cd ordao && npm install && NODE_OPTIONS=--max-old-space-size=2048 npm run build",
+    "start": "NODE_OPTIONS=--max-old-space-size=2048 ORNODE_CFG_PATH=./ordao/services/ornode/dev-config.json tsx src/main.ts"
   },
   "repository": {
     "type": "git",
@@ -31,7 +31,7 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@ordao/ornode": "file:./apps/ordao/services/ornode",
+    "@ordao/ornode": "file:./ordao/services/ornode",
     "@ordao/ortypes": "^1.1.3",
     "@ordao/ts-utils": "^1.1.3",
     "commander": "^13.1.0",

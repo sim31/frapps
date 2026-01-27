@@ -1,10 +1,4 @@
-import { z } from "zod";
-import { zOrdaoFrapp } from "./ordaoFrapp.js";
-import { zExternalFrapp } from "./externalFrapp.js";
+import { OrdaoFrapp, zOrdaoFrapp } from "./ordaoFrapp.js";
 
-export const zFrapp = z.union([
-  zOrdaoFrapp,
-  zExternalFrapp
-]);
-export type Frapp = z.infer<typeof zFrapp>;
-
+export const zFrapp = zOrdaoFrapp;
+export type Frapp = OrdaoFrapp;

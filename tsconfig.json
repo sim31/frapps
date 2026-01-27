@@ -17,6 +17,6 @@
     "src/**/*"
   ],
   "exclude": [
-    "apps/ordao/apps"
+    "ordao/apps",
   ]
 }
