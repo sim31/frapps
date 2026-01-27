@@ -121,6 +121,17 @@ function createOrnodeSite(frapp: OrdaoFrappFull, domain: string) {
   console.log("Creating ornode site: ", frapp.id);
   const procAddr = `http://localhost:${frapp.localOnly.ornode.port}`;
   const siteNames = frapp.frappsSubdomains.map(d => frappOrnodeSiteName(d));
+  const ornodeOrigin = frapp.deploymentCfg.ornodeOrigin;
+  if (ornodeOrigin !== undefined) {
+    const url = new URL(ornodeOrigin);
+    const hostname = url.hostname;
+    // Remove top-level domain to get subdomain
+    const parts = hostname.split('.');
+    const subdomain = parts.length > 1 ? parts.slice(0, -1).join('.') : parts[0];
+    if (!siteNames.includes(subdomain)) {
+      throw new Error(`Ornode origin specified and its subdomain ${subdomain} not in frapp subdomains`);      
+    }
+  }
   createProxySite(procAddr, domain, siteNames);
 }
 
