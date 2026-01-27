@@ -8,9 +8,10 @@
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "init": "git submodule update --init --recursive && npm install",
-    "update": "git submodule update --recursive && npm install",
     "init-apps": "cd ordao && npm install && NODE_OPTIONS=--max-old-space-size=2048 npm run build",
+    "alias": "echo \"Run: source ./orfrapps-alias\"",
+    "init": "git submodule update --init --recursive && npm install && npm run init-apps && npm run alias",
+    "update": "git submodule update --recursive && npm install && npm run init-apps && npm run alias",
     "start": "NODE_OPTIONS=--max-old-space-size=2048 ORNODE_CFG_PATH=./ordao/services/ornode/dev-config.json tsx src/main.ts"
   },
   "repository": {

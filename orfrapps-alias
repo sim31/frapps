@@ -1,0 +1,16 @@
+# Usage (bash/zsh):
+#   source /path/to/frapps/frapps-alias
+#   frapps --help
+#
+# This defines a `frapps` shell function that runs the CLI from the repo root
+# regardless of your current working directory.
+
+orfrapps() {
+  local _frapps_repo
+
+  # Resolve the repo directory based on the location of this file.
+  _frapps_repo="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+
+  cd "$_frapps_repo" || return 1
+  npm run start -- "$@"
+}
