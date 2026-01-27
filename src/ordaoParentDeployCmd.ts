@@ -23,16 +23,16 @@ export const ordaoParentDeployCmd = new Command("parent-deploy")
   .option("-d, --deploy", "deploy")
   .option("-v, --verify", "verify")
   .option("-o, --output", "output deployment info (to dist/deployments folder)")
-  .option("-a, --all", "shorthand for -cdov")
+  .option("-a, --all", "shorthand for -bcdvo")
   .showHelpAfterError()
   .action(async (target: string, networkId: string, opts: any) => {
     console.log("target: ", target, "network: ", networkId, ", opts: ", opts);
 
-    const config = opts.config;
-    const deploy = opts.deploy;
-    const verify = opts.verify;
-    const output = opts.output;
-    const build = opts.build;
+    const config = opts.all || opts.config;
+    const deploy = opts.all || opts.deploy;
+    const verify = opts.all || opts.verify;
+    const output = opts.all || opts.output;
+    const build = opts.all || opts.build;
 
     const ordaoFrapps = readTargetFrappType(zOrdaoFrapp, [target]);
     const network = zNetworkId.parse(networkId);

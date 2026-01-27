@@ -33,7 +33,7 @@ export const ordaoOrnodeCmd = new Command("ornode")
   .option("-p, --config-process", "create pm2 start options for ornode instances")
   .option("-d, --db-backup", "backup ornode db")
   .option("-e, --export [img-dir-url]", "export ornode db")
-  .option("-a, --all", "shorthand for -lbcp")
+  .option("-a, --all", "shorthand for -lbcsp")
   .showHelpAfterError()
   .action(async (targets: string[], opts) => {
     console.log("targets: ", targets, ", opts: ", opts);

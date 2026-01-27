@@ -22,7 +22,7 @@ export const ordaoContractsCmd = new Command("contracts")
   .option("--reset", "Clear a previous deployment with a reset. *Only works with -d option!*")
   .option("-v, --verify", "verify")
   .option("-o, --output", "output deployment info (to dist/deployments folder)")
-  .option("-a, --all", "shorthand for -cdov")
+  .option("-a, --all", "shorthand for -bcdov")
   .showHelpAfterError()
   .action((targets: string[], opts: any) => {
     console.log("targets: ", targets, ", opts: ", opts);

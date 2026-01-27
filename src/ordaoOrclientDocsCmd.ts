@@ -11,8 +11,8 @@ export const ordaoOrclientDocsCmd = new Command("orclient-docs")
   .option("-n, --domain <domain>", "domain name", "frapps.xyz")
   .option("-l, --clean", "clean build")
   .option("-b, --build", "build orclient-docs")
-  .option("-s --config-sites", "configure nginx server blocks to serve this app")
-  .option("-a, --all", "shorthand for all options")
+  .option("-s, --config-sites", "configure nginx server blocks to serve this app")
+  .option("-a, --all", "shorthand for -lbs")
   .showHelpAfterError()
   .action((opts) => {
     console.log("opts: ", opts);
