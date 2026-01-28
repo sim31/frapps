@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "check": "npx tsc -p tsconfig.json --noEmit",
     "init-apps": "cd ordao && npm install && NODE_OPTIONS=--max-old-space-size=2048 npm run build",
     "alias": "echo \"Run: source ./orfrapps-alias\"",
     "init": "git submodule update --init --recursive && npm install && npm run init-apps && npm run alias",

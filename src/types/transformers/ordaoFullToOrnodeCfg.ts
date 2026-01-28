@@ -1,5 +1,6 @@
-import { zConfig as zOrnodeCfg, Config as OrnodeCfg, zSwaggerUICfg } from "@ordao/ornode/dist/config.js";
+import { zConfig as zOrnodeCfg, Config as OrnodeCfg } from "@ordao/ornode/dist/config.js";
 import { zOrdaoFrappFull } from "../ordaoFrappDeployed.js";
+import { z } from "zod";
 
 export const zToOrnodeCfg = zOrdaoFrappFull.transform((val) => {
   const c: Omit<OrnodeCfg, "swaggerUI"> = {
@@ -13,4 +14,4 @@ export const zToOrnodeCfg = zOrdaoFrappFull.transform((val) => {
     providerUrl: val.localOnly.providerUrl
   }
   return c;
-}).pipe(zOrnodeCfg);
+}).pipe(zOrnodeCfg as unknown as z.ZodTypeAny);
