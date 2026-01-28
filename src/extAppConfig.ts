@@ -21,6 +21,6 @@ export const extAppConfigCmd = new Command("config")
 
 function configureSite(frapp: ExternalFrapp, domain: string) {
   console.log("Configuring site for: ", frapp.id);
-  const subdomains = domain === "localhost" ? [""] : (frapp.frappsSubdomains ?? [frapp.id]);
-  createRedirectSite(frapp.app.url, domain, subdomains);
+  const siteNames = frapp.frappsSubdomains ?? [frapp.id];
+  createRedirectSite(frapp.app.url, domain, siteNames);
 }
