@@ -8,8 +8,12 @@ export function readFrapp(fractalId: string): Frapp | undefined {
   const frappF = frappFile(fractalId);
   if (fs.existsSync(frappF)) {
     const frappText = fs.readFileSync(frappF, 'utf-8');
-    const frapp = zFrapp.parse(JSON.parse(frappText));
-    return frapp;
+    try {
+      const frapp = zFrapp.parse(JSON.parse(frappText));
+      return frapp;
+    } catch (err) {
+      throw new Error(`Failed to parse frapp ${fractalId}: ${err}`)
+    }
   } else {
     return undefined;
   }
