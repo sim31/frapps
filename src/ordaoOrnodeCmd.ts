@@ -153,7 +153,7 @@ function createProcCfg(frapp: OrdaoFrapp) {
 
   fs.writeFileSync(p, stringify(pm2Opts));
   console.log("Wrote pm2 config: ", p);
-  console.log("Start: ", `pm2 start ${p}`);
+  console.log("Start: ", `npx pm2 start ${p}`);
 }
 
 function backup() {

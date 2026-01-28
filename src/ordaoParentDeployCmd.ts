@@ -12,6 +12,7 @@ import { NetworkId, zNetworkId } from "./types/baseDeploymentCfg.js";
 import { stringify } from "@ordao/ts-utils";
 import { symbol } from "zod";
 import { EthAddress } from "@ordao/ortypes";
+import { syncContractsSrc } from "./syncContractsSrc.js";
 
 type BaseFrappReq = Required<BaseFrapp, "symbol">; 
 
@@ -24,6 +25,7 @@ export const ordaoParentDeployCmd = new Command("parent-deploy")
   .option("-v, --verify", "verify")
   .option("-o, --output", "output deployment info (to dist/deployments folder)")
   .option("-a, --all", "shorthand for -bcdvo")
+  .addHelpText("before", "Deploy parent Respect distributions to selected networks.")
   .showHelpAfterError()
   .action(async (target: string, networkId: string, opts: any) => {
     console.log("target: ", target, "network: ", networkId, ", opts: ", opts);
@@ -36,6 +38,10 @@ export const ordaoParentDeployCmd = new Command("parent-deploy")
 
     const ordaoFrapps = readTargetFrappType(zOrdaoFrapp, [target]);
     const network = zNetworkId.parse(networkId);
+
+    if (build) {
+      syncContractsSrc();
+    }
 
     console.log("frapps: ", ordaoFrapps.map(f => f.id));
 

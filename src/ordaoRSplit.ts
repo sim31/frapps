@@ -11,6 +11,7 @@ export const ordaoRSplitsCmd = new Command("rsplits")
   .argument("[targets...]", "frapp ids for which to deploy. \'all\' stands for all frapps which target this app", "all")
   .option("-c, --output-csv", "create csv file with percentages to create splits from")
   .option("-a, --all", "shorthand for -c")
+  .addHelpText("before", "Create splits contracts based on Respect distributions.")
   .showHelpAfterError()
   .action(async (targets: string[], opts: any) => {
     console.log("targets: ", targets, ", opts: ", opts);
