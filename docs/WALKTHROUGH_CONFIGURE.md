@@ -17,7 +17,7 @@ Pick a unique identifier for your fractal:
 - Lowercase letters, numbers, and hyphens only
 - Must be unique across all frapps
 
-**Example:** `ef2`, `zaof`, `omf`
+**Example:** `ef2`, `zaof`, `op-sepolia-3`
 
 ### 2. Create Frapp Directory
 
@@ -40,10 +40,10 @@ Create `fractals/<your-frapp-id>/frapp.json` with the following structure:
     "network": "base",
     "module": "OrdaoNew",
     "oldRespectAddr": "0x...",
-    "votePeriod": 777600,
-    "vetoPeriod": 777600,
+    "votePeriod": 259200,
+    "vetoPeriod": 259200,
     "voteThreshold": 1000,
-    "maxLiveYesVotes": 4,
+    "maxLiveYesVotes": 8,
     "ornodeOrigin": "https://<subdomain>-ornode.frapps.xyz"
   },
   "app": {
@@ -100,21 +100,23 @@ Choose your blockchain network:
 
 #### Governance Parameters
 
+See [OREC spec](https://github.com/sim31/orec/blob/main/OREC.md) for detailed parameter descriptions.
+
 - **`oldRespectAddr`**: Address of your existing respect token contract
   - If you don't have one, you'll need to deploy it first
   - Must be a valid Ethereum address (0x...)
 
 - **`votePeriod`**: Voting period in seconds
-  - Example: `777600` (9 days)
+  - Example: `259200` (3 days)
 
 - **`vetoPeriod`**: Veto period in seconds
-  - Example: `777600` (9 days)
+  - Example: `259200` (3 days)
 
 - **`voteThreshold`**: Minimum respect needed to vote
   - Example: `1000`
 
 - **`maxLiveYesVotes`**: Maximum concurrent yes votes per user
-  - Example: `4`
+  - Example: `8`
 
 - **`ornodeOrigin`**: URL where your ornode backend will be hosted
   - Format: `https://<subdomain>-ornode.frapps.xyz`
@@ -125,14 +127,16 @@ Choose your blockchain network:
 - **`startPeriodNum`**: Starting period number for your fractal
   - Use `0` for new fractals
   - Use current period number if migrating
+  - `period_number = next_meeting_number - 1`
 
 - **`parentRespectLink`**: URL to view parent fractal's respect
-  - Link to parent organization's accounts page
+  - Link to parent organization's accounts page or block explorer for parent respect token;
 
 - **`childRespectLink`**: URL to view child respect on block explorer
   - Usually a block explorer link to your respect contract
 
-- **`respectGameLink`**: URL to your respect game/distribution tool
+<!-- TODO: link to respect game doc -->
+- **`respectGameLink`**: URL to your respect game tool
   - Example: `https://fractalgram.frapps.xyz`
 
 - **`fractalDocsUrl`**: (Optional) URL to your fractal's documentation
@@ -143,7 +147,7 @@ Choose your blockchain network:
 Configure how your respect tokens appear:
 
 **Award Metadata** (`app.respect.award`):
-- Individual respect awards (NFTs)
+- Individual respect awards (Non-transferable NFTs)
 - Include name, description, and image URL
 
 **Fungible Token** (`app.respect.fungible`):
@@ -174,35 +178,9 @@ Create additional documentation files in your frapp directory:
 # User guide
 fractals/<your-frapp-id>/userGuide.md
 
-# Concept document
+# Concept document for your fractal
 fractals/<your-frapp-id>/concept.md
 ```
-
-### 7. Submit Configuration
-
-#### Option A: Create Pull Request
-
-1. Commit your changes:
-```bash
-git add fractals/<your-frapp-id>/
-git commit -m "Add configuration for <your-fractal-name>"
-```
-
-2. Push to your fork and create a pull request
-
-3. Request review from repository maintainers
-
-#### Option B: Fill Out Form
-
-If you're not comfortable with Git, fill out the [configuration form](https://docs.google.com/forms/d/e/1FAIpQLSdtVHemKjH78Z84PUZULZP3FxYRupt5YKQL5WSapb_sv8f1rQ/viewform).
-
-## Next Steps
-
-After your configuration is merged:
-
-1. Create a contribution request in the [Synchronous Respect Tree Game](https://hackmd.io/@sim31/srt-1)
-2. Reference your pull request
-3. Wait for deployment by the frapps.xyz team
 
 ## Common Issues
 

@@ -1,6 +1,6 @@
 # ORDAO Fractal Apps (ORFrapps)
 
-Configuration and scripts for deployment and maintenance of ORDAO instances serving [Fractal communities](https://optimystics.io/blog/fractalhistory).
+Configuration and scripts for deployment and maintenance of ORDAO instances for [Fractal communities](https://optimystics.io/blog/fractalhistory).
 
 This repository contains:
 - Configuration files for ORDAO instances
@@ -160,7 +160,7 @@ frapps/
 
 ### Guides
 - **[Configuration Walkthrough](./docs/WALKTHROUGH_CONFIGURE.md)** - Step-by-step guide to create `frapp.json`
-- **[Deployment Walkthrough](./docs/WALKTHROUGH_DEPLOY.md)** - Complete deployment process
+- **[Deployment Walkthrough](./docs/WALKTHROUGH_DEPLOY.md)** - Complete deployment process for a single instance of ORDAO
 - **[Multiple Deployments](./docs/MULTIPLE_DEPLOYMENTS.md)** - Managing multiple instances on one server
 
 ### Reference

@@ -14,20 +14,21 @@ This file is **committed to the repository** and contains public configuration.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `id` | string | Yes | Short identifier (2-12 chars, lowercase alphanumeric and hyphens). Must be unique. |
+| `id` | string | Yes | Short identifier (2-12 chars, lowercase alphanumeric and hyphens). Must be unique. Must match `<frapp-id>` in the path `fractals/<frapp-id>/frapp.json`. |
 | `fullName` | string | Yes | Full name/title of the fractal |
 | `description` | string | No | Description of the fractal |
-| `symbol` | string | No | Symbol for the fractal |
+| `symbol` | string | No | Token symbol for the fractal |
 | `address` | string | No | Ethereum address associated with the fractal |
 
 #### ORDAO-Specific Fields
 
 Additional fields when `app.appId` is `"ordao"`:
 
+<!-- TODO: Documentation for what is "parent fractal" -->
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `frappsSubdomains` | string[] | Yes | Subdomains for this fractal. Empty string means root domain. Must be unique across all frapps. |
-| `parentFrappId` | string | No | ID of parent fractal (for hierarchical fractals) |
+| `parentFrappId` | string | No | ID of parent fractal |
 
 #### Deployment Configuration (`deploymentCfg`)
 
@@ -36,13 +37,14 @@ Additional fields when `app.appId` is `"ordao"`:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `module` | `"OrdaoNew"` | Yes | Deployment module type |
-| `network` | string | Yes | Network ID: `"optimism"`, `"opSepolia"`, `"base"`, or `"baseSepolia"` |
-| `oldRespectAddr` | string | Yes | Address of old respect contract (Ethereum address) |
-| `votePeriod` | number | Yes | Voting period in seconds |
-| `vetoPeriod` | number | Yes | Veto period in seconds |
-| `voteThreshold` | number | Yes | Vote threshold |
-| `maxLiveYesVotes` | number | Yes | Maximum live yes votes |
+| `network` | string | Yes | Network ID: `"optimism"`, `"opSepolia"`, `"base"`, or `"baseSepolia"` (create an issue if you want more supported) |
+| `oldRespectAddr` | string | Yes | Address of old respect contract (Ethereum address). See [OREC spec](https://github.com/sim31/ordao/blob/main/docs/OREC.md#specification). |
+| `votePeriod` | number | Yes | Voting period in seconds (see [OREC spec](https://github.com/sim31/ordao/blob/main/docs/OREC.md#specification)) |
+| `vetoPeriod` | number | Yes | Veto period in seconds (see [OREC spec](https://github.com/sim31/ordao/blob/main/docs/OREC.md#specification)) |
+| `voteThreshold` | number | Yes | Vote threshold (see [OREC spec](https://github.com/sim31/ordao/blob/main/docs/OREC.md#specification)) |
+| `maxLiveYesVotes` | number | Yes | Maximum live yes votes (see [OREC spec](https://github.com/sim31/ordao/blob/main/docs/OREC.md#specification)) |
 | `ornodeOrigin` | string | Yes | Ornode origin URL (e.g., `"https://ef2-ornode.frapps.xyz"`) |
+
 
 ##### For Existing Deployments (`module: "OrdaoExisting"`)
 
@@ -71,9 +73,9 @@ When `app.appId` is `"ordao"`:
 | `respectGameLink` | string | Yes | URL to respect game |
 | `defaultPropQuerySize` | number | No | Default proposal query size (positive integer) |
 | `defaultAwardQuerySize` | number | No | Default award query size (positive integer) |
-| `fractalDocsUrl` | string | No | URL to fractal documentation |
-| `oldRespectDecimals` | number | No | Decimals for old respect token |
-| `defBreakoutType` | string | No | Default breakout type: `"respectBreakout"` or `"respectBreakoutX2"` |
+| `fractalDocsUrl` | string | No | URL to documentation about a fractal (will be used in about page of [GUI](../ordao/apps/gui/)) |
+| `oldRespectDecimals` | number | No | Number of decimals for old respect token |
+| `defBreakoutType` | string | No | Default breakout type: `"respectBreakout"` (fibonacci starting with 5) or `"respectBreakoutX2"` (fibonacci startign with 5) * 2 |
 
 #### Respect Configuration (`app.respect`)
 
@@ -130,7 +132,7 @@ This file is **NOT committed** (gitignored) and contains sensitive configuration
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `url` | string | Yes | MongoDB connection URL |
-| `dbName` | string | Yes | Database name |
+| `dbName` | string | Yes | Database name (has to be unique for each frapp) |
 
 #### Ornode Configuration (`ornode`)
 

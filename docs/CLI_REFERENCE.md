@@ -4,7 +4,7 @@ The `orfrapps` command-line tool manages ORDAO deployments for fractal organizat
 
 ## Installation & Setup
 
-After running the init script, source the alias file:
+After running the [init script](../README.md#installation), source the alias file:
 
 ```bash
 source ./orfrapps-alias
@@ -13,21 +13,6 @@ source ./orfrapps-alias
 This creates the `orfrapps` command that can be run from any directory.
 
 ## Commands
-
-### `orfrapps init`
-
-Initialize ORDAO dependencies.
-
-```bash
-orfrapps init
-```
-
-**What it does:**
-- Installs npm dependencies in the ordao submodule
-
-**When to use:** After cloning the repository or updating the ordao submodule.
-
----
 
 ### `orfrapps contracts [targets...]`
 
@@ -42,7 +27,7 @@ orfrapps contracts [targets...] [options]
 
 **Options:**
 - `-b, --build` - Build contracts
-- `-c, --config` - Generate deployment configuration
+- `-c, --config` - Generate deployment configuration (parameters for hardhat ignition)
 - `-d, --deploy` - Deploy contracts using Hardhat Ignition
 - `--reset` - Clear previous deployment (only with `-d`)
 - `-v, --verify` - Verify contracts on block explorer
@@ -158,65 +143,109 @@ orfrapps gui ef2 -c
 
 ---
 
-### `orfrapps orclient-docs [targets...]`
+### `orfrapps orclient-docs`
 
-Build and configure orclient documentation.
+Build and configure [orclient](../ordao/libs/orclient/) documentation website.
+
+This is currently deployed on frapps.xyz here: https://orclient-docs.frapps.xyz/
 
 ```bash
-orfrapps orclient-docs [targets...] [options]
+orfrapps orclient-docs [options]
 ```
-
-**Arguments:**
-- `targets` - Frapp IDs to target (default: `all`)
 
 **Options:**
 - `-n, --domain <domain>` - Domain name (default: `frapps.xyz`)
+- `-l, --clean` - Clean build
 - `-b, --build` - Build documentation
-- `-s, --config-site` - Configure nginx server blocks
-- `-a, --all` - Shorthand for `-bs`
+- `-s, --config-sites` - Configure nginx server blocks
+- `-a, --all` - Shorthand for `-lbs`
+
+**Example:**
+```bash
+# Build and configure orclient docs
+orfrapps orclient-docs -a
+```
 
 ---
 
-### `orfrapps ornode-sync [targets...]`
+### `orfrapps ornode-sync <from-block> <to-block> [targets...]`
 
-Synchronize ornode with blockchain events.
+Synchronize ornode with blockchain events. Queries for relevant blockchain events in specified block range. Use when some blockchain events were missed.
 
 ```bash
-orfrapps ornode-sync [targets...] [options]
+orfrapps ornode-sync <from-block> <to-block> [targets...] [options]
 ```
 
 **Arguments:**
+- `from-block` - Starting block number (required)
+- `to-block` - Ending block number (required)
 - `targets` - Frapp IDs to target (default: `all`)
 
 **Options:**
-- `-f, --from-block <number>` - Starting block number
-- `-t, --to-block <number|latest>` - Ending block (default: `latest`)
+- `-s, --step-range <step-range>` - Size of sync steps for querying eth node (default: `8000`)
+
+**Prerequisites:**
+- Ornode configs must be generated for each frapp before running sync
+
+**Example:**
+```bash
+# Sync from block 12345678 to latest for specific frapp
+orfrapps ornode-sync 12345678 latest ef2
+
+# Sync with custom step range
+orfrapps ornode-sync 12345678 13000000 ef2 -s 5000
+```
 
 ---
 
 ### `orfrapps rsplits [targets...]`
 
-Generate respect splits CSV files.
+Generate CSV files for creating [splits](https://splits.org/) contracts based on Respect distributions.
 
 ```bash
-orfrapps rsplits [targets...]
+orfrapps rsplits [targets...] [options]
 ```
 
 **Arguments:**
 - `targets` - Frapp IDs to target (default: `all`)
+
+**Options:**
+- `-c, --output-csv` - Create CSV file with percentages to create splits from
+- `-a, --all` - Shorthand for `-c`
+
+**Example:**
+```bash
+# Generate splits CSV for specific frapp
+orfrapps rsplits ef2 -c
+```
 
 ---
 
-### `orfrapps parent-deploy [targets...]`
+### `orfrapps parent-deploy <target> <network>`
 
-Deploy parent fractal configurations.
+Deploy parent fractal respect distribution on specified networks.
 
 ```bash
-orfrapps parent-deploy [targets...]
+orfrapps parent-deploy <target> <network> [options]
 ```
 
 **Arguments:**
-- `targets` - Frapp IDs to target (default: `all`)
+- `target` - Frapp ID to deploy (required)
+- `network` - Network to deploy to: `optimism`, `opSepolia`, `base`, or `baseSepolia` (required)
+
+**Options:**
+- `-b, --build` - Build contracts
+- `-c, --config` - Configure (prepare) for deployment
+- `-d, --deploy` - Deploy
+- `-v, --verify` - Verify contracts on block explorer
+- `-o, --output` - Output deployment info to dist/deployments folder
+- `-a, --all` - Shorthand for `-bcdvo`
+
+**Example:**
+```bash
+# Deploy parent respect distribution to Base
+orfrapps parent-deploy ef2 base -a
+```
 
 ---
 

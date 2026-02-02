@@ -17,7 +17,7 @@ This guide walks you through deploying ORDAO for your fractal on your own server
 - **Blockchain wallet** with funds for contract deployment
 
 ### Configuration
-- **Frapp configuration** (`frapp.json`) created and merged
+- **Frapp configuration** (`frapp.json`) created
   - See [WALKTHROUGH_CONFIGURE.md](./WALKTHROUGH_CONFIGURE.md)
 
 ## Deployment Steps
@@ -37,11 +37,11 @@ source ./orfrapps-alias
 ```
 
 **What this does:**
-- Clones the frapps repository
+- Clones the frapps repository to your local filesystem
 - Initializes the ORDAO submodule
 - Installs all npm dependencies
 - Builds ORDAO components
-- Creates the `orfrapps` command alias
+- Creates the `orfrapps` command alias (so you can use `orfrapps ...` commands in your terminal)
 
 ### 2. Create Local Configuration
 
@@ -59,13 +59,6 @@ Create `fractals/<your-frapp-id>/frapp.local.json`:
     "host": "localhost",
     "port": 8090,
     "startPeriodNum": 0,
-    "listenForEvents": true,
-    "wsResetInterval": 3600,
-    "sync": {
-      "fromBlock": 0,
-      "toBlock": "latest",
-      "stepRange": 8000
-    }
   }
 }
 ```
@@ -90,10 +83,6 @@ Create `fractals/<your-frapp-id>/frapp.local.json`:
 - **`ornode.port`**: Backend API port
   - Each frapp needs unique port
   - Default: 8090, increment for multiple frapps (8091, 8092, etc.)
-
-- **`sync.fromBlock`**: Starting block for event sync
-  - Use `0` for full history
-  - Use recent block number for faster initial sync
 
 ### 3. Configure Contract Deployment
 
@@ -127,7 +116,7 @@ orfrapps contracts <your-frapp-id> -a
 
 **What this does:**
 1. Builds contracts
-2. Generates deployment configuration
+2. Generates deployment parameters for Hardhat ignition (configuration)
 3. Deploys contracts via Hardhat Ignition
 4. Verifies contracts on block explorer
 5. Outputs deployment addresses to `dist/deployments/<frapp-id>.json`
@@ -139,7 +128,7 @@ Deploying contracts...
 Wrote deployment info: dist/deployments/<frapp-id>.json
 ```
 
-**Time estimate:** 5-15 minutes
+**Time estimate:** 1-5 minutes
 
 ### 5. Configure and Build Ornode
 
@@ -151,13 +140,13 @@ Replace `<your-domain>` with your domain (e.g., `frapps.xyz` or `yourdomain.com`
 
 **What this does:**
 1. Cleans previous builds
-2. Builds ornode backend
-3. Generates ornode configuration
+2. Builds ornode
+3. Generates ornode runtime configuration
 4. Creates nginx site configuration
 5. Creates PM2 process configuration
 
 **Output files:**
-- `proc/<frapp-id>/ornode.json` - Ornode config
+- `proc/<frapp-id>/ornode.json` - Ornode runtime config
 - `proc/<frapp-id>/ornode.pm2.json` - PM2 config
 - `sites/<subdomain>-ornode.<domain>` - Nginx config
 
@@ -174,7 +163,7 @@ sudo ln -s /etc/nginx/sites-available/<subdomain>.<domain> /etc/nginx/sites-enab
 sudo nginx -t
 
 # Reload nginx
-sudo systemctl reload nginx
+sudo nginx -s reload
 ```
 
 ### 7. Configure DNS
@@ -195,7 +184,7 @@ Wait for DNS propagation (can take up to 48 hours, usually minutes).
 
 ### 8. Setup SSL Certificates
 
-Use Let's Encrypt for free SSL certificates:
+One way is to use Let's Encrypt for free SSL certificates:
 
 ```bash
 sudo certbot --nginx -d <subdomain>.<domain> -d <subdomain>-ornode.<domain>
@@ -260,9 +249,25 @@ Visit your deployment:
 Ensure ornode restarts on server reboot:
 
 ```bash
+# Configure PM2 to start on system boot
 pm2 startup
+# Follow the command output instructions (may require sudo)
+
+# Save current PM2 process list
 pm2 save
 ```
+
+**To restore processes after reboot:**
+```bash
+pm2 resurrect
+```
+
+The `pm2 save` command saves your current process list, and `pm2 resurrect` restores it. This is useful when:
+- Server reboots (automatic with `pm2 startup`)
+- You need to restore processes after PM2 updates
+- You want to replicate process configuration on another server
+
+See [PM2 documentation](https://pm2.keymetrics.io/docs/usage/startup/) for more details on process management and startup configuration.
 
 ### Monitor Logs
 
