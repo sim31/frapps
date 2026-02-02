@@ -235,10 +235,17 @@ npm run check
 npm run start -- <command> [options]
 ```
 
+### Issues, feature requests
+
+This project aims to serve fractal ecosystem which is diverse and has many parties with differing interests. This results in competing perspectives about what is most needed and how to prioritize features. So creating an issue here is not a guarantee that it will be implemented. We use [Synchronous Respect Trees process](https://hackmd.io/@sim31/srt-1) to determine priorities. Therefore reporting an issue or requesting a feature becomes a two-step process:
+
+* Use [GitHub Issues](https://github.com/sim31/frapps/issues) for reporting issues and requesting features.
+* Participate in [SRT game](https://hackmd.io/@sim31/srt-1) of Eden Fractal to help determine priorities: https://t.me/edenfractal/5562
+
 ## Support
 
 - **Issues:** [GitHub Issues](https://github.com/sim31/frapps/issues)
-- **Discussions:** [Telegram - Eden Fractal](https://t.me/edenfractal/5562)
+- **Discussions:** [Telegram - Eden Fractal](https://t.me/edenfractal)
 - **ORDAO Documentation:** [ORDAO Repository](https://github.com/sim31/ordao)
 
 ## License
