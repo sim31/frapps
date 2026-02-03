@@ -4,3 +4,6 @@
 [submodule "apps/op-fractal/ui"]
 	path = apps/op-fractal/ui
 	url = https://github.com/Optimystics/op-fractal-frontend
+[submodule "apps/ordao"]
+	path = apps/ordao
+	url = git@github.com:sim31/orfrapps.git
