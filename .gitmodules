@@ -4,9 +4,6 @@
 [submodule "apps/op-fractal/ui"]
 	path = apps/op-fractal/ui
 	url = https://github.com/Optimystics/op-fractal-frontend
-[submodule "concepts"]
-	path = concepts
-	url = git@github.com:sim31/frapp-concepts.git
 [submodule "apps/orfrapps"]
 	path = apps/orfrapps
 	url = git@github.com:sim31/orfrapps.git
