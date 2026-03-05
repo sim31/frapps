@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SRT V1 Cumulative Report — Period 135</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .decay-bar { transition: width 0.4s ease; }
+    details summary { cursor: pointer; }
+    details summary::-webkit-details-marker { display: none; }
+    details summary::before {
+      content: '▶';
+      display: inline-block;
+      margin-right: 0.5rem;
+      transition: transform 0.2s;
+      font-size: 0.75rem;
+    }
+    details[open] summary::before { transform: rotate(90deg); }
+    .score-cell { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+
+  <header class="bg-gradient-to-r from-indigo-700 to-purple-700 text-white py-10 px-6">
+    <div class="max-w-5xl mx-auto">
+      <p class="text-indigo-200 text-sm font-medium uppercase tracking-wider mb-1">Eden Fractal</p>
+      <h1 class="text-3xl font-bold mb-2">SRT V1 Cumulative Report</h1>
+      <p class="text-indigo-100 text-lg">Periods 133 – 135 &nbsp;·&nbsp; January – February 2026</p>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6 py-10" id="app">
+    <noscript>
+      <p class="text-red-600 font-semibold">This report requires JavaScript to render.</p>
+    </noscript>
+  </main>
+
+  <script>
+  // ── Data ──────────────────────────────────────────────────────────────────────
+  const DATA = {
+    meta: {
+      decayFactor: 0.5,
+      periodsIncluded: [133, 134, 135],
+    },
+    periods: [
+      {
+        period: 133, periodIndex: 0, decayWeight: 0.25,
+        dates: { stage1Start: "2026-01-23", stage2End: "2026-01-29" },
+        topics: {
+          snapshotUrl: "https://snapshot.box/#/s:edenfractal.eth/proposal/0x9487b258ccd45de63fd01279bf90b8b59257d09863169e8cbd802e27d14cfc34",
+          votes: 2, scoresTotal: 809,
+          choices: [
+            { name: "Update ORDAO configuration", score: 351.34, proposer: "Tadas | sim31" },
+            { name: "Fractalgram", score: 53.83, proposer: "Tadas | sim31" },
+            { name: "Eden Fractal 2026 Resolutions", score: 107.65, proposer: "Dan Singjoy" },
+            { name: "Introduction to Fractal Circles", score: 216.90, proposer: "Dan Singjoy" },
+            { name: "Optimism Fractal Hiatus", score: 58.33, proposer: "Dan Singjoy" },
+            { name: "Continuing Discussions", score: 20.95, proposer: "Dan Singjoy" }
+          ]
+        },
+        crs: {
+          snapshotUrl: "https://snapshot.box/#/s:edenfractal.eth/proposal/0x7a42b4e42d0da7e5914fabce684c0f302d6c870416bf0bf9764add67bd9d2471",
+          votes: 2, scoresTotal: 809,
+          choices: [
+            { name: "Non-profit", score: 141.74, proposer: "Tadas | sim31" },
+            { name: "Documentation for ORDAO", score: 104.42, proposer: "Tadas | sim31" },
+            { name: "Fractalgram requirements", score: 221.28, proposer: "Tadas | sim31" },
+            { name: "A game to guide discussion", score: 38.13, proposer: "Tadas | sim31" },
+            { name: "Educational resource developmen", score: 88.70, proposer: "Dan Singjoy" },
+            { name: "Tech development for gov tools", score: 37.31, proposer: "Dan Singjoy" },
+            { name: "Engagement and outreach", score: 88.70, proposer: "Dan Singjoy" },
+            { name: "Research Fractal decision-making", score: 88.70, proposer: "Dan Singjoy" }
+          ]
+        }
+      },
+      {
+        period: 134, periodIndex: 1, decayWeight: 0.5,
+        dates: { stage1Start: "2026-02-06", stage2End: "2026-02-12" },
+        topics: {
+          snapshotUrl: "https://snapshot.box/#/s:edenfractal.eth/proposal/0x0274951d491e1a6e2fb331a0c89d37ba0c24d3d212aaea2f8113113e99e9f313",
+          votes: 2, scoresTotal: 809,
+          choices: [
+            { name: "Update ORDAO configuration", score: 327.96, proposer: "Tadas | sim31" },
+            { name: "More Equal Animals Anniversary", score: 194.60, proposer: "Dan Singjoy" },
+            { name: "Fractalgram dev discussions", score: 30.62, proposer: "Dan Singjoy" },
+            { name: "Eden Fractal 2026 Resolutions", score: 86.92, proposer: "Dan Singjoy" },
+            { name: "Fractalgram", score: 30.62, proposer: "Tadas | sim31" },
+            { name: "SRT V1 improvements", score: 138.29, proposer: "Tadas | sim31" }
+          ]
+        },
+        crs: {
+          snapshotUrl: "https://snapshot.box/#/s:edenfractal.eth/proposal/0x741300dfe59a694690cb282659bd683d6d4f037afcb39abc7d1d5676d3fe04cc",
+          votes: 1, scoresTotal: 398,
+          choices: [
+            { name: "Educational resources", score: 94.76, proposer: "Dan Singjoy" },
+            { name: "Technical development", score: 37.90, proposer: "Dan Singjoy" },
+            { name: "Engagement and outreach", score: 56.86, proposer: "Dan Singjoy" },
+            { name: "Fractal decision-making research", score: 37.90, proposer: "Dan Singjoy" },
+            { name: "Fractalgram", score: 56.86, proposer: "Tadas | sim31" },
+            { name: "Non-profit for fractal ecosystem", score: 56.86, proposer: "Tadas | sim31" },
+            { name: "Firmament", score: 56.86, proposer: "Tadas | sim31" }
+          ]
+        }
+      },
+      {
+        period: 135, periodIndex: 2, decayWeight: 1.0,
+        dates: { stage1Start: "2026-02-20", stage2End: "2026-02-26" },
+        topics: {
+          snapshotUrl: "https://snapshot.box/#/s:edenfractal.eth/proposal/0x638c39b095319441d2c2d7fdef7c2ed6193e208f5de3fb21892db49c873c6909",
+          votes: 2, scoresTotal: 940,
+          choices: [
+            { name: "Update ORDAO configuration", score: 330.79, proposer: "Tadas | sim31" },
+            { name: "SRT V1 improvements/feedback", score: 81.17, proposer: "Tadas | sim31" },
+            { name: "Fractalgram", score: 58.04, proposer: "Dan Singjoy" },
+            { name: "Eden Fractal Community Agreement", score: 79.75, proposer: "Dan Singjoy" },
+            { name: "Eden Fractal Intent Document", score: 20.29, proposer: "Dan Singjoy" },
+            { name: "Eden+Fractal Improvements", score: 20.29, proposer: "Dan Singjoy" },
+            { name: "Recognizing Prior Contributions", score: 20.29, proposer: "Dan Singjoy" },
+            { name: "2026 Resolutions and Break Plans", score: 211.88, proposer: "Dan Singjoy" },
+            { name: "Exploring Matrix.org", score: 117.50, proposer: "Dan Singjoy" }
+          ]
+        },
+        crs: {
+          snapshotUrl: "https://snapshot.box/#/s:edenfractal.eth/proposal/0xd221b31388638de85bffe7cdc751b316ae7f2fc42b0044e3b2ccea94026a9fcf",
+          votes: 2, scoresTotal: 940,
+          choices: [
+            { name: "Firmament", score: 223.97, proposer: "Tadas | sim31" },
+            { name: "Non-profit for fractal ecosystem", score: 125.26, proposer: "Tadas | sim31" },
+            { name: "Quicker uploads of videos", score: 140.08, proposer: "Tadas | sim31" },
+            { name: "Fractalgram", score: 106.53, proposer: "Tadas | sim31" },
+            { name: "Educational Resources", score: 56.19, proposer: "Dan Singjoy" },
+            { name: "Community Engagement", score: 37.46, proposer: "Dan Singjoy" },
+            { name: "Fractal Research", score: 37.46, proposer: "Dan Singjoy" },
+            { name: "Eden Fractal Intent Document", score: 106.53, proposer: "Dan Singjoy" },
+            { name: "Eden Fractal Community Agreement", score: 106.53, proposer: "Dan Singjoy" }
+          ]
+        },
+        missingItems: [
+          { type: "cr", name: "Solve denial of respect distribution", proposer: "Tadas | sim31", reason: "Omitted from Snapshot poll due to 9-option limit" }
+        ]
+      }
+    ]
+  };
+
+  // ── Compute cumulative scores ─────────────────────────────────────────────
+  function buildCumulativeTable(type) {
+    // type = 'topics' | 'crs'
+    // Collect all unique (name) entries across periods with their per-period data
+    const rows = []; // { name, proposer, periodScores: { [period]: { raw, weighted } }, cumulative }
+
+    const nameMap = new Map(); // name -> row index
+
+    for (const p of DATA.periods) {
+      const poll = p[type];
+      for (const c of poll.choices) {
+        if (!nameMap.has(c.name)) {
+          nameMap.set(c.name, rows.length);
+          rows.push({
+            name: c.name,
+            proposer: c.proposer,
+            periodScores: {},
+            cumulative: 0
+          });
+        }
+        const idx = nameMap.get(c.name);
+        const weighted = c.score * p.decayWeight;
+        rows[idx].periodScores[p.period] = { raw: c.score, weighted, votes: poll.votes };
+        rows[idx].cumulative += weighted;
+      }
+    }
+
+    rows.sort((a, b) => b.cumulative - a.cumulative);
+    return rows;
+  }
+
+  // ── Rendering helpers ─────────────────────────────────────────────────────
+  function fmt(n) { return n.toFixed(2); }
+
+  function renderBar(value, maxValue) {
+    const pct = maxValue > 0 ? (value / maxValue) * 100 : 0;
+    return `<div class="w-full bg-gray-100 rounded-full h-2.5 mt-1">
+      <div class="decay-bar bg-indigo-500 h-2.5 rounded-full" style="width: ${pct.toFixed(1)}%"></div>
+    </div>`;
+  }
+
+  function renderPeriodBadge(period) {
+    const colors = { 133: 'bg-amber-100 text-amber-800', 134: 'bg-sky-100 text-sky-800', 135: 'bg-emerald-100 text-emerald-800' };
+    return `<span class="inline-block text-xs font-medium px-2 py-0.5 rounded ${colors[period] || 'bg-gray-100'}">P${period}</span>`;
+  }
+
+  function renderSection(title, type) {
+    const rows = buildCumulativeTable(type);
+    if (rows.length === 0) return '';
+
+    const maxCum = rows[0].cumulative;
+    const periods = DATA.meta.periodsIncluded;
+
+    let periodHeaders = periods.map(p =>
+      `<th class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">P${p}<br><span class="text-[10px] normal-case text-gray-400">×${DATA.periods.find(d => d.period === p).decayWeight}</span></th>`
+    ).join('');
+
+    let tableRows = rows.map((r, i) => {
+      const rank = i + 1;
+      const periodCells = periods.map(p => {
+        const ps = r.periodScores[p];
+        if (!ps) return `<td class="px-3 py-3 text-right text-gray-300 score-cell">—</td>`;
+        return `<td class="px-3 py-3 text-right score-cell">
+          <span class="text-gray-800 font-medium">${fmt(ps.weighted)}</span>
+          <br><span class="text-xs text-gray-400">${fmt(ps.raw)} raw</span>
+        </td>`;
+      }).join('');
+
+      const periodsPresent = periods.filter(p => r.periodScores[p]).map(renderPeriodBadge).join(' ');
+
+      return `<tr class="${rank % 2 === 0 ? 'bg-gray-50/50' : ''}">
+        <td class="px-3 py-3 text-center text-gray-400 font-medium">${rank}</td>
+        <td class="px-3 py-3">
+          <div class="font-medium text-gray-900">${r.name}</div>
+          <div class="text-xs text-gray-400 mt-0.5">${r.proposer} · ${periodsPresent}</div>
+        </td>
+        <td class="px-4 py-3 text-right score-cell">
+          <span class="text-lg font-semibold text-indigo-700">${fmt(r.cumulative)}</span>
+          ${renderBar(r.cumulative, maxCum)}
+        </td>
+        ${periodCells}
+      </tr>`;
+    }).join('');
+
+    // Per-period detail
+    let periodDetails = DATA.periods.map(p => {
+      const poll = p[type];
+      const sorted = [...poll.choices].sort((a, b) => b.score - a.score);
+      const maxScore = sorted[0]?.score || 1;
+      const choiceRows = sorted.map((c, i) => `
+        <tr class="${i % 2 === 0 ? '' : 'bg-gray-50/50'}">
+          <td class="px-3 py-2 text-center text-gray-400 text-sm">${i + 1}</td>
+          <td class="px-3 py-2 text-sm">${c.name} <span class="text-gray-400 text-xs">— ${c.proposer}</span></td>
+          <td class="px-3 py-2 text-right text-sm font-medium score-cell">${fmt(c.score)}</td>
+          <td class="px-3 py-2 w-32">
+            <div class="w-full bg-gray-100 rounded-full h-2">
+              <div class="bg-indigo-400 h-2 rounded-full" style="width: ${(c.score / maxScore * 100).toFixed(1)}%"></div>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      // Missing items for this period
+      let missingHtml = '';
+      if (p.missingItems) {
+        const relevant = p.missingItems.filter(m => m.type === (type === 'topics' ? 'tp' : 'cr'));
+        if (relevant.length > 0) {
+          missingHtml = relevant.map(m => `
+            <div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+              <strong>⚠ Missing:</strong> "${m.name}" (by ${m.proposer}) — ${m.reason}
+            </div>
+          `).join('');
+        }
+      }
+
+      return `
+        <details class="border border-gray-200 rounded-lg overflow-hidden">
+          <summary class="px-4 py-3 bg-white hover:bg-gray-50 font-medium text-sm">
+            Period ${p.period}
+            <span class="text-gray-400 font-normal ml-2">${p.dates.stage1Start} → ${p.dates.stage2End} · ${poll.votes} voter${poll.votes !== 1 ? 's' : ''} · Total: ${fmt(poll.scoresTotal)}</span>
+            <a href="${poll.snapshotUrl}" target="_blank" rel="noopener" class="ml-2 text-indigo-500 hover:text-indigo-700 text-xs">[Snapshot ↗]</a>
+          </summary>
+          <div class="px-2 py-2">
+            <table class="w-full">
+              <thead><tr class="border-b border-gray-100">
+                <th class="px-3 py-2 text-left text-xs text-gray-400 w-10">#</th>
+                <th class="px-3 py-2 text-left text-xs text-gray-400">Proposal</th>
+                <th class="px-3 py-2 text-right text-xs text-gray-400">Score</th>
+                <th class="px-3 py-2 text-xs text-gray-400 w-32"></th>
+              </tr></thead>
+              <tbody>${choiceRows}</tbody>
+            </table>
+            ${missingHtml}
+          </div>
+        </details>
+      `;
+    }).join('');
+
+    return `
+      <section class="mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-1">${title}</h2>
+        <p class="text-sm text-gray-500 mb-5">Cumulative scores across periods 133–135, weighted by exponential decay (λ = ${DATA.meta.decayFactor})</p>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-gray-200 bg-gray-50/80">
+                  <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">#</th>
+                  <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proposal</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-40">Cumulative</th>
+                  ${periodHeaders}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">${tableRows}</tbody>
+            </table>
+          </div>
+        </div>
+
+        <h3 class="text-lg font-semibold text-gray-700 mb-3">Per-Period Breakdown</h3>
+        <div class="space-y-2">${periodDetails}</div>
+      </section>
+    `;
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  const app = document.getElementById('app');
+
+  app.innerHTML = `
+    <div class="mb-8 p-5 bg-white rounded-xl shadow-sm border border-gray-200">
+      <h2 class="text-lg font-semibold text-gray-800 mb-2">About this report</h2>
+      <p class="text-sm text-gray-600 mb-3">
+        This report aggregates results from 3 sessions of the
+        <a href="https://hackmd.io/@sim31/srt-1" class="text-indigo-600 hover:underline" target="_blank">Synchronous Respect Trees V1</a>
+        game played by the Eden Fractal community. Each session produces two polls on
+        <a href="https://snapshot.box/#/s:edenfractal.eth" class="text-indigo-600 hover:underline" target="_blank">Snapshot</a>:
+        one for <strong>Topic Proposals (TPs)</strong> and one for <strong>Contribution Requests (CRs)</strong>.
+      </p>
+      <div class="flex flex-wrap gap-4 text-sm">
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-full bg-amber-300"></span>
+          <span><strong>Period 133</strong> — weight ×0.25</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-full bg-sky-400"></span>
+          <span><strong>Period 134</strong> — weight ×0.50</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-full bg-emerald-500"></span>
+          <span><strong>Period 135</strong> — weight ×1.00</span>
+        </div>
+      </div>
+    </div>
+
+    ${renderSection('Topic Proposals', 'topics')}
+    ${renderSection('Contribution Requests', 'crs')}
+
+    <footer class="mt-12 pt-8 border-t border-gray-200 text-sm text-gray-500 space-y-4 pb-12">
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-1">Methodology</h3>
+        <p>
+          Scores are accumulated using an <strong>exponential decay</strong> function on raw (un-normalized) scores.
+          The formula is: <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">cumulative = Σ (raw_score × λ<sup>(N−i)</sup>)</code>
+          where <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">λ = ${DATA.meta.decayFactor}</code>,
+          <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">N = 2</code> (index of most recent period),
+          and <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">i</code> is the period index (0, 1, 2).
+          This means the most recent period has full weight (×1), the previous period is halved (×0.5), and the oldest is quartered (×0.25).
+          Periods with more voters naturally contribute more to the cumulative score (no normalization is applied).
+        </p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-1">Snapshot Poll Links</h3>
+        <ul class="space-y-1">
+          ${DATA.periods.map(p => `
+            <li>
+              <strong>Period ${p.period}:</strong>
+              <a href="${p.topics.snapshotUrl}" target="_blank" class="text-indigo-600 hover:underline">Topics ↗</a> ·
+              <a href="${p.crs.snapshotUrl}" target="_blank" class="text-indigo-600 hover:underline">CRs ↗</a>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+      <p class="text-xs text-gray-400">
+        Generated on 2026-03-05. Game rules:
+        <a href="https://hackmd.io/@sim31/srt-1" class="text-indigo-500 hover:underline" target="_blank">SRT V1</a>.
+      </p>
+    </footer>
+  `;
+  </script>
+</body>
+</html>
