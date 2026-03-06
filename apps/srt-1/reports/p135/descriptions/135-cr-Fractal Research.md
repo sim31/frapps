@@ -1,0 +1,3 @@
+Eden Fractal's mission includes collaborative research to advance our understanding of how communities can coordinate more effectively. Research can include studying how fractal governance works in practice, interviewing experienced practitioners, exploring how other communities implement similar processes, investigating novel coordination mechanisms, and engaging deeply with existing literature and theory. Both newcomers with fresh perspectives and experienced practitioners who can identify the most impactful areas for investigation are welcome to contribute.
+
+🔬 [Read the full contribution request](https://www.notion.so/CR-Research-into-Fractal-Decision-Making-Processes-302074f5adac80cb9ad1d3dad0084371?pvs=21)

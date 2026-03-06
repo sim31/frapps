@@ -3,9 +3,14 @@
     "game": "SRT V1",
     "community": "Eden Fractal",
     "reportPeriod": 135,
-    "periodsIncluded": [133, 134, 135],
+    "periodsIncluded": [
+      133,
+      134,
+      135
+    ],
     "decayFactor": 0.5,
-    "generatedAt": "2026-03-05",
+    "generatedAt": "2026-03-06",
+    "proposalsGroup": "https://t.me/edenfractal/5562",
     "notes": [
       "Period 133 polls were mislabeled as 'period 134' on Snapshot (acknowledged in Telegram chat).",
       "CR 'Solve denial of respect distribution' was omitted from the Period 135 CR poll due to Snapshot's 9-option limit."
@@ -27,12 +32,36 @@
         "votes": 2,
         "scoresTotal": 809,
         "choices": [
-          { "name": "Update ORDAO configuration", "score": 351.34, "proposer": "Tadas | sim31" },
-          { "name": "Fractalgram", "score": 53.83, "proposer": "Tadas | sim31" },
-          { "name": "Eden Fractal 2026 Resolutions", "score": 107.65, "proposer": "Dan Singjoy" },
-          { "name": "Introduction to Fractal Circles", "score": 216.90, "proposer": "Dan Singjoy" },
-          { "name": "Optimism Fractal Hiatus", "score": 58.33, "proposer": "Dan Singjoy" },
-          { "name": "Continuing Discussions", "score": 20.95, "proposer": "Dan Singjoy" }
+          {
+            "name": "Update ORDAO configuration",
+            "score": 351.34,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "Fractalgram",
+            "score": 53.83,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "Eden Fractal 2026 Resolutions",
+            "score": 107.65,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Introduction to Fractal Circles",
+            "score": 216.9,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Optimism Fractal Hiatus",
+            "score": 58.33,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Continuing Discussions",
+            "score": 20.95,
+            "proposer": "Dan Singjoy"
+          }
         ]
       },
       "crs": {
@@ -42,14 +71,46 @@
         "votes": 2,
         "scoresTotal": 809,
         "choices": [
-          { "name": "Non-profit", "score": 141.74, "proposer": "Tadas | sim31" },
-          { "name": "Documentation for ORDAO", "score": 104.42, "proposer": "Tadas | sim31" },
-          { "name": "Fractalgram requirements", "score": 221.28, "proposer": "Tadas | sim31" },
-          { "name": "A game to guide discussion", "score": 38.13, "proposer": "Tadas | sim31" },
-          { "name": "Educational resource developmen", "score": 88.70, "proposer": "Dan Singjoy" },
-          { "name": "Tech development for gov tools", "score": 37.31, "proposer": "Dan Singjoy" },
-          { "name": "Engagement and outreach", "score": 88.70, "proposer": "Dan Singjoy" },
-          { "name": "Research Fractal decision-making", "score": 88.70, "proposer": "Dan Singjoy" }
+          {
+            "name": "Non-profit",
+            "score": 141.74,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "Documentation for ORDAO",
+            "score": 104.42,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "Fractalgram requirements",
+            "score": 221.28,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "A game to guide discussion",
+            "score": 38.13,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "Educational resource developmen",
+            "score": 88.7,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Tech development for gov tools",
+            "score": 37.31,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Engagement and outreach",
+            "score": 88.7,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Research Fractal decision-making",
+            "score": 88.7,
+            "proposer": "Dan Singjoy"
+          }
         ]
       }
     },
@@ -68,12 +129,36 @@
         "votes": 2,
         "scoresTotal": 809,
         "choices": [
-          { "name": "Update ORDAO configuration", "score": 327.96, "proposer": "Tadas | sim31" },
-          { "name": "More Equal Animals Anniversary", "score": 194.60, "proposer": "Dan Singjoy" },
-          { "name": "Fractalgram dev discussions", "score": 30.62, "proposer": "Dan Singjoy" },
-          { "name": "Eden Fractal 2026 Resolutions", "score": 86.92, "proposer": "Dan Singjoy" },
-          { "name": "Fractalgram", "score": 30.62, "proposer": "Tadas | sim31" },
-          { "name": "SRT V1 improvements", "score": 138.29, "proposer": "Tadas | sim31" }
+          {
+            "name": "Update ORDAO configuration",
+            "score": 327.96,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "More Equal Animals Anniversary",
+            "score": 194.6,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Fractalgram dev discussions",
+            "score": 30.62,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Eden Fractal 2026 Resolutions",
+            "score": 86.92,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Fractalgram",
+            "score": 30.62,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "SRT V1 improvements",
+            "score": 138.29,
+            "proposer": "Tadas | sim31"
+          }
         ]
       },
       "crs": {
@@ -83,13 +168,41 @@
         "votes": 1,
         "scoresTotal": 398,
         "choices": [
-          { "name": "Educational resources", "score": 94.76, "proposer": "Dan Singjoy" },
-          { "name": "Technical development", "score": 37.90, "proposer": "Dan Singjoy" },
-          { "name": "Engagement and outreach", "score": 56.86, "proposer": "Dan Singjoy" },
-          { "name": "Fractal decision-making research", "score": 37.90, "proposer": "Dan Singjoy" },
-          { "name": "Fractalgram", "score": 56.86, "proposer": "Tadas | sim31" },
-          { "name": "Non-profit for fractal ecosystem", "score": 56.86, "proposer": "Tadas | sim31" },
-          { "name": "Firmament", "score": 56.86, "proposer": "Tadas | sim31" }
+          {
+            "name": "Educational resources",
+            "score": 94.76,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Technical development",
+            "score": 37.9,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Engagement and outreach",
+            "score": 56.86,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Fractal decision-making research",
+            "score": 37.9,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Fractalgram",
+            "score": 56.86,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "Non-profit for fractal ecosystem",
+            "score": 56.86,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "Firmament",
+            "score": 56.86,
+            "proposer": "Tadas | sim31"
+          }
         ]
       }
     },
@@ -108,15 +221,51 @@
         "votes": 2,
         "scoresTotal": 940,
         "choices": [
-          { "name": "Update ORDAO configuration", "score": 330.79, "proposer": "Tadas | sim31" },
-          { "name": "SRT V1 improvements/feedback", "score": 81.17, "proposer": "Tadas | sim31" },
-          { "name": "Fractalgram", "score": 58.04, "proposer": "Dan Singjoy" },
-          { "name": "Eden Fractal Community Agreement", "score": 79.75, "proposer": "Dan Singjoy" },
-          { "name": "Eden Fractal Intent Document", "score": 20.29, "proposer": "Dan Singjoy" },
-          { "name": "Eden+Fractal Improvements", "score": 20.29, "proposer": "Dan Singjoy" },
-          { "name": "Recognizing Prior Contributions", "score": 20.29, "proposer": "Dan Singjoy" },
-          { "name": "2026 Resolutions and Break Plans", "score": 211.88, "proposer": "Dan Singjoy" },
-          { "name": "Exploring Matrix.org", "score": 117.50, "proposer": "Dan Singjoy" }
+          {
+            "name": "Update ORDAO configuration",
+            "score": 330.79,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "SRT V1 improvements/feedback",
+            "score": 81.17,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "Fractalgram",
+            "score": 58.04,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Eden Fractal Community Agreement",
+            "score": 79.75,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Eden Fractal Intent Document",
+            "score": 20.29,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Eden+Fractal Improvements",
+            "score": 20.29,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Recognizing Prior Contributions",
+            "score": 20.29,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "2026 Resolutions and Break Plans",
+            "score": 211.88,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Exploring Matrix.org",
+            "score": 117.5,
+            "proposer": "Dan Singjoy"
+          }
         ]
       },
       "crs": {
@@ -126,19 +275,56 @@
         "votes": 2,
         "scoresTotal": 940,
         "choices": [
-          { "name": "Firmament", "score": 223.97, "proposer": "Tadas | sim31" },
-          { "name": "Non-profit for fractal ecosystem", "score": 125.26, "proposer": "Tadas | sim31" },
-          { "name": "Quicker uploads of videos", "score": 140.08, "proposer": "Tadas | sim31" },
-          { "name": "Fractalgram", "score": 106.53, "proposer": "Tadas | sim31" },
-          { "name": "Educational Resources", "score": 56.19, "proposer": "Dan Singjoy" },
-          { "name": "Community Engagement", "score": 37.46, "proposer": "Dan Singjoy" },
-          { "name": "Fractal Research", "score": 37.46, "proposer": "Dan Singjoy" },
-          { "name": "Eden Fractal Intent Document", "score": 106.53, "proposer": "Dan Singjoy" },
-          { "name": "Eden Fractal Community Agreement", "score": 106.53, "proposer": "Dan Singjoy" }
+          {
+            "name": "Firmament",
+            "score": 223.97,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "Non-profit for fractal ecosystem",
+            "score": 125.26,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "Quicker uploads of videos",
+            "score": 140.08,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "Fractalgram",
+            "score": 106.53,
+            "proposer": "Tadas | sim31"
+          },
+          {
+            "name": "Educational Resources",
+            "score": 56.19,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Community Engagement",
+            "score": 37.46,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Fractal Research",
+            "score": 37.46,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Eden Fractal Intent Document",
+            "score": 106.53,
+            "proposer": "Dan Singjoy"
+          },
+          {
+            "name": "Eden Fractal Community Agreement",
+            "score": 106.53,
+            "proposer": "Dan Singjoy"
+          }
         ]
       },
       "missingItems": [
         {
+          "period": 135,
           "type": "cr",
           "name": "Solve denial of respect distribution",
           "proposer": "Tadas | sim31",

@@ -1,0 +1,60 @@
+{
+  "periodOverrides": {
+    "0x9487b258ccd45de63fd01279bf90b8b59257d09863169e8cbd802e27d14cfc34": 133,
+    "0x7a42b4e42d0da7e5914fabce684c0f302d6c870416bf0bf9764add67bd9d2471": 133
+  },
+  "stage1Dates": {
+    "133": "2026-01-23",
+    "134": "2026-02-06",
+    "135": "2026-02-20"
+  },
+  "proposerNames": {
+    "Tadas": "Tadas | sim31",
+    "Dan": "Dan Singjoy"
+  },
+  "choiceProposers": {
+    "133-tp-Update ORDAO configuration": "Tadas | sim31",
+    "133-tp-Fractalgram": "Tadas | sim31",
+    "133-tp-Eden Fractal 2026 Resolutions": "Dan Singjoy",
+    "133-tp-Introduction to Fractal Circles": "Dan Singjoy",
+    "133-tp-Optimism Fractal Hiatus": "Dan Singjoy",
+    "133-tp-Continuing Discussions": "Dan Singjoy",
+    "133-cr-Non-profit": "Tadas | sim31",
+    "133-cr-Documentation for ORDAO": "Tadas | sim31",
+    "133-cr-Fractalgram requirements": "Tadas | sim31",
+    "133-cr-A game to guide discussion": "Tadas | sim31",
+    "133-cr-Educational resource developmen": "Dan Singjoy",
+    "133-cr-Tech development for gov tools": "Dan Singjoy",
+    "133-cr-Engagement and outreach": "Dan Singjoy",
+    "133-cr-Research Fractal decision-making": "Dan Singjoy",
+    "134-tp-Update ORDAO configuration": "Tadas | sim31",
+    "134-tp-Fractalgram": "Tadas | sim31",
+    "134-tp-SRT V1 improvements": "Tadas | sim31",
+    "134-tp-More Equal Animals Anniversary": "Dan Singjoy",
+    "134-tp-Fractalgram dev discussions": "Dan Singjoy",
+    "134-tp-Eden Fractal 2026 Resolutions": "Dan Singjoy",
+    "134-cr-Fractalgram": "Tadas | sim31",
+    "134-cr-Non-profit for fractal ecosystem": "Tadas | sim31",
+    "134-cr-Firmament": "Tadas | sim31",
+    "134-cr-Educational resources": "Dan Singjoy",
+    "134-cr-Technical development": "Dan Singjoy",
+    "134-cr-Engagement and outreach": "Dan Singjoy",
+    "134-cr-Fractal decision-making research": "Dan Singjoy",
+    "135-tp-Fractalgram": "Dan Singjoy",
+    "135-tp-2026 Resolutions and Break Plans": "Dan Singjoy"
+  },
+  "missingItems": [
+    {
+      "period": 135,
+      "type": "cr",
+      "name": "Solve denial of respect distribution",
+      "proposer": "Tadas | sim31",
+      "reason": "Omitted from Snapshot poll due to 9-option limit",
+      "description": "This is a technical issue that requires some development work in ORDAO.\n\nAll the details here: [https://github.com/sim31/ordao/issues/27](https://github.com/sim31/ordao/issues/27)."
+    }
+  ],
+  "notes": [
+    "Period 133 polls were mislabeled as 'period 134' on Snapshot (acknowledged in Telegram chat).",
+    "CR 'Solve denial of respect distribution' was omitted from the Period 135 CR poll due to Snapshot's 9-option limit."
+  ]
+}

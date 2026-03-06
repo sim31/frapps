@@ -1,0 +1,3 @@
+Eden Fractal needs better educational resources to help people understand what we're doing and how they can benefit from participating. Contributions can include writing articles and blog posts about fractal governance, developing FAQ resources, improving our website content, creating technical documentation and specifications, exploring AI-powered workflows for content creation, and producing video content. Resources about Eden Fractal's implementation are highest priority, but educational content about fractal governance broadly also supports our mission.
+
+📖 [Read the full contribution request](https://www.notion.so/CR-Educational-Resource-Development-302074f5adac80a1ac57e94dffee4eb8?pvs=21)

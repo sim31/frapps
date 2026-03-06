@@ -1,0 +1,3 @@
+While Synchronous Respect Trees effectively signal priority topics between meetings, they are insufficient for democratically controlling real-time meeting flow. This proposal requests creation of a simple game mechanism that would complement SRT by allowing participants to signal when to switch topics and prioritize discussions during meetings.
+
+[Full problem statement and request](https://hackmd.io/@sim31/meeting-ctrl-cr).

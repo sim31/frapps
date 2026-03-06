@@ -1,0 +1,3 @@
+[Eden+Fractal](https://edenfractal.com/plus) is our legislative consensus process for choosing delegates, deliberating on decisions, and making community decisions. The process was first introduced around Eden Fractal's 20th event back in 2022, and we've been practicing it consistently for the past six months during Epoch 2. When we started adopting it for Epoch 2, I created an implementation plan to guide how we'd operate it, informed significantly by discussions with Tadas and the community back in August and September 2025.
+
+It's been working well, but there are areas for improvement. More details: https://t.me/edenfractal/5562/6282
