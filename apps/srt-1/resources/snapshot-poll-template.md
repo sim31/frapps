@@ -13,6 +13,38 @@ where `NNN` is the period number.
 
 ## Poll Description Body
 
+The poll description should start with an introductory paragraph explaining the purpose of the poll, followed by a section header, then the proposals grouped by author.
+
+### For Topics polls:
+
+```markdown
+This is a poll to determine priority of topics at the time of period NNN of Eden Fractal. It is part of stage 2 of [Synchronous Respect Tree V1 game](https://hackmd.io/@sim31/srt-1).
+
+Spread your Respect-weighted votes among topics according to your understanding of what topics are the most important to discuss right now. This will help determine our discussion topics for the upcoming town hall and the following week.
+
+## From Author Display Name
+
+### TP: Proposal Title
+
+Proposal description...
+```
+
+### For Contribution Requests polls:
+
+```markdown
+This is a poll to determine priority of contribution requests at the time of period NNN of Eden Fractal. It is part of stage 2 of [Synchronous Respect Tree V1 game](https://hackmd.io/@sim31/srt-1).
+
+Spread your Respect-weighted votes among contribution requests according to your understanding of what contributions are the most important right now. This will help guide contributors on what work would be most valuable to the community.
+
+## From Author Display Name
+
+### CR: Contribution Request Title
+
+Description...
+```
+
+### Optional Note Section
+
 ```markdown
 # Note
 Optional notes about the poll (e.g. why a proposal was omitted).
@@ -66,6 +98,10 @@ Description...
 **Poll description:**
 
 ```markdown
+This is a poll to determine priority of topics at the time of period 136 of Eden Fractal. It is part of stage 2 of [Synchronous Respect Tree V1 game](https://hackmd.io/@sim31/srt-1).
+
+Spread your Respect-weighted votes among topics according to your understanding of what topics are the most important to discuss right now. This will help determine our discussion topics for the upcoming town hall and the following week.
+
 ## From Tadas | sim31
 
 ### TP: Update ORDAO configuration
@@ -96,6 +132,10 @@ Creating a community agreement has been one of our outstanding goals...
 **Poll description:**
 
 ```markdown
+This is a poll to determine priority of contribution requests at the time of period 136 of Eden Fractal. It is part of stage 2 of [Synchronous Respect Tree V1 game](https://hackmd.io/@sim31/srt-1).
+
+Spread your Respect-weighted votes among contribution requests according to your understanding of what contributions are the most important right now. This will help guide contributors on what work would be most valuable to the community.
+
 # Note
 Snapshot only allows 9 choices. CR "Example Item" was omitted from this poll.
 

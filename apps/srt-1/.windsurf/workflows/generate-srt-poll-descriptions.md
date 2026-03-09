@@ -59,10 +59,14 @@ Wait for user confirmation before proceeding.
 
 Read the template at `apps/srt-1/resources/snapshot-poll-template.md` for the expected format.
 
-For each poll type (Topics and CRs), generate a markdown file following the template:
+For each poll type (Topics and CRs), generate a markdown file following the template. Each file should start with an introductory description explaining the poll's purpose.
 
 **File: `apps/srt-1/stage2/p<PERIOD>/topics-body.md`**
 ```markdown
+This is a poll to determine priority of topics at the time of period <PERIOD> of Eden Fractal. It is part of stage 2 of [Synchronous Respect Tree V1 game](https://hackmd.io/@sim31/srt-1).
+
+Spread your Respect-weighted votes among topics according to your understanding of what topics are the most important to discuss right now. This will help determine our discussion topics for the upcoming town hall and the following week.
+
 ## From <Author 1 Display Name>
 
 ### TP: <Proposal Title>
@@ -81,9 +85,19 @@ For each poll type (Topics and CRs), generate a markdown file following the temp
 ```
 
 **File: `apps/srt-1/stage2/p<PERIOD>/crs-body.md`**
-Same format but with `### CR:` headers.
+```markdown
+This is a poll to determine priority of contribution requests at the time of period <PERIOD> of Eden Fractal. It is part of stage 2 of [Synchronous Respect Tree V1 game](https://hackmd.io/@sim31/srt-1).
 
-If any proposals were omitted due to the 9-choice limit, add a `# Note` section at the top:
+Spread your Respect-weighted votes among contribution requests according to your understanding of what contributions are the most important right now. This will help guide contributors on what work would be most valuable to the community.
+
+## From <Author Display Name>
+
+### CR: <Contribution Request Title>
+
+<Description>
+```
+
+If any proposals were omitted due to the 9-choice limit, add a `# Note` section after the introductory paragraph:
 ```markdown
 # Note
 Snapshot allows only 9 choices. The following proposals were omitted from this poll:
