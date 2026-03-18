@@ -1,0 +1,1 @@
+A non profit could help Eden Fractal by accepting donations and distributing funds to contributors. It is also part of a broader vision of creating a sustainable ecosystem for fractals. It is also part of the vision I expressed here: https://hackmd.io/@sim31/ef-vision-p132

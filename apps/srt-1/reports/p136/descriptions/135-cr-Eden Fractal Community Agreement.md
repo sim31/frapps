@@ -1,0 +1,5 @@
+Eden Fractal needs a community agreement that establishes clear expectations and protections for participants. This has been an outstanding goal since our early days and is becoming increasingly important as we prepare to scale our processes. 
+
+Contributions can include researching prior agreement discussions and materials from Eden Fractal, Genesis Fractal, and related communities; drafting agreement terms covering video consent, governance participation, content rights, and the nature of Respect as an opinion token; exploring integration with tools like Hats Protocol for onchain agreement signing and role-based access; and helping to organize and curate all existing resources about this topic into one accessible place. 
+
+I'm currently working on resources to make coordination easier, and contributions to this effort are very welcome. You can see some of our prior discussions about agreements at [EdenCreators.com/agreement](https://edencreators.com/agreement).

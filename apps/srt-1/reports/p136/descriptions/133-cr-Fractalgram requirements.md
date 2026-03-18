@@ -1,0 +1,3 @@
+Fractalgram is core component of Eden Fractal and many other fractals. However we currently do not have a reliably working implementation of it. We should prioritize it because it's essential for user friendly experience in fractals.
+
+This contribution request is about the first few steps - creating and then aligning on requirements specification. It makes sense to seek alignment, because this app has potential to be useful to both old and new iterations of fractals (if we design it the right way). Also it is an opportunity to experiment with [Github Spec-kit](https://github.com/github/spec-kit). Once we have specification using spec-kit, it should be straightforward to implement it.

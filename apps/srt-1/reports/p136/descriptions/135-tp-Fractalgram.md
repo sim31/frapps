@@ -1,0 +1,3 @@
+Fractalgram has been a major topic of discussion over the past several weeks, and our community has been actively working to specify how the next generation of this essential tool should be built. As the primary interface for playing the Respect Game at our events, Fractalgram is central to Eden Fractal's operations and to the broader fractal ecosystem's ability to scale governance processes...
+
+See more in the original post: https://t.me/edenfractal/5562/6193

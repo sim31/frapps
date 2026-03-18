@@ -1,0 +1,5 @@
+I've been learning about [Matrix](https://matrix.org/) over the past week and wanted to share some of what I've found. Matrix is an open-source, decentralized communication protocol that can do similar things to Telegram or Discord, but it aligns more closely with Eden Fractal's values around openness, decentralization, and composability — meaning we can build with it and on top of it.
+
+Matrix has a [spec-driven development process](https://spec.matrix.org/) with a governance and proposal system on GitHub that could serve as useful inspiration as we start using spec-driven development ourselves. They also have both a federated version and are building Matrix P2P, a non-federated peer-to-peer version that shares some of the same goals that Dan Larimer's team had with Clarion OS. The project has been in development for over 10 years.
+
+Learn more here: https://t.me/edenfractal/5562/6285

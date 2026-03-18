@@ -1,0 +1,3 @@
+Eden Fractal thrives through active community engagement, and we're seeking contributions that help grow and strengthen our community. Quality matters more than quantity—inviting one highly engaged contributor often creates more value than attracting many passive observers. Contributions include inviting strong-fit people to join events, welcoming and onboarding new participants, building relationships with collaborators in adjacent spaces, and nurturing connections with potential future contributors.
+
+🤝 [Read the full contribution request](https://www.notion.so/CR-Community-Engagement-and-Contributor-Outreach-302074f5adac80e383f4e788810b4820?pvs=21)
