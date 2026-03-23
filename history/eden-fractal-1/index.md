@@ -33,15 +33,18 @@
   * [Code repository](https://github.com/n0umen0n/edenfractalsc)
 
 ## Tools
-* Consensus submissions frontend
+### Consensus submissions frontend
   * [URL](https://edenfracfront.web.app/)
   * [Code repository](https://github.com/lennarlehestik/fractalvotingsystem)
-* Consortium
+### Consortium
   * [Smart contracts](https://github.com/n0umen0n/ConsortiumSC)
   * [Frontend](https://github.com/n0umen0n/ConsortiumWeb)
-* [Fractalgram](../../concepts/fractalgram.md) (from [meeting 35](https://edenfractal.com/35)) for playing [respect game](../../concepts/respect-game.md)
-  * [URL](https://fractgram.web.app/)
-  * [Code](https://github.com/sim31/fractalgram/tree/bae4cd9a8d627ab60a50b24d6915e07e211498f9)
+### Fractalgram (from [meeting 35](https://edenfractal.com/35))
+An app for playing [respect game](../../concepts/respect-game.md) in [fractalgram mode](../../concepts/fractalgram.md).
+
+* [URL](https://fractgram.web.app/)
+* [Code](../../apps/fractalgram/)
+* [Intro post](https://peakd.com/dao/@sim31/introducing-fractalgram)
 
 ## Respect accounting mechanism
 Onchain token controlled by the multisignature setup (see ["Executive process](#executive-process)). Signatories would manually create and execute onchain transaction based on respect game result votes submitted onchain;
