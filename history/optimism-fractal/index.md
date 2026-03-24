@@ -56,6 +56,7 @@ Optimistic Respect-based executive contract ([OREC](../../concepts/orec.md)).
 * [Fractalgram](../../concepts/fractalgram.md) - used to play Respect game
   * [Old telegram-based](https://github.com/sim31/fractalgram/tree/bae4cd9a8d627ab60a50b24d6915e07e211498f9)
   * [New, standalone respect-game app](https://respect-game.vercel.app/)
+* [Submission frontend](https://github.com/Optimystics/op-fractal-frontend) (used until around meeting 60);
 * ORDAO frontend (available from around meeting 60)
   * [Codebase](https://github.com/sim31/ordao/tree/8f983f84fa481714425ff0c067819be5e10ff25d/apps/gui)
   * URL of deployment: https://of.frapps.xyz or https://optimism.frapps.xyz
