@@ -33,12 +33,24 @@ Sections 1 and 2 of [intent document](./of-intent-1.pdf).
   * [Proposals in snapshot](https://snapshot.box/#/s:optimismfractal.eth)
 
 ## Smart contracts
-* [Meetings 1 - 48](https://github.com/Optimystics/op-fractal-sc/tree/0ab15a1c2e3a242289b16bcce25acfb721e33c26)
-* [Meeting 49 -](https://github.com/sim31/ordao/tree/8f983f84fa481714425ff0c067819be5e10ff25d/contracts/packages)
+### Meetings 1 - 48
+* [Source code](https://github.com/Optimystics/op-fractal-sc/tree/0ab15a1c2e3a242289b16bcce25acfb721e33c26)
+* Onchain address: [0x53c9e3a44b08e7ecf3e8882996a500eb06c0c5cc](https://optimistic.etherscan.io/address/0x53c9e3a44b08e7ecf3e8882996a500eb06c0c5cc)
+
+### Meeting 49 -
+* [Source code](https://github.com/sim31/ordao/tree/8f983f84fa481714425ff0c067819be5e10ff25d/contracts/packages)
+* Onchain addresses
+  * [Respect1155](https://github.com/sim31/ordao/tree/8f983f84fa481714425ff0c067819be5e10ff25d/contracts/packages/respect1155) - [0x07418B51196045EB360F31d8881326858Ed25121](https://optimistic.etherscan.io/address/0x07418B51196045EB360F31d8881326858Ed25121)
+  * [Orec](https://github.com/sim31/ordao/tree/8f983f84fa481714425ff0c067819be5e10ff25d/contracts/packages/orec) - [0x73eb8B61E6Eb65aFAAE972874bB4EB5689d1cCE3](https://optimistic.etherscan.io/address/0x07418B51196045EB360F31d8881326858Ed25121)
 
 ## Respect token
-* [Meetings 1 - 48](https://github.com/Optimystics/op-fractal-sc/blob/0ab15a1c2e3a242289b16bcce25acfb721e33c26/contracts/FractalRespect.sol) (part of main onchain contract);
-* [Meetings 49 -](https://github.com/sim31/ordao/tree/8f983f84fa481714425ff0c067819be5e10ff25d/contracts/packages/respect1155)
+### Meetings 1 - 48
+Part of the [main onchain contract](#meetings-1---48).
+
+### Meeting 49 - 
+* [Source code](https://github.com/sim31/ordao/tree/8f983f84fa481714425ff0c067819be5e10ff25d/contracts/packages/respect1155)
+* Onchain address: [0x07418B51196045EB360F31d8881326858Ed25121](https://optimistic.etherscan.io/address/0x07418B51196045EB360F31d8881326858Ed25121)
+
 
 ## Executive process
 Executive process is used to execute the will of [consensus process](#consensus-process) and distribute respect according to respect game result submissions [^1].

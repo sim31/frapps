@@ -34,11 +34,11 @@
 
 ## Tools
 ### Consensus submissions frontend
-  * [URL](https://edenfracfront.web.app/)
-  * [Code repository](https://github.com/lennarlehestik/fractalvotingsystem)
+* [URL](https://edenfracfront.web.app/)
+* [Code repository](https://github.com/lennarlehestik/fractalvotingsystem)
 ### Consortium
-  * [Smart contracts](https://github.com/n0umen0n/ConsortiumSC)
-  * [Frontend](https://github.com/n0umen0n/ConsortiumWeb)
+* [Smart contracts](https://github.com/n0umen0n/ConsortiumSC)
+* [Frontend](https://github.com/n0umen0n/ConsortiumWeb)
 ### Fractalgram (from [meeting 35](https://edenfractal.com/35))
 An app for playing [respect game](../../concepts/respect-game.md) in [fractalgram mode](../../concepts/fractalgram.md).
 
