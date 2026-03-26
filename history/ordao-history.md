@@ -56,53 +56,9 @@ To save the legitimacy of Optimism Fractal and to preserve reputation of Optimys
 
 **This still did not give respect-holders any onchain power. But the point is that it gave them a voice and a clear, transparrent mechanism to issue legitimate consensus signals.**
 
-This is a continuation of the principle used in previous solutions: a lack in qualities like decentralization and credible neutrality at the onchain mechanism level is mitigated by clearly communicating intent and providing sufficient transparency in the implementation of the intent (which blockchain is trully great for).
+This [new intent document](./optimism-fractal/of-intent-2.pdf) did not even mention msig or any other onchain mechanism. It just dealt in concept of "a council" and a consensus process that elects the council and gives it power to pass proposals. This made the intent document clean from technical language. **And the whole point is that Optimism Fractal is an organization that works according to the intent document. If an onchain implementation, whether using a fixed msig or some other centralized solution, does not implement this intention, then it (by definition) not the implementation of Optimism Fractal (it is not Optimism Fractal). The community should always pick and use an implementation that matches the intent.** This means that through passing this new intent document, Opitmystics did in a sense transfer power to the respect-holders. In case Optimystics msig and its executor role failed to represent the will of respect-holder consensus process defined in the intent document, the community would have to coordinate to get a new onchain implementation going, and that would have required work and coordination. But at this point there was a basis for agreement (the intent document), which would have made this transition significantly easier had such a need arisen.
 
-This [new intent document](./optimism-fractal/of-intent-2.pdf) did not even mention msig or any other onchain mechanism. It just dealt in concept of "a council" and a consensus process that elects the council and gives it power to pass proposals. This made the intent document clean from technical language. **And the whole point is that Optimism Fractal is an organization that works according to the intent document. If an onchain implementation, whether using a fixed msig or some other centralized solution, does not implement this intention, then it (by definition) not the implementation of Optimism Fractal (it is not Optimism Fractal). The community should always pick and use an implementation that matches the intent.** This means that through passing this new intent document, Opitmystics did transfer power to the respect-holders. In case Optimystics msig and its executor role failed to represent the will of respect-holder consensus process defined in the intent document, the community would have to coordinate to get a new onchain implementation going, and that would have required work and coordination. But at this point there was a basis for agreement (the intent document), which would have made this transition significantly easier had such a need arisen.
-
-Passing this intent document was also a significant event from the perspective of [tripartite governance model theory](../concepts/tripartite-governance-model.md). As mentioned before, during the bootstrap stage the onchain mechanism implemented consensus process defined in the intent document. **After the bootstrap stage the role of the onchain mechanism became to implement *the will* (expected outputs) of the consensus process defined in the intent document rather than to implement the actual mechanism as defined. The implementation of the actual consensus mechanism was in Snapshot at that point.** And when it came to the respect distribution, the onchain implementation always implemented the will of the intent document - consensus did not have to be involved in every respect distribution. Note that the intent document did not define the mechanism to distribute respect it only expressed the intended final result.
-
-```mermaid
-flowchart TD
-    subgraph "During Bootstrap Stage"
-        subgraph ID["Intent Document"]
-            CP["Consensus Process"]
-            RDR["Respect Distribution Rules"]
-        end
-        RGS["Respect Game<br/>Result Submissions"]
-        subgraph OC["Onchain Implementation"]
-            MSIG["MSIG + Executor"]
-            RT["Respect Token"]
-        end
-        CP -->|"mechanism<br/>implemented by"| MSIG
-        RDR -->|"will<br/>implemented by"| MSIG
-        RGS -->|"input"| MSIG
-        MSIG -->|"controls"| RT
-    end
-```
-
-```mermaid
-flowchart TD
-    subgraph "After Bootstrap Stage"
-        subgraph ID["Intent Document"]
-            CP["Consensus Process"]
-            RDR["Respect Distribution Rules"]
-        end
-        SV["Snapshot Voting"]
-        RGS["Respect Game<br/>Result Submissions"]
-        subgraph OC["Onchain Implementation"]
-            MSIG["MSIG + Executor"]
-            RT["Respect Token"]
-        end
-        CP -->|"mechanism<br/>implemented by"| SV
-        SV -->|"will<br/>implemented by"| MSIG
-        RDR -->|"will<br/>implemented by"| MSIG
-        RGS -->|"input"| MSIG
-        MSIG -->|"controls"| RT
-    end
-```
-
-The above can be understood as a legitimacy chain: each layer derives its legitimacy from the layer above it. Community agreement legitimizes the intent document. The intent document legitimizes the legislative layer (the consensus process implementation - Snapshot voting after bootstrap stage) by defining the process it must faithfully implement. The legislative layer legitimizes the executive layer (onchain MSIG + Executor) by producing the decisions it must carry out. For respect distribution, the intent document legitimizes the executive layer directly - the rules are specific enough that no per-instance legislative decision is needed.
+This can be understood through the concept of a legitimacy chain: each layer of the governance system derives its legitimacy from the layer above it. Community agreement legitimizes the intent document. The intent document legitimizes the legislative layer (the consensus process implementation) by defining the process it must faithfully implement. The legislative layer legitimizes the executive layer (onchain MSIG + Executor) by producing the decisions it must carry out. For respect distribution, the intent document legitimizes the executive layer directly - the rules are specific enough that no per-instance legislative decision is needed. The intent document is therefore the top of the legitimacy chain (below community agreement). Without it, replacing a failing executive layer would require rebuilding community agreement from scratch. With it, the community has a coordination anchor - an agreed-upon basis from which to judge whether lower layers are functioning correctly and to replace them if they are not. Blockchain transparency makes each link in the chain verifiable - anyone can check whether the executive layer faithfully implemented the will of the legislative layer and the intent document by examining the onchain record. Transparency does not create legitimacy, but it makes the legitimacy chain auditable, which is what sustains trust in the system over time.
 
 ```mermaid
 flowchart TD
@@ -120,8 +76,51 @@ flowchart TD
     ID -->|"legitimizes directly<br/>(respect distribution rules)"| OC
 ```
 
-This framing explains why the intent document matters even without onchain enforcement: it is the top of the legitimacy chain (below community agreement). Without it, replacing a failing executive layer would require rebuilding community agreement from scratch. With it, the community has a coordination anchor - an agreed-upon basis from which to judge whether lower layers are functioning correctly and to replace them if they are not. Blockchain transparency plays a key role here: it makes each link in the chain verifiable. Anyone can check whether the executive layer faithfully implemented the will of the legislative layer and the intent document by examining the onchain record. Transparency does not create legitimacy, but it makes the legitimacy chain auditable, which is what sustains trust in the system over time.
+Passing this intent document was also a significant event from the perspective of [tripartite governance model theory](../concepts/tripartite-governance-model.md). As mentioned before, during the bootstrap stage the onchain mechanism implemented the consensus process defined in the intent document. **After the bootstrap stage the role of the onchain mechanism became to implement *the will* (expected outputs) of the consensus process defined in the intent document rather than to implement the actual mechanism as defined. The implementation of the actual consensus mechanism was in Snapshot at that point.** In other words, what was previously a single consensus process implemented directly by the MSIG now split into two distinct layers: a legislative layer (Snapshot voting, where the community's will is determined) and an executive layer (the onchain MSIG, which carries out that will). When it came to the respect distribution, the onchain implementation always implemented the will of the intent document directly - consensus process did not have to be involved in every respect distribution. 
 
+```mermaid
+---
+title: During Bootstrap Stage
+---
+flowchart TD
+    subgraph ID1["Intent Document"]
+        CP1["Consensus Process"]
+        RDR1["Respect Distribution Rules"]
+    end
+    RGS1["Respect Game<br/>Result Submissions"]
+    subgraph OC1["Onchain Implementation"]
+        MSIG1["MSIG + Executor"]
+        RT1["Respect Token"]
+    end
+    CP1 -->|"mechanism<br/>implemented by"| MSIG1
+    RDR1 -->|"will<br/>implemented by"| MSIG1
+    RGS1 -->|"input"| MSIG1
+    MSIG1 -->|"controls"| RT1
+```
+
+```mermaid
+---
+title: After Bootstrap Stage
+---
+flowchart TD
+    subgraph ID2["Intent Document"]
+        CP2["Consensus Process"]
+        RDR2["Respect Distribution Rules"]
+    end
+    SV["Snapshot Voting<br/>(Legislative Layer)"]
+    RGS2["Respect Game<br/>Result Submissions"]
+    subgraph OC2["Onchain Implementation<br/>(Executive Layer)"]
+        MSIG2["MSIG + Executor"]
+        RT2["Respect Token"]
+    end
+    CP2 -->|"mechanism<br/>implemented by"| SV
+    SV -->|"will<br/>implemented by"| MSIG2
+    RDR2 -->|"will<br/>implemented by"| MSIG2
+    RGS2 -->|"input"| MSIG2
+    MSIG2 -->|"controls"| RT2
+```
+
+This split into legislative and executive layers was the birth of a distinct legislative process in Optimism Fractal. The consensus process was no longer fused with its onchain execution - it now had its own independent implementation where the community's will could be formed, while the onchain mechanism was relegated to carrying out that will.
 
 [^1]: Dan Singjoy
 
