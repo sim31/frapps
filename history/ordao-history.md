@@ -6,7 +6,7 @@ The purpose of this document is to shine a light on ORDAO usage and development 
 
 ## ORDAO origins
 
-ORDAO was initially created to solve specific problems for one specific community - [Optimism Fractal](./optimism-fractal/). Optimism Fractal was created by participants of [Eden Fractal Epoch 1](./eden-fractal-1/) by replicating their EOS-based Eden Fractal process on Optimism and presenting it to Optimism community. ORDAO was meant to solve problems a lot of which Optimism Fractal inherited from Eden Fractal Epoch 1. Hence we have to start with Eden Fractal Epoch 1 in order to understand the origins, context and design patterns of ORDAO.
+ORDAO was initially created to solve specific problems for one specific community - [Optimism Fractal](./optimism-fractal/). Optimism Fractal was created by participants of [Eden Fractal Epoch 1](./eden-fractal-1/) by replicating their [EOS](https://en.wikipedia.org/wiki/EOS.IO)-based Eden Fractal process on Optimism and presenting it to Optimism community. ORDAO was meant to solve problems a lot of which Optimism Fractal inherited from Eden Fractal Epoch 1. Hence we have to start with Eden Fractal Epoch 1 in order to understand the origins, context and design patterns of ORDAO.
 
 ### ORDAO grandparent - Eden Fractal Epoch 1 toolset
 
@@ -45,7 +45,7 @@ We understood these key issues when deploying Optimism Fractal and hence looked 
 
 This [original intent document](./optimism-fractal/of-intent-1.pdf) also defined a simple, council-based, consensus process for making changes to any of the rules of Optimism Fractal or its Respect distribution. It then defined a "bootstrap stage" as first 12 events during which the "council" which makes decision in consensus process would be the 4 people who have founded Optimism Fractal. **This meant that, in the beginning, consensus process of Optimism Fractal defined in the intent document and the msig setup which controlled the onchain smart contracts matched each other. In other words, the onchain msig implemented the consensus process defined in the intent document.**
 
-The bootstrap stage made sense not just because it bought us time to develop something better. We wanted eventual consensus process to be based on Respect distribution (one of the main use cases of Respect - bootstrapping governance), but we did not have any respect distribution to start with. So some kind of bootstrapping phase to build up the initial distribution was needed.
+The bootstrap stage made sense not just because it bought us time to develop something better. We wanted eventual consensus process to be based on Respect distribution (one of the main use cases of Respect - bootstrapping governance), but we did not have any respect distribution to start with on Optimism. So some kind of bootstrapping phase to build up the initial distribution was needed.
 
 But this bootstrap stage had a predefined limit - 12 events (12 weeks). This time frame seemed reasonable to us at the time. By then we expected to implement a fully onchain legitimate consensus process that would give all the power to the respect-holders who have been participating throughout the bootstrap stage and beyond.
 
@@ -122,8 +122,24 @@ flowchart TD
 
 This split into legislative and executive layers was the birth of a distinct legislative process in Optimism Fractal. The consensus process was no longer fused with its onchain execution - it now had its own independent implementation where the community's will could be formed, while the onchain mechanism was relegated to carrying out that will.
 
+#### Operation of the new legislative process
+
+Through events 12-49 the 1st generation toolset of Optimism Fractal worked in tandem with the new council-based legislative process. Full history of all proposals council passed can be found in [Optimism Fractal's Snapshot space](https://snapshot.org/#/optimismfractal.eth/).
+
+One of the most common uses of the new legislative process was to fix respect distributions when respect game submissions were lacking in some way. This was needed because the [intent documents](./optimism-fractal/index.md#intent-document) during that time contained a clause that required at least 2/3rds of the breakout group to submit the same ranking of contributors for a [respect game](../concepts/respect-game.md) result to be considered "valid" and result in legitimate respect distribution. But it would often happen that some breakout room participants would not submit. They would never express a disagreement with the results. Most often there would either be some technical difficulty (user not having wallet prepared, connection issues, etc) or other coincidental circumstances (them having to leave a bit early, forgetting it, other timely concerns).
+
+This is a general pattern that's very clear from our experiences in online (video call) Respect game sessions: all kinds of issues and distractions happen during these calls. If we had a strict blockchain-based process that would enforce all the rules and deadlines during respect game a big part of Respet would not have been distributed.
+
+So within this strand of fractals (Eden Fractal, Optimism Fractal) our practice historically has been to look for the true intent from the breakout room and use a transparent process for making sure the Respect distribution reflects the true intent. In case of Optimism Fractal this meant using the council process to pass proposals like [this one](https://snapshot.org/#/s:optimismfractal.eth/proposal/0x3895270f9e87c9bd62b3ce30e43023f38f99bd4068b4cc6ff051fe54e52b067d) that would explicitly name the intended respect distribution and then using the "executor role" to execute the intended distribution. There was never any dispute ever raised about ochain respect distribution in Optimism Fractal, which is the clearest argument for the legitimacy of this process.
+
+Besides fixing respect distributions we also used the council process to [change the intent document of Optimism Fractal](./optimism-fractal/intent-changelog.md) or to pass new meeting schedules and scheduling breaks.
+
+
+
 [^1]: Dan Singjoy
 
 [^2]: https://optimystics.io/enhancing-retropgf-with-optimism-fractal
 
 [^3]: Introducing fractals and their potential [synergy with Optimism](https://optimystics.io/enhancing-retropgf-with-optimism-fractal) to Optimism community took a lot of our attention during the bootstrap stage.
+
+[^4]: This is a pattern that's very clear from our experiences in online (video call) Respect game sessions: all kinds of wron
