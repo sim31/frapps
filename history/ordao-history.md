@@ -2,6 +2,8 @@
 
 [ORDAO](../apps/orfrapps/ordao/) is a toolset. As with any tool there are different ways of using it and some ways might work better than others. Additionally context matters - a tool might work better in some contexts than in others. Furthermore a tool might be better suited for solving certain sets of problems than others.
 
+Beyond just proper use of ORDAO as a tool, how it developed is also relevant since it can inform understanding of design decisions and limitations of ORDAO and inform future development patterns for the kind of communities ORDAO was created to serve.
+
 The purpose of this document is to shine a light on ORDAO usage and development patterns that work by providing a clear history of how ORDAO developed and how it has successfully been used so far. Hopefully this will provide useful context for future developments or ORDAO or alternative codebases.
 
 ## ORDAO origins
@@ -134,12 +136,30 @@ So within this strand of fractals (Eden Fractal, Optimism Fractal) our practice 
 
 Besides fixing respect distributions we also used the council process to [change the intent document of Optimism Fractal](./optimism-fractal/intent-changelog.md) or to pass new meeting schedules and scheduling breaks.
 
+### ORDAO seeds
+
+The legislative process described above was started in January 2024. There was one other significant event for ORDAO that happened at the beginning of that year: I published a document titled "OREC" [^3] [^4], that described an early draft version of [OREC](../concepts/orec.md), that later became the essence of ORDAO. Comparing that version with the [current](../apps/orfrapps/ordao/docs/OREC.md#specification), that initial version was very rough - a lot more complicated and less polished. But you can recognize the same approach at solving the same problem. This document was actually published before passing the new legislative process described above. We went with that process, because we did not have an implementation of OREC, nor the agreement that we really want to go that way.
+
+So after a short back and forth discussion about OREC, we kind of forgot about it and then throughout the first quarter of 2024 Optimism Fractal ran the new legislative process as [described above](#operation-of-the-new-legislative-process) while Optimystics internally also tried to agree on the design of a new fractal app. It was very much still needed. Some of the main pain pain points at the time:
+
+* **Manual distribution of Respect** - not only this required manual work from "executor" within Optimism Fractal, but also prevented any realistic replication of our process to other communities - the work executor had to was not something you can ask a non-technical user to do.
+* **Ownership of smart contracts and respect distribution by the founders** - we wanted community to become autonomous and self-sufficient (i.e.: transfer onchain control to respect-holders);
+* **Issues with Respect token in block explorers** - holders list wasn't working on Etherscan, distribution transaction did not show how much each account received.
+* **Respect game submission requirements requiring constant intervention from legislative process** - legislative process had to "fix respect distributions" for breakout groups as described above quite often. This "fixing" was quite straighforward but required some manual work and clear communication. Another thing that would prevent replicability of our process at the time - typical user would expect less work for such a routine procedure.
+
+There was another issue which wasn't a pain point yet, but which we knew would become more relevant as the time went on. Something that could probably be categorized as version of ["incumbency advantage"](https://en.wikipedia.org/wiki/Incumbent#:~:text=%5B3%5D-,Incumbency%20advantage,-In%20general%2C%20an) of fractals. People who have participated a lot in the past but are not active anymore, could have a lot of respect and have a lot of governance power as a result, even though they might have lost touch with the community. It's an interesting discussion topic - how much an organization should give power to those who contributed a lot in the past vs those who are more recent and more active contributors. But generally most agreed that there's utility in some form of decay of respect-based power. You can see one discussion about it [here](https://discord.com/channels/1164572177115398184/1164572177878765591/1194574639255523389).
+
+## Initial development
+
+* Change in approach to a process of development of a fractal app
+
+## Optimism Fractal deployment
 
 
 [^1]: Dan Singjoy
 
 [^2]: https://optimystics.io/enhancing-retropgf-with-optimism-fractal
 
-[^3]: Introducing fractals and their potential [synergy with Optimism](https://optimystics.io/enhancing-retropgf-with-optimism-fractal) to Optimism community took a lot of our attention during the bootstrap stage.
+[^3]: https://discord.com/channels/1164572177115398184/1164572177878765591/1193866578563977286
 
-[^4]: This is a pattern that's very clear from our experiences in online (video call) Respect game sessions: all kinds of wron
+[^4]: https://adaptable-oxygen-176.notion.site/OREC-e991e5b8025c4170948b7e20bbfbb2bd
