@@ -138,22 +138,42 @@ Besides fixing respect distributions we also used the council process to [change
 
 ### ORDAO seeds
 
-The legislative process described above was started in January 2024. There was one other significant event for ORDAO that happened at the beginning of that year: I published a document titled "OREC" [^3] [^4], that described an early draft version of [OREC](../concepts/orec.md), that later became the essence of ORDAO. Comparing that version with the [current](../apps/orfrapps/ordao/docs/OREC.md#specification), that initial version was very rough - a lot more complicated and less polished. But you can recognize the same approach at solving the same problem. This document was actually published before passing the new legislative process described above. We went with that process, because we did not have an implementation of OREC, nor the agreement that we really want to go that way.
+The legislative process described above was started in January 2024. There was one other significant event for ORDAO that happened at the beginning of that year: I published a document titled "OREC" [^3] [^4], that described an early draft version of [OREC](../concepts/orec.md), that later became the basis for ORDAO. Comparing that version with the [current](../apps/orfrapps/ordao/docs/OREC.md#specification), that initial version was very rough - a lot more complicated and less polished. But you can recognize the same approach at solving the same problem. This document was actually published before passing the new legislative process described above. We went with that process, because we did not have an implementation of OREC, nor the agreement that we really want to go that way.
 
-So after a short back and forth discussion about OREC, we kind of forgot about it and then throughout the first quarter of 2024 Optimism Fractal ran the new legislative process as [described above](#operation-of-the-new-legislative-process) while Optimystics internally also tried to agree on the design of a new fractal app. It was very much still needed. Some of the main pain pain points at the time:
+So after a short discussion about OREC, we kind of forgot about it and then throughout the first quarter of 2024 Optimism Fractal ran the new legislative process as [described above](#operation-of-the-new-legislative-process) while Optimystics internally also tried to agree on the design of a new fractal app. It was very much still needed. Some of the main pain pain points at the time:
 
 * **Manual distribution of Respect** - not only this required manual work from "executor" within Optimism Fractal, but also prevented any realistic replication of our process to other communities - the work executor had to was not something you can ask a non-technical user to do.
 * **Ownership of smart contracts and respect distribution by the founders** - we wanted community to become autonomous and self-sufficient (i.e.: transfer onchain control to respect-holders);
 * **Issues with Respect token in block explorers** - holders list wasn't working on Etherscan, distribution transaction did not show how much each account received.
-* **Respect game submission requirements requiring constant intervention from legislative process** - legislative process had to "fix respect distributions" for breakout groups as described above quite often. This "fixing" was quite straighforward but required some manual work and clear communication. Another thing that would prevent replicability of our process at the time - typical user would expect less work for such a routine procedure.
+* **Respect game submission requirements requiring constant intervention from legislative process** - legislative process had to "fix respect distributions" for breakout groups as described above quite often. This "fixing" was quite straighforward but required some manual work and clear communication. Another thing that would prevent replicability of our process at the time - typical user would expect less work for such a routine procedure for fractals as respect distribution for respect game events.
 
-There was another issue which wasn't a pain point yet, but which we knew would become more relevant as the time went on. Something that could probably be categorized as version of ["incumbency advantage"](https://en.wikipedia.org/wiki/Incumbent#:~:text=%5B3%5D-,Incumbency%20advantage,-In%20general%2C%20an) of fractals. People who have participated a lot in the past but are not active anymore, could have a lot of respect and have a lot of governance power as a result, even though they might have lost touch with the community. It's an interesting discussion topic - how much an organization should give power to those who contributed a lot in the past vs those who are more recent and more active contributors. But generally most agreed that there's utility in some form of decay of respect-based power. You can see one discussion about it [here](https://discord.com/channels/1164572177115398184/1164572177878765591/1194574639255523389).
+There was another issue which wasn't a pain point yet, but which we knew would become more relevant as the time went on. Something that could probably be categorized as version of ["incumbency advantage"](https://en.wikipedia.org/wiki/Incumbent#:~:text=%5B3%5D-,Incumbency%20advantage,-In%20general%2C%20an) of fractals. People who have participated a lot in the past but are not active anymore, could have a lot of respect and have a lot of governance power as a result, even though they might have lost touch with the community. Not to mention it would get increasingly hard for new people to have any kind of voice as time went on and more respect got distributed. It's an interesting discussion topic - how much an organization should give power to those who contributed a lot in the past vs those who are more recent and more active contributors. But generally most participans I conversed with at the time agreed that there's utility in some form of decay of respect-based power. You can find one discussion about it [here](https://discord.com/channels/1164572177115398184/1164572177878765591/1194574639255523389).
 
 ## Initial development
 
-* Change in approach to a process of development of a fractal app
+In spring of 2024 Optimystics still did not have an agreement on a design of a new fractal app for Optimism Fractal.
+
+One thing to understand about Optimystics is that we did not have a any kind of hierarchy or traditional decision-making structure. There was a kind of implicit agreement that we needed 3/4 agreement (like in the MSIG we controlled) for any key decisions. In practice we would typically get 4/4 agreement. But when it came to governance design and development (beyond simply replicating our past processes) we had quite different philosophies at the time. And it wasn't just that we disagreed on the design of the actual app, but also on how to build it. Some were looking for some funding first, while I was advocating for building things for Optimism Fractal first.
+
+In retrospective, I wonder if our main mistake wasn't that we took it upon our Optimystics team to deliver the new app as opposed to involving community more. On the other hand, more people would probably have made an agreement even harder.
+
+To be fair there was actually one fractal app design document that came from wider community and not from Optimystics [^5] [^6]. But it came at a time when I was already so tired of discussing different designs and it was clearly different design direction than I was considering, which meant that it would have lead to even more design discussion. But at around that time it started dawning on me that this was not at all what was needed at that point... **The problem was not "what is the right fractal app for Optimism Fractal", the problem was largely becoming - "who will spend effort to contribute the next version of a fractal app for Optimism Fractal"**.
+
+For one we did not need a perfect fractal app - we just needed the next version that would be a little bit better and that would enable Optimism Fractal to survive while building further [^7]. But by building consenus on a fractal app I realized we were innevitably optimizing for the former. Because this is what consensus building does - it tries to approach a decision that would be right from all perspectives.
+
+* Should have spent more time thinking - "who will build the fractal app"? Who is motivated enough to spend that  energy...
+
 
 ## Optimism Fractal deployment
+
+* ORDAO office hours
+* Upgrade process
+
+## ORDAO GUI, ORDAO Fractal
+
+## Optimism Fractal on Base
+
+## Eden Fractal
 
 
 [^1]: Dan Singjoy
@@ -163,3 +183,9 @@ There was another issue which wasn't a pain point yet, but which we knew would b
 [^3]: https://discord.com/channels/1164572177115398184/1164572177878765591/1193866578563977286
 
 [^4]: https://adaptable-oxygen-176.notion.site/OREC-e991e5b8025c4170948b7e20bbfbb2bd
+
+[^5]: https://discord.com/channels/1164572177115398184/1164572177878765591/1227653926371725402
+
+[^6]: https://hackmd.io/@Hodlon/HknNpzgeC
+
+[^7]: I was doing the "executor" role by the way and I was getting seriously tired of it. Wanted to automate it "the right way"
