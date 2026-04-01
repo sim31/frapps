@@ -7,3 +7,6 @@
 [submodule "apps/orfrapps"]
 	path = apps/orfrapps
 	url = git@github.com:sim31/orfrapps.git
+[submodule "apps/ordao"]
+	path = apps/ordao
+	url = https://github.com/sim31/ordao
